@@ -1,9 +1,10 @@
 /*
 STTiledLayer.swift
 
-Author: Makoto Kinoshita
+Author: Makoto Kinoshita (mkino@hmdt.jp)
 
-Copyright 2022 HMDT. All rights reserved.
+Copyright 2024 Nihon Design Center. All rights reserved.
+This software is licensed under the MIT License. See LICENSE for details.
 */
 
 import UIKit
