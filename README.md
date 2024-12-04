@@ -12,6 +12,10 @@ STLabelは、画面にテキストを表示するためのビュークラスで�
 
 文字を描画する方向として、LrTbまたはTbRlを指定できる。TbRlは、いわゆる縦書き表示である。
 
+<img width="944" src="https://github.com/user-attachments/assets/bc779d89-a96a-4235-80b5-332cc18e1f8a">
+
+<img width="380" src="https://github.com/user-attachments/assets/dc5979e9-dd17-4b9e-9da6-8a8156f899bf">
+
 ### 縦書き表示
 
 縦書き表示では、フォントを描画するときに適切なグリフが選択される。たとえば、句読点、括弧などに適用される。
@@ -42,7 +46,9 @@ T.B.D.
 
 STLabelでは、文字種ごとにフォントを指定することが可能である。たとえば、日本語フォントとして游明朝、ラテン文字フォントとしてTimesを指定すると、次のような描画になる。
 
-図
+<img width="945" src="https://github.com/user-attachments/assets/efad8041-4e26-4165-acca-13feb3b6d3b8">
+
+<img width="945" src="https://github.com/user-attachments/assets/a19c165a-bde1-4cd4-9943-7666c26f85c6">
 
 指定可能な文字種は、Unicodeカテゴリとして定義される。
 
