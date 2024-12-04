@@ -14,7 +14,6 @@
 		0BA78B6F2CE483C4007EDDE2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0BA78B622CE483C4007EDDE2 /* Assets.xcassets */; };
 		0BA78B702CE483C4007EDDE2 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0BA78B672CE483C4007EDDE2 /* Main.storyboard */; };
 		0BA78B712CE483C4007EDDE2 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0BA78B652CE483C4007EDDE2 /* LaunchScreen.storyboard */; };
-		0BA78B722CE483C4007EDDE2 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0BA78B632CE483C4007EDDE2 /* Info.plist */; };
 		0BA9E2A22CA3BB160072D709 /* STKnobView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BA9E2A12CA3BB160072D709 /* STKnobView.swift */; };
 		0BA9E2A42CA3D2950072D709 /* STTextView+Lens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BA9E2A32CA3D2950072D709 /* STTextView+Lens.swift */; };
 		0BB5CDBD2BB5411500A53CDD /* STParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BB5CDBC2BB5411500A53CDD /* STParser.swift */; };
@@ -243,7 +242,6 @@
 				0BA78B6F2CE483C4007EDDE2 /* Assets.xcassets in Resources */,
 				0BA78B702CE483C4007EDDE2 /* Main.storyboard in Resources */,
 				0BA78B712CE483C4007EDDE2 /* LaunchScreen.storyboard in Resources */,
-				0BA78B722CE483C4007EDDE2 /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -430,7 +428,7 @@
 				CURRENT_PROJECT_VERSION = 240925;
 				DEVELOPMENT_TEAM = S77FC4545C;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = stone/Info.plist;
+				INFOPLIST_FILE = sample/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "stone oss";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
@@ -463,7 +461,7 @@
 				CURRENT_PROJECT_VERSION = 240925;
 				DEVELOPMENT_TEAM = S77FC4545C;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = stone/Info.plist;
+				INFOPLIST_FILE = sample/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "stone oss";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
