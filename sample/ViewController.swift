@@ -13,6 +13,9 @@ let catcherText = "If you really want to hear about it, the first thing you'll p
 
 let rashomonText = "　ある日の暮方の事である。一人の下人が、羅生門の下で雨やみを待っていた。\n　広い門の下には、この男のほかに誰もいない。ただ、所々丹塗の剥げた、大きな円柱に、蟋蟀が一匹とまっている。羅生門が、朱雀大路にある以上は、この男のほかにも、雨やみをする市女笠や揉烏帽子が、もう二三人はありそうなものである。それが、この男のほかには誰もいない。"
 
+let yoshuText = 
+    "　洋酒といえば、だれでも最初に思い浮かべるのがウイスキー。いわば洋酒のシンボル的な存在なのだが、英語表記が［一般に〔米〕では Whiskey,〔英〕では Whisky.］であることはあまり知られていない。米英両国では、このスペルの差で自国産と輸入品を区別しているという。わが和製ウイスキーの“Whisky”という英国式表示は、手本にしたスコッチのフォルムに倣ったものであり、それ以上の意味はないようだ。カナ表記にしても、ごくまれに〈ウヰスキー〉という書き方を見かけるが、これとて差別化を意図したものではなく、単にカナづかいの時代性にすぎない。"
+
 class RootController: UITableViewController {
     override func viewDidLoad() {
         title = "stone engine"
@@ -130,6 +133,8 @@ class InspectorController: UIViewController {
     @IBOutlet weak var directionSegmentedControl: UISegmentedControl!
     @IBOutlet weak var latinFontButton: UIButton!
     @IBOutlet weak var japaneseFontButton: UIButton!
+    @IBOutlet weak var latinFontScaleSlider: UISlider!
+    @IBOutlet weak var japaneseFontScaleSlider: UISlider!
     @IBOutlet weak var punctuationSegmentedControl: UISegmentedControl!
     @IBOutlet weak var allowTateChuYokoSwitch: UISwitch!
     @IBOutlet weak var processKinsokuSwitch: UISwitch!
@@ -153,6 +158,8 @@ class InspectorController: UIViewController {
             container.font = UIFont.systemFont(ofSize: 13)
             latinFontButton.configuration?.attributedTitle = .init(label.fontNames(script: .latin).first ?? "", attributes: container)
             japaneseFontButton.configuration?.attributedTitle = .init(label.fontNames(script: .japanese).first ?? "", attributes: container)
+            latinFontScaleSlider.value = Float(label.fontScale(script: .latin))
+            japaneseFontScaleSlider.value = Float(label.fontScale(script: .japanese))
             
             allowTateChuYokoSwitch.isOn = label.isAllowedTateChuYoko
             processKinsokuSwitch.isOn = label.isKinsokuAvailable
@@ -256,6 +263,16 @@ class InspectorController: UIViewController {
         present(fontController, animated: true)
     }
     
+    @IBAction func latinFontScaleAction(_ sender: AnyObject) {
+        label?.setFontScale(CGFloat(latinFontScaleSlider.value), script: .latin)
+        textView?.setFontScale(CGFloat(latinFontScaleSlider.value), script: .latin)
+    }
+    
+    @IBAction func japaneseFontScaleAction(_ sender: AnyObject) {
+        label?.setFontScale(CGFloat(japaneseFontScaleSlider.value), script: .japanese)
+        textView?.setFontScale(CGFloat(japaneseFontScaleSlider.value), script: .japanese)
+    }
+    
     @IBAction func punctuationAction(_ sender: AnyObject) {
         guard let segmentedControl = sender as? UISegmentedControl else { return }
         guard let punctuationMode = STPunctuationMode(rawValue: segmentedControl.selectedSegmentIndex) else { return }
@@ -319,6 +336,14 @@ class EditTextController: UIViewController, UITextViewDelegate {
     @IBAction func rashomonAction(_ sender: AnyObject) {
         // Set text
         textView.text = rashomonText
+        
+        // Notify it
+        textViewDidChange(textView)
+    }
+    
+    @IBAction func yoshuAction(_ sender: AnyObject) {
+        // Set text
+        textView.text = yoshuText
         
         // Notify it
         textViewDidChange(textView)

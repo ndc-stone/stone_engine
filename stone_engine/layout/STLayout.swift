@@ -62,6 +62,7 @@ class STLayout {
             var width: CGFloat = context.runs[runId].advance.width
             switch context.punctuationMode {
             case .whole:
+                // Do nothing
                 break
             case .half:
                 // Set position x and frame
@@ -69,7 +70,6 @@ class STLayout {
                 case .whole:
                     break
                 case .firstHalf:
-                    posX = x
                     width = context.runs[runId].advance.width * 0.5
                 case .secondHalf:
                     posX = x - context.runs[runId].advance.width * 0.5
@@ -81,62 +81,33 @@ class STLayout {
             case .stone:
                 // Check with prev run
                 if runId > 0 {
-                    // For first half and frist half
-                    if context.runs[runId - 1].punctuation == .firstHalf && context.runs[runId].punctuation == .firstHalf {
-                        posX = x
+                    // For first half and second half, like '」「'
+                    if context.runs[runId - 1].punctuation == .firstHalf && context.runs[runId].punctuation == .secondHalf {
+                        posX = x - context.runs[runId].advance.width * 0.5
+                        width = context.runs[runId].advance.width * 0.5
+                    }
+                    // For second half and second half, like '「「'
+                    else if context.runs[runId - 1].punctuation == .secondHalf && context.runs[runId].punctuation == .secondHalf {
+                        posX = x - context.runs[runId].advance.width * 0.5
+                        width = context.runs[runId].advance.width * 0.5
+                    }
+                    // For quater and second half, like '・「'
+                    else if context.runs[runId - 1].punctuation == .quarter && context.runs[runId].punctuation == .secondHalf {
+                        posX = x - context.runs[runId].advance.width * 0.5
                         width = context.runs[runId].advance.width * 0.5
                     }
                 }
                 
                 // Check with next run
                 if runId + 1 < context.runs.count {
-                    // For first half and frist half
+                    // For first half and first half, like '。」'
                     if context.runs[runId].punctuation == .firstHalf && context.runs[runId + 1].punctuation == .firstHalf {
-                        posX = x
                         width = context.runs[runId].advance.width * 0.5
                     }
-                    // For first half and second half
-                    else if context.runs[runId].punctuation == .firstHalf && context.runs[runId + 1].punctuation == .secondHalf {
-                        posX = x
-                        width = context.runs[runId].advance.width
-                    }
-                    // For second half and second half
-                    else if context.runs[runId].punctuation == .secondHalf && context.runs[runId + 1].punctuation == .secondHalf {
-                        posX = x
-                        width = context.runs[runId].advance.width
-                    }
-                    // For first half and quarter
+                    // For first half and quarter, like '」・'
                     else if context.runs[runId].punctuation == .firstHalf && context.runs[runId + 1].punctuation == .quarter {
-                        posX = x
-                        width = context.runs[runId].advance.width
-                    }
-                    // For quarter and second half
-                    else if context.runs[runId].punctuation == .firstHalf && context.runs[runId + 1].punctuation == .quarter {
-                        posX = x
-                        width = context.runs[runId].advance.width
-                    }
-                    
-                    /*
-                    switch context.runs[runId].punctuation {
-                    case .whole:
-                        posX = x
-                        width = context.runs[runId].advance.width
-                    case .firstHalf:
-                        posX = x
-                        width = context.runs[runId].advance.width * 0.5
-                    case .secondHalf:
-                        posX = x - context.runs[runId].advance.width * 0.5
-                        width = context.runs[runId].advance.width * 0.5
-                    case .quarter:
-                        posX = x - context.runs[runId].advance.width * 0.25
                         width = context.runs[runId].advance.width * 0.5
                     }
-                    */
-                }
-                // For no next run
-                else {
-                    posX = x
-                    width = context.runs[runId].advance.width
                 }
             }
             
@@ -182,14 +153,16 @@ class STLayout {
         else {
             // Decide position y and frame height
             var posY = y + context.adjustFontSize - context.fontManager.descent(fontId: context.runs[runId].fontId, size: context.adjustFontSize)
-            let height: CGFloat
+            var height = context.adjustFontSize
             switch context.punctuationMode {
             case .whole:
-                height = context.adjustFontSize
-            case .half, .stone:
+                // Do nothing
+                break
+            case .half:
+                // Set position y and frame
                 switch context.runs[runId].punctuation {
                 case .whole:
-                    height = context.adjustFontSize
+                    break
                 case .firstHalf:
                     height = context.adjustFontSize * 0.5
                 case .secondHalf:
@@ -198,6 +171,37 @@ class STLayout {
                 case .quarter:
                     posY -= context.adjustFontSize * 0.25
                     height = context.adjustFontSize * 0.5
+                }
+            case .stone:
+                // Check with prev run
+                if runId > 0 {
+                    // For first half and second half, like '」「'
+                    if context.runs[runId - 1].punctuation == .firstHalf && context.runs[runId].punctuation == .secondHalf {
+                        posY -= context.adjustFontSize * 0.5
+                        height = context.adjustFontSize * 0.5
+                    }
+                    // For second half and second half, like '「「'
+                    else if context.runs[runId - 1].punctuation == .secondHalf && context.runs[runId].punctuation == .secondHalf {
+                        posY -= context.adjustFontSize * 0.5
+                        height = context.adjustFontSize * 0.5
+                    }
+                    // For quater and second half, like '・「'
+                    else if context.runs[runId - 1].punctuation == .quarter && context.runs[runId].punctuation == .secondHalf {
+                        posY -= context.adjustFontSize * 0.5
+                        height = context.adjustFontSize * 0.5
+                    }
+                }
+                
+                // Check with next run
+                if runId + 1 < context.runs.count {
+                    // For first half and first half, like '。」'
+                    if context.runs[runId].punctuation == .firstHalf && context.runs[runId + 1].punctuation == .firstHalf {
+                        height = context.adjustFontSize * 0.5
+                    }
+                    // For first half and quarter, like '」・'
+                    else if context.runs[runId].punctuation == .firstHalf && context.runs[runId + 1].punctuation == .quarter {
+                        height = context.adjustFontSize * 0.5
+                    }
                 }
             }
             
