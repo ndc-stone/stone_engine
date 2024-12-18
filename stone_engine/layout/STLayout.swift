@@ -237,12 +237,82 @@ class STLayout {
     //--------------------------------------------------------------//
     
     private func goNextLineLrTb() {
+        // Swtich by punctuation mode
+        switch context.punctuationMode {
+        case .stone:
+            // For second half begin run, like '「'
+            if context.runs[lineStartRunId].punctuation == .secondHalf {
+                // Set position and frame
+                let dx = context.runs[lineStartRunId].advance.width * 0.5
+                var position = context.runs[lineStartRunId].position
+                position.x -= dx
+                context.runs[lineStartRunId].position = position
+                var frame = context.runs[lineStartRunId].frame
+                frame.size.width = context.runs[lineStartRunId].advance.width * 0.5
+                context.runs[lineStartRunId].frame = frame
+                
+                // Shift rest runs
+                for runId in lineStartRunId + 1 ..< self.runId {
+                    position = context.runs[runId].position
+                    position.x -= dx
+                    context.runs[runId].position = position
+                    frame = context.runs[runId].frame
+                    frame.origin.x -= dx
+                    context.runs[runId].frame = frame
+                }
+            }
+            
+            // For first half end run, link '。'
+            if context.runs[runId].punctuation == .firstHalf {
+                // Set frame
+                var frame = context.runs[runId].frame
+                frame.size.width = context.runs[runId].advance.width * 0.5
+                context.runs[runId].frame = frame
+            }
+        default: break
+        }
+        
         // Go next line
         x = minX
         y += context.adjustLineHeight
     }
     
     private func goNextLineTbRl() {
+        // Swtich by punctuation mode
+        switch context.punctuationMode {
+        case .stone:
+            // For second half begin run, like '「'
+            if context.runs[lineStartRunId].punctuation == .secondHalf {
+                // Set position and frame
+                let dy = context.adjustFontSize * 0.5
+                var position = context.runs[lineStartRunId].position
+                position.y -= dy
+                context.runs[lineStartRunId].position = position
+                var frame = context.runs[lineStartRunId].frame
+                frame.size.height = context.adjustFontSize * 0.5
+                context.runs[lineStartRunId].frame = frame
+                
+                // Shift rest runs
+                for runId in lineStartRunId + 1 ..< self.runId {
+                    position = context.runs[runId].position
+                    position.y -= dy
+                    context.runs[runId].position = position
+                    frame = context.runs[runId].frame
+                    frame.origin.y -= dy
+                    context.runs[runId].frame = frame
+                }
+            }
+            
+            // For first half end run, link '。'
+            if context.runs[runId].punctuation == .firstHalf {
+                // Set frame
+                var frame = context.runs[runId].frame
+                frame.size.height = context.adjustFontSize * 0.5
+                context.runs[runId].frame = frame
+            }
+        default: break
+        }
+        
         // Go next line
         x -= context.adjustLineHeight
         y = 0
@@ -553,7 +623,7 @@ class STLayout {
         let renderFrame = CGRect(origin: .zero, size: context.renderSize)
         for i in 0 ..< context.runs.count {
             // Decide shown
-            let isShown = renderFrame.contains(context.runs[i].frame)
+            let isShown = renderFrame.intersects(context.runs[i].frame)
             let nextIsShown: Bool
             if i < context.runs.count - 1 { nextIsShown = renderFrame.contains(context.runs[i + 1].frame) }
             else { nextIsShown = true }
