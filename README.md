@@ -2,7 +2,7 @@ stone_engineは、日本語の美しい組版を実現する、テキストレ�
 
 ## 提供クラス
 
-stone_engineは、STLabelとSTTextViewというクラスを提供する。これは、UI KitにおけるUILabelとUITextViewを置き換えることを意図している。
+stone_engineは、`STLabel`と`STTextView`というクラスを提供する。これは、UI KitにおけるUILabelとUITextViewを置き換えることを意図している。
 
 ## STLabel
 
@@ -10,11 +10,15 @@ STLabelは、画面にテキストを表示するためのビュークラスで�
 
 ### 文字描画方向の指定
 
-文字を描画する方向として、LrTbまたはTbRlを指定できる。TbRlは、いわゆる縦書き表示である。
+文字を描画する方向として、`LrTb`または`TbRl`を指定できる。TbRlは、いわゆる縦書き表示である。
 
-<img width="944" src="https://github.com/user-attachments/assets/bc779d89-a96a-4235-80b5-332cc18e1f8a">
+| <img width="480" src="https://github.com/user-attachments/assets/bc779d89-a96a-4235-80b5-332cc18e1f8a"> |
+|:--:|
+| `LrTb`（横書き表示） |
 
-<img width="380" src="https://github.com/user-attachments/assets/dc5979e9-dd17-4b9e-9da6-8a8156f899bf">
+| <img width="240" src="https://github.com/user-attachments/assets/dc5979e9-dd17-4b9e-9da6-8a8156f899bf"> |
+|:--:|
+| `TbRl`（縦書き表示） |
 
 ### 縦書き表示
 
@@ -23,6 +27,11 @@ STLabelは、画面にテキストを表示するためのビュークラスで�
 数字を表示するときは、いわゆる縦中横が反映される。数字が2桁以下のときは、正体で表示される。2桁より大きいとは、90度回転して表示される。
 
 アルファベットは、90度回転して表示される。
+
+| <img width="60" src="https://github.com/user-attachments/assets/47a5b36a-cbfe-435c-8910-27042b73e6de"> |
+|:--:|
+| 数字の縦中横表示と、アルファベットの90度回転表示 |
+
 
 ### 禁則処理
 
@@ -38,17 +47,29 @@ STLabelは、画面にテキストを表示するためのビュークラスで�
 - 常に半角
 - 前後の文字種や行中の位置で、適切に判断する（stoneモード）
 
-stoneモードでは、以下のように約物の半角／全角が決定される。
+| <img width="640" src="https://github.com/user-attachments/assets/8cd0b639-976c-4091-8dc3-d08f2fb480b4"> |
+|:--:|
+| 常に全角 |
 
-T.B.D.
+| <img width="640" src="https://github.com/user-attachments/assets/4467fd22-75e7-4038-b852-20612f462edf"> |
+|:--:|
+| 常に半角 |
+
+| <img width="640" src="https://github.com/user-attachments/assets/b82a28f8-58cc-43eb-9c2d-3b34eed3006c"> |
+|:--:|
+| stoneモード |
 
 ### フォントの指定
 
-STLabelでは、文字種ごとにフォントを指定することが可能である。たとえば、日本語フォントとして游明朝、ラテン文字フォントとしてTimesを指定すると、次のような描画になる。
+STLabelでは、文字種ごとにフォントを指定することが可能である。
 
-<img width="945" src="https://github.com/user-attachments/assets/efad8041-4e26-4165-acca-13feb3b6d3b8">
+| <img width="640" src="https://github.com/user-attachments/assets/efad8041-4e26-4165-acca-13feb3b6d3b8"> |
+|:--:|
+| 日本語フォント：游明朝<br>ラテン文字フォント：Times New Roman |
 
-<img width="945" src="https://github.com/user-attachments/assets/a19c165a-bde1-4cd4-9943-7666c26f85c6">
+| <img width="640" src="https://github.com/user-attachments/assets/a19c165a-bde1-4cd4-9943-7666c26f85c6"> |
+|:--:|
+| 日本語フォント：游ゴシック<br>ラテン文字フォント：Helvetica |
 
 指定可能な文字種は、Unicodeカテゴリとして定義される。
 
@@ -56,9 +77,9 @@ STLabelでは、文字種ごとにフォントを指定することが可能で�
 
 STLabelでは、文字種ごとに表示するスケールを指定することが可能である。たとえば、日本語フォントとして1.0、ラテン文字フォントとして0.9を指定すると、次のような描画になる。
 
-<img width="652" src="https://github.com/user-attachments/assets/39372f77-960c-4d41-90f5-528da494a730">
-
-図
+| <img width="480" src="https://github.com/user-attachments/assets/39372f77-960c-4d41-90f5-528da494a730"> |
+|:--:|
+| 日本語フォントスケール：1.0<br>ラテン文字フォントスケール：0.9 |
 
 ### 文字寄せ
 
