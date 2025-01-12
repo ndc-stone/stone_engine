@@ -494,10 +494,26 @@ class STLabel: UIView {
         }
     }
     
+    private func drawFrames(_ dirtyRect: CGRect) {
+        // Get CG context
+        guard let cgContext = UIGraphicsGetCurrentContext() else { return }
+        
+        // Set frame color
+        cgContext.setStrokeColor(UIColor.blue.cgColor)
+        
+        // Draw frames
+        for run in context.runs {
+            cgContext.stroke(run.frame)
+        }
+    }
+    
     override func draw(_ dirtyRect: CGRect) {
         // Draw
         drawSelectedArea(dirtyRect)
         drawMarkedArea(dirtyRect)
         drawGlyphs(dirtyRect)
+        
+        // For test
+        //drawFrames(dirtyRect)
     }
 }

@@ -234,7 +234,7 @@ extension STContext {
             // Check run
             guard runs[i].line != line else { continue }
             
-            // Get first run rect
+            // Get first run frame
             let runFrame = firstRunFrame(line: runs[i].line)
             
             // Check dy
@@ -247,11 +247,11 @@ extension STContext {
         
         // Check last new line
         if isAll, isNewline(at: range.upperBound), line < lineCount {
-            // Get first run rect for last line
-            let runRect = firstRunFrame(line: lineCount - 1)
+            // Get first run frame for last line
+            let runFrame = firstRunFrame(line: lineCount - 1)
             
             // Check dy
-            let dy = dy(from: runRect, to: point)
+            let dy = dy(from: runFrame, to: point)
             if dy < minDy {
                 minDy = dy
                 line = lineCount - 1
@@ -259,19 +259,19 @@ extension STContext {
         }
         
         // Decide closest run
-        var minDx: CGFloat = .greatestFiniteMagnitude
+        var minDistance: CGFloat = .greatestFiniteMagnitude
         var index = 0
         for i in range {
             // Check line
-            guard runs[i].line == line else { continue }
+            guard runs[i].line >= line - 1 && runs[i].line <= line + 1 else { continue }
             let runFrame = runs[i].frame
             
             // For new line
             if runs[i].char.isNewline {
-                // Calc dx
-                let dx = dx(from: runFrame, to: point)
-                if dx < minDx {
-                    minDx = dx
+                // Calc distance
+                let d = distance(from: runFrame, to: point)
+                if d < minDistance {
+                    minDistance = d
                     index = i
                 }
             }
@@ -279,24 +279,24 @@ extension STContext {
             else {
                 // Calc dx for first half
                 let firstHalfRect: CGRect = .init(x: runFrame.minX, y: runFrame.minY, width: runFrame.width * 0.5, height: runFrame.height)
-                let fdx = dx(from: firstHalfRect, to: point)
-                if fdx < minDx {
-                    minDx = fdx
+                let fd = distance(from: firstHalfRect, to: point)
+                if fd < minDistance {
+                    minDistance = fd
                     index = i
                 }
                 
                 // Calc dx for second half
                 let secondHalfRect: CGRect = .init(x: runFrame.midX, y: runFrame.minY, width: runFrame.width * 0.5, height: runFrame.height)
-                let sdx = dx(from: secondHalfRect, to: point)
-                if sdx < minDx {
-                    minDx = sdx
+                let sd = distance(from: secondHalfRect, to: point)
+                if sd < minDistance {
+                    minDistance = sd
                     index = i + 1
                 }
             }
         }
         
         // For not found
-        if minDx == .greatestFiniteMagnitude {
+        if minDistance == .greatestFiniteMagnitude {
             // Use last
             index = runs.count
         }
@@ -307,7 +307,7 @@ extension STContext {
     private func closestRunIndexV(to point: CGPoint, range: Range<Int>?) -> Int {
         // Decide range
         let isAll = range == nil
-        let range = range ?? 0 ..< runs.count - 1
+        let range = range ?? 0 ..< runs.count
         
         // Decide closest line
         var minDx: CGFloat = .greatestFiniteMagnitude
@@ -328,7 +328,7 @@ extension STContext {
         if line == -1 { line = 0 }
         
         // Check last new line
-        if isAll, runs[range.upperBound].char.isNewline, line < lineCount {
+        if isAll, isNewline(at: range.upperBound), line < lineCount {
             // Get first run rect for last line
             let runFrame = firstRunFrame(line: lineCount - 1)
             
@@ -341,44 +341,44 @@ extension STContext {
         }
         
         // Decide closest run
-        var minDy: CGFloat = .greatestFiniteMagnitude
+        var minDistance: CGFloat = .greatestFiniteMagnitude
         var index = 0
         for i in range {
             // Check run
-            guard runs[i].line == line else { continue }
+            guard runs[i].line >= line - 1 && runs[i].line <= line + 1 else { continue }
             let runFrame = runs[i].frame
             
             // For new line
             if runs[i].char.isNewline {
-                // Calc dy
-                let dy = dy(from: runFrame, to: point)
-                if dy < minDy {
-                    minDy = dy
+                // Calc distance
+                let d = distance(from: runFrame, to: point)
+                if d < minDistance {
+                    minDistance = d
                     index = i
                 }
             }
             // For other
             else {
-                // Calc dy for first half
+                // Calc distance for first half
                 let firstHalfRect: CGRect = .init(x: runFrame.minX, y: runFrame.minY, width: runFrame.width, height: runFrame.height * 0.5)
-                let fdy = dy(from: firstHalfRect, to: point)
-                if fdy < minDy {
-                    minDy = fdy
+                let fd = distance(from: firstHalfRect, to: point)
+                if fd < minDistance {
+                    minDistance = fd
                     index = i
                 }
                 
-                // Calc dy for second half
+                // Calc distance for second half
                 let secondHalfRect: CGRect = .init(x: runFrame.minX, y: runFrame.midY, width: runFrame.width, height: runFrame.height * 0.5)
-                let sdy = dy(from: secondHalfRect, to: point)
-                if sdy < minDy {
-                    minDy = sdy
+                let sd = distance(from: secondHalfRect, to: point)
+                if sd < minDistance {
+                    minDistance = sd
                     index = i + 1
                 }
             }
         }
         
         // For not found
-        if minDy == .greatestFiniteMagnitude {
+        if minDistance == .greatestFiniteMagnitude {
             // Use last
             index = runs.count
         }

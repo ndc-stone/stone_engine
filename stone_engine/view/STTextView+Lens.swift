@@ -16,35 +16,28 @@ extension STTextView {
 
     var lensCenter: CGPoint? {
         // For knob view
-        if beginKnobView.superview != nil && endKnobView.superview != nil {
+        if let isBeginKnobDragging = isBeginKnobDragging, beginKnobView.superview != nil, endKnobView.superview != nil {
             // Get begin and end frame
             let beginFrame = beginKnobView.frame
             let endFrame = endKnobView.frame
             
             // Decide point
-            var point: CGPoint?
-            if let isBeginKnobDragging = isBeginKnobDragging {
-                if isBeginKnobDragging { point = CGPoint(x: beginFrame.midX, y: beginFrame.midY) }
-                else { point = CGPoint(x: endFrame.midX, y: endFrame.midY) }
-            }
-            else if isLongPressing {
-                let x = beginFrame.midX + (endFrame.midX - beginFrame.midX) * 0.5
-                let y = beginFrame.midY
-                point = CGPoint(x: x, y: y)
-            }
+            let point: CGPoint
+            if isBeginKnobDragging { point = CGPoint(x: beginFrame.midX, y: beginFrame.midY) }
+            else { point = CGPoint(x: endFrame.midX, y: endFrame.midY) }
             
             return point
         }
-        // For cursor
-        else if !cursorView.isHidden {
-            // Get cursor frame
-            let frame = cursorView.frame
-            
-            // Decide point
-            return .init(x: frame.midX, y: frame.midY)
-        }
         
-        return nil
+        // Get rect at index
+        guard let range = (selectedTextRange as? STTextRange)?.range else { return nil }
+        let startIndex = range.lowerBound
+        let endIndex = range.upperBound < label.context.runs.count ? range.upperBound : range.upperBound - 1
+        let startFrame = convert(label.context.runs[startIndex].frame, from: label)
+        let endFrame = convert(label.context.runs[endIndex].frame, from: label)
+        
+        // Decide point
+        return .init(x: (startFrame.midX + endFrame.midX) * 0.5, y: (startFrame.midY + endFrame.midY) * 0.5)
     }
     
     var lensFrame: CGRect? {
@@ -85,6 +78,12 @@ extension STTextView {
         let colorSpace = CGColorSpaceCreateDeviceRGB()
         guard let context = CGContext(data: rawData, width: width, height: height, bitsPerComponent: bitsPerComponent, bytesPerRow: bytesPerRow, space: colorSpace, bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue) else { return nil }
         
+        // Fill context
+        if let backgroundColor = label.backgroundColor {
+            context.setFillColor(backgroundColor.cgColor)
+        }
+        context.fill(.init(x: 0, y: 0, width: width, height: height))
+        
         // Transform context
         context.translateBy(x: CGFloat(width) * 0.5, y: CGFloat(height) * 0.5)
         context.scaleBy(x: scale, y: scale)
@@ -93,16 +92,13 @@ extension STTextView {
         // Draw label
         label.layer.draw(in: context)
         
-        // Draw cursor
-        context.setFillColor(UIColor.label.cgColor)
-        var frame = cursorView.frame
-        switch direction {
-        case .lrTb:
-            frame.origin.x -= 120
-        case .tbRl:
-            frame.origin.y -= 52
+        // For selected
+        if let range = (selectedTextRange as? STTextRange)?.range {
+            // Draw cursor
+            context.setFillColor(label.textColor.cgColor)
+            context.fill(label.context.cursorFrame(at: range.lowerBound))
+            context.fill(label.context.cursorFrame(at: range.upperBound))
         }
-        context.fill(frame)
         
         // Get image
         guard let cgImage = context.makeImage() else { return nil }
@@ -115,19 +111,20 @@ extension STTextView {
     // MARK: - Appeanrace for lens
     //--------------------------------------------------------------//
     
-    private var isLensShown: Bool { lensView.superview != nil }
+    var isLensShown: Bool { lensView.superview != nil }
     
     private func showLensView() {
         // Add subview
         window?.addSubview(lensView)
         
-        // Set lens frame
+        // Set initial geometry
         guard let frame = lensFrame else { return }
         lensView.frame = lensView.superview!.convert(frame, from: self)
-        
-        // Do animation
         lensView.transform = .init(scaleX: 0.001, y: 0.001)
         lensView.alpha = 0
+        lensView.layoutIfNeeded()
+        
+        // Do animation
         UIView.animate(withDuration: 0.15, delay: 0) { 
             self.lensView.transform = .identity
             self.lensView.alpha = 1
@@ -139,7 +136,7 @@ extension STTextView {
         guard let frame = lensFrame else { return }
         
         // Do animation
-        UIView.animate(withDuration: 0.1) { 
+        UIView.animate(withDuration: 0.2) { 
             // Set lens frame
             self.lensView.frame = self.lensView.superview!.convert(frame, from: self)
         }

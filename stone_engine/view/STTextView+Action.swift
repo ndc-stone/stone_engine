@@ -15,6 +15,7 @@ extension STTextView {
     //--------------------------------------------------------------//
     
     @objc func tapAction(_ recognizer: UITapGestureRecognizer) {
+print("\(#function)")
         // For not first responder
         if !isFirstResponder {
             // Make itself first responder
@@ -24,7 +25,9 @@ extension STTextView {
         // Get point and index
         let point = recognizer.location(in: label)
         let index = label.context.closestRunIndex(to: point)
+print("\(#function), index \(index)")
         let hitIndex = label.context.hitRunIndex(to: point)
+print("\(#function), hitIndex \(hitIndex)")
         
         // Get modifiers
         let shift = recognizer.modifierFlags.contains(.shift)
@@ -60,17 +63,19 @@ extension STTextView {
         // Get text position
         let point = recognizer.location(in: self)
         guard let closestTextPosition = closestPosition(to: point) as? STTextPosition else { return }
-        let hitTextPosition = hitPosition(to: point) as? STTextPosition
         let textCount = text?.count ?? 0
         
         // Switch by state
         switch recognizer.state {
         case .began:
+            // Check hit text position
+            guard hitPosition(to: point) != nil else { return }
+            
             // Set long press point
             longPressPoint = point
             
             // Select text
-            if textCount > 0, hitTextPosition != nil, closestTextPosition.index <= textCount {
+            if textCount > 0, closestTextPosition.index <= textCount {
                 if closestTextPosition.index == textCount {
                     selectedTextRange = STTextRange(range: closestTextPosition.index - 1 ..< closestTextPosition.index)
                 }
@@ -82,11 +87,14 @@ extension STTextView {
             // Needs to show lens
             setNeedsToUpdateLens(true)
         case .changed:
+            // Check lens visibility
+            guard isLensShown else { return }
+            
             // Set long press point
             longPressPoint = point
             
             // Select text
-            if textCount > 0, hitTextPosition != nil, closestTextPosition.index <= textCount {
+            if textCount > 0, closestTextPosition.index <= textCount {
                 if closestTextPosition.index == textCount {
                     selectedTextRange = STTextRange(range: closestTextPosition.index - 1 ..< closestTextPosition.index)
                 }
