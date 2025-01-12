@@ -15,7 +15,6 @@ extension STTextView {
     //--------------------------------------------------------------//
     
     @objc func tapAction(_ recognizer: UITapGestureRecognizer) {
-print("\(#function)")
         // For not first responder
         if !isFirstResponder {
             // Make itself first responder
@@ -25,9 +24,7 @@ print("\(#function)")
         // Get point and index
         let point = recognizer.location(in: label)
         let index = label.context.closestRunIndex(to: point)
-print("\(#function), index \(index)")
         let hitIndex = label.context.hitRunIndex(to: point)
-print("\(#function), hitIndex \(hitIndex)")
         
         // Get modifiers
         let shift = recognizer.modifierFlags.contains(.shift)

@@ -87,6 +87,13 @@ class STLabel: UIView {
             setNeedsLayout()
         }
     }
+    var selectedAreaColor: UIColor {
+        get { context.selectedAreaColor }
+        set {
+            context.selectedAreaColor = newValue
+            setNeedsLayout()
+        }
+    }
     
     // Features
     var punctuationMode: STPunctuationMode {
@@ -334,15 +341,16 @@ class STLabel: UIView {
     // MARK: - Draw
     //--------------------------------------------------------------//
     
-    private func uniteRunRects(range: STTextRange) -> [CGRect] {
+    private func uniteRunRects(range: STTextRange, hasLineGap: Bool) -> [CGRect] {
         // Unite run rects
         var unitedRect = CGRect.zero
         var rects = [CGRect]()
         var prevLine = -1
         for i in range.range {
             // Get run and rect
+            guard i < context.runs.count else { break }
             let run = context.runs[i]
-            let rect = run.frame
+            let rect = hasLineGap ? context.runFrameWithLineGap(at: i) : run.frame
             
             // For in same line
             if prevLine == run.line {
@@ -364,6 +372,27 @@ class STLabel: UIView {
         // Add last united rect
         if !unitedRect.isEmpty { rects.append(unitedRect) }
         
+        // Adjust rects
+        for i in 0 ..< rects.count {
+            // Check min Y with prev max Y
+            guard i > 0 else { continue }
+            if abs(rects[i].minY - rects[i - 1].maxY) < 1 {
+                var rect = rects[i]
+                let maxY = rect.maxY
+                rect.origin.y = rects[i - 1].maxY - 1
+                rect.size.height = maxY - rect.origin.y
+                rects[i] = rect
+            }
+            
+            // Check max X and prev min X
+            if abs(rects[i].maxX - rects[i - 1].minX) < 1 {
+                var rect = rects[i]
+                let minX = rect.minX
+                rect.size.width = rects[i - 1].minX - rect.minX + 1
+                rects[i] = rect
+            }
+        }
+        
         return rects
     }
     
@@ -375,10 +404,10 @@ class STLabel: UIView {
         guard let cgContext = UIGraphicsGetCurrentContext() else { return }
         
         // Set selected area color
-        cgContext.setFillColor(UIColor.secondaryLabel.cgColor)
+        cgContext.setFillColor(selectedAreaColor.cgColor)
         
         // Unite selected run rects
-        let rects = uniteRunRects(range: range)
+        let rects = uniteRunRects(range: range, hasLineGap: true)
         
         // Fill rects
         for rect in rects {
@@ -453,7 +482,7 @@ class STLabel: UIView {
             context.setFillColor(color.cgColor)
             
             // Unite marked run rects
-            let rects = uniteRunRects(range: STTextRange(range: markedRange.0))
+            let rects = uniteRunRects(range: STTextRange(range: markedRange.0), hasLineGap: false)
             
             // Fill rects
             for rect in rects {

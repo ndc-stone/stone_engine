@@ -24,6 +24,7 @@ class STContext {
     var fontSize: CGFloat = 17
     var lineHeightScale: CGFloat = 1.0
     var lineHeight: CGFloat { fontSize * lineHeightScale }
+    var lineGapHeight: CGFloat { fontSize * (lineHeightScale - 1) }
     var textAlign: STTextAlign = .leading
     var directionAlign: STDirectionAlign = .start
     var direction: STDirection = .lrTb
@@ -38,6 +39,7 @@ class STContext {
     
     // Color
     var textColor: UIColor = .label
+    var selectedAreaColor: UIColor = .link
     
     // Features
     var punctuationMode: STPunctuationMode = .stone
@@ -137,6 +139,28 @@ extension STContext {
         }
         
         return rect
+    }
+    
+    func runFrameWithLineGap(at index: Int) -> CGRect {
+        // For line 0
+        if runs[index].line == 0 { return runs[index].frame }
+        
+        // Swtich by direction
+        var runFrame: CGRect = .zero
+        switch direction {
+        case .lrTb:
+            runFrame.origin.x = runs[index].frame.minX
+            runFrame.origin.y = runs[index].frame.minY - lineGapHeight
+            runFrame.size.width = runs[index].frame.width
+            runFrame.size.height = runs[index].frame.height + lineGapHeight
+        case .tbRl:
+            runFrame.origin.x = runs[index].frame.minX
+            runFrame.origin.y = runs[index].frame.minY
+            runFrame.size.width = runs[index].frame.width + lineGapHeight
+            runFrame.size.height = runs[index].frame.height
+        }
+        
+        return runFrame
     }
     
     func cursorFrame(at index: Int) -> CGRect {
