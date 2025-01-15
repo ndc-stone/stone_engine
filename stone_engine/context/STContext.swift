@@ -338,6 +338,7 @@ extension STContext {
         var line = -1
         for i in range {
             // Check run
+            guard i < runs.count else { break }
             guard runs[i].line != line else { continue }
             
             // Get first run frame
@@ -489,11 +490,6 @@ extension STContext {
         if tokens[run.tokenId].runIdRange.map({ runs[$0] }).first(where: { !$0.char.isNumber }) == nil {
             // Check token count
             return tokens[run.tokenId].runIdRange.count <= 2
-        }
-        // For letter token
-        else if tokens[run.tokenId].runIdRange.map({ runs[$0] }).first(where: { !$0.char.isLetter }) == nil {
-            // Check token count
-            return tokens[run.tokenId].runIdRange.count <= 1
         }
         
         return false

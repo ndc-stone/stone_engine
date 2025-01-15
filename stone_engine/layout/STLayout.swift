@@ -650,13 +650,13 @@ class STLayout {
         // Decide min x and max x
         var minX: CGFloat = .greatestFiniteMagnitude
         for i in (0 ..< context.runs.count).reversed() {
-            guard context.runs[i].line == context.lineCount - 1 else { break }
             minX = min(minX, context.runs[i].frame.minX)
+            guard context.runs[i].line == context.lineCount - 1 else { break }
         }
         var maxX: CGFloat = 0
         for i in 0 ..< context.runs.count {
-            guard context.runs[i].line == 0 else { break }
             maxX = max(maxX, context.runs[i].frame.maxX)
+            guard context.runs[i].line == 0 else { break }
         }
         guard minX < .greatestFiniteMagnitude && maxX > .greatestFiniteMagnitude * -1 else { return }
         

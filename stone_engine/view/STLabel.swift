@@ -387,7 +387,6 @@ class STLabel: UIView {
             // Check max X and prev min X
             if abs(rects[i].maxX - rects[i - 1].minX) < 1 {
                 var rect = rects[i]
-                let minX = rect.minX
                 rect.size.width = rects[i - 1].minX - rect.minX + 1
                 rects[i] = rect
             }
