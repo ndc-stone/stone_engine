@@ -7,7 +7,11 @@ Copyright 2024 Nihon Design Center. All rights reserved.
 This software is licensed under the MIT License. See LICENSE for details.
 */
 
+#if os(iOS)
 import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
 
 class STContext {
     static let cursorWide: CGFloat = 2
@@ -38,8 +42,13 @@ class STContext {
     var adjustLineHeight: CGFloat { adjustFontSize * lineHeightScale }
     
     // Color
+    #if os(iOS)
     var textColor: UIColor = .label
     var selectedAreaColor: UIColor = .link
+    #elseif os(macOS)
+    var textColor: NSColor = .labelColor
+    var selectedAreaColor: NSColor = .linkColor
+    #endif
     
     // Features
     var punctuationMode: STPunctuationMode = .stone

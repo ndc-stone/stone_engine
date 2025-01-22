@@ -3,11 +3,25 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		0B1BB1692BC291A50053D908 /* STTextSubstitutionGlyph.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B1BB1682BC291A50053D908 /* STTextSubstitutionGlyph.m */; };
+		0B2560AD2D40CE6700A6756F /* STTextSubstitutionGlyph.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B1BB1682BC291A50053D908 /* STTextSubstitutionGlyph.m */; };
+		0B2560AE2D40CE7300A6756F /* STFontManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BB5CDBF2BB54D2000A53CDD /* STFontManager.swift */; };
+		0B2560AF2D40CE8100A6756F /* STTextView+TextInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BE1B3702BD8CC3600948574 /* STTextView+TextInput.swift */; };
+		0B2560B02D40CE8100A6756F /* STTextView+Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BEEC9A72C4779C9001A60CF /* STTextView+Action.swift */; };
+		0B2560B12D40CE8100A6756F /* STCursorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BCBC13E2BEB589E000DB882 /* STCursorView.swift */; };
+		0B2560B22D40CE8100A6756F /* STObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BBF10232B9ECBBA00031CAC /* STObject.swift */; };
+		0B2560B52D40CE8100A6756F /* STTextView+Lens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BA9E2A32CA3D2950072D709 /* STTextView+Lens.swift */; };
+		0B2560B62D40CE8100A6756F /* STTextView+Responder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BE1B3722BD8E31500948574 /* STTextView+Responder.swift */; };
+		0B2560B72D40CE8100A6756F /* STLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BBF101B2B9ECA1F00031CAC /* STLabel.swift */; };
+		0B2560B82D40CE8100A6756F /* STTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BE1B36E2BD8C98F00948574 /* STTextView.swift */; };
+		0B2560B92D40CE8100A6756F /* STTiledLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BBF10272B9ECD1500031CAC /* STTiledLayer.swift */; };
+		0B2560BA2D40CE8100A6756F /* STLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BB5CDC22BB5609700A53CDD /* STLayout.swift */; };
+		0B2560BC2D40CE8100A6756F /* STParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BB5CDBC2BB5411500A53CDD /* STParser.swift */; };
+		0B2560BD2D40CE8100A6756F /* STContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BBF10252B9ECC4600031CAC /* STContext.swift */; };
 		0BA78B6C2CE483C4007EDDE2 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BA78B6A2CE483C4007EDDE2 /* ViewController.swift */; };
 		0BA78B6D2CE483C4007EDDE2 /* UIFont+Localized.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BA78B692CE483C4007EDDE2 /* UIFont+Localized.m */; };
 		0BA78B6E2CE483C4007EDDE2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BA78B612CE483C4007EDDE2 /* AppDelegate.swift */; };
@@ -36,6 +50,7 @@
 		0B1BB1672BC291A50053D908 /* STTextSubstitutionGlyph.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STTextSubstitutionGlyph.h; sourceTree = "<group>"; };
 		0B1BB1682BC291A50053D908 /* STTextSubstitutionGlyph.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STTextSubstitutionGlyph.m; sourceTree = "<group>"; };
 		0B1BB16A2BC291D10053D908 /* stone-engine-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "stone-engine-Bridging-Header.h"; sourceTree = "<group>"; };
+		0B25609E2D40CE0B00A6756F /* stone_macOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = stone_macOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0BA78B612CE483C4007EDDE2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0BA78B622CE483C4007EDDE2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0BA78B632CE483C4007EDDE2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -63,7 +78,18 @@
 		0BEEC9A92C47853F001A60CF /* STLensView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = STLensView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		0B25609F2D40CE0B00A6756F /* stone_macOS */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = stone_macOS; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
 /* Begin PBXFrameworksBuildPhase section */
+		0B25609B2D40CE0B00A6756F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		0BBF0FF52B9EC7AA00031CAC /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -120,6 +146,7 @@
 			children = (
 				0BBF10142B9EC99D00031CAC /* stone_engine */,
 				0BA78B6B2CE483C4007EDDE2 /* sample */,
+				0B25609F2D40CE0B00A6756F /* stone_macOS */,
 				0BBF0FF92B9EC7AA00031CAC /* Products */,
 				0BBF101D2B9ECA9E00031CAC /* Frameworks */,
 			);
@@ -129,6 +156,7 @@
 			isa = PBXGroup;
 			children = (
 				0BBF0FF82B9EC7AA00031CAC /* stone oss.app */,
+				0B25609E2D40CE0B00A6756F /* stone_macOS.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -183,6 +211,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		0B25609D2D40CE0B00A6756F /* stone_macOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0B2560AC2D40CE0C00A6756F /* Build configuration list for PBXNativeTarget "stone_macOS" */;
+			buildPhases = (
+				0B25609A2D40CE0B00A6756F /* Sources */,
+				0B25609B2D40CE0B00A6756F /* Frameworks */,
+				0B25609C2D40CE0B00A6756F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				0B25609F2D40CE0B00A6756F /* stone_macOS */,
+			);
+			name = stone_macOS;
+			packageProductDependencies = (
+			);
+			productName = stone_macOS;
+			productReference = 0B25609E2D40CE0B00A6756F /* stone_macOS.app */;
+			productType = "com.apple.product-type.application";
+		};
 		0BBF0FF72B9EC7AA00031CAC /* stone */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0BBF100C2B9EC7AB00031CAC /* Build configuration list for PBXNativeTarget "stone" */;
@@ -207,9 +257,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1520;
+				LastSwiftUpdateCheck = 1600;
 				LastUpgradeCheck = 1520;
 				TargetAttributes = {
+					0B25609D2D40CE0B00A6756F = {
+						CreatedOnToolsVersion = 16.0;
+					};
 					0BBF0FF72B9EC7AA00031CAC = {
 						CreatedOnToolsVersion = 15.2;
 						LastSwiftMigration = 1520;
@@ -230,11 +283,19 @@
 			projectRoot = "";
 			targets = (
 				0BBF0FF72B9EC7AA00031CAC /* stone */,
+				0B25609D2D40CE0B00A6756F /* stone_macOS */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		0B25609C2D40CE0B00A6756F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		0BBF0FF62B9EC7AA00031CAC /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -248,6 +309,27 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		0B25609A2D40CE0B00A6756F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0B2560AD2D40CE6700A6756F /* STTextSubstitutionGlyph.m in Sources */,
+				0B2560AF2D40CE8100A6756F /* STTextView+TextInput.swift in Sources */,
+				0B2560B02D40CE8100A6756F /* STTextView+Action.swift in Sources */,
+				0B2560B12D40CE8100A6756F /* STCursorView.swift in Sources */,
+				0B2560B22D40CE8100A6756F /* STObject.swift in Sources */,
+				0B2560B52D40CE8100A6756F /* STTextView+Lens.swift in Sources */,
+				0B2560B62D40CE8100A6756F /* STTextView+Responder.swift in Sources */,
+				0B2560B72D40CE8100A6756F /* STLabel.swift in Sources */,
+				0B2560B82D40CE8100A6756F /* STTextView.swift in Sources */,
+				0B2560B92D40CE8100A6756F /* STTiledLayer.swift in Sources */,
+				0B2560BA2D40CE8100A6756F /* STLayout.swift in Sources */,
+				0B2560BC2D40CE8100A6756F /* STParser.swift in Sources */,
+				0B2560BD2D40CE8100A6756F /* STContext.swift in Sources */,
+				0B2560AE2D40CE7300A6756F /* STFontManager.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		0BBF0FF42B9EC7AA00031CAC /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -297,6 +379,64 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		0B2560AA2D40CE0C00A6756F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = stone_macOS/stone_macOS.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VNCJ5ZUDL5;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainStoryboardFile = Main;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "jp.hmdt.stone-macOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		0B2560AB2D40CE0C00A6756F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = stone_macOS/stone_macOS.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = VNCJ5ZUDL5;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSMainStoryboardFile = Main;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "jp.hmdt.stone-macOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 		0BBF100A2B9EC7AB00031CAC /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -486,6 +626,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		0B2560AC2D40CE0C00A6756F /* Build configuration list for PBXNativeTarget "stone_macOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0B2560AA2D40CE0C00A6756F /* Debug */,
+				0B2560AB2D40CE0C00A6756F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		0BBF0FF32B9EC7AA00031CAC /* Build configuration list for PBXProject "stone" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

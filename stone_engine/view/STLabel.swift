@@ -7,8 +7,13 @@ Copyright 2024 Nihon Design Center. All rights reserved.
 This software is licensed under the MIT License. See LICENSE for details.
 */
 
+#if os(iOS)
 import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
 
+#if os(iOS)
 class STLabel: UIView {
     // Text input
     weak var textInput: UITextInput?
@@ -121,14 +126,18 @@ class STLabel: UIView {
     // Context
     let context = STContext()
     
-    //--------------------------------------------------------------//
-    // MARK: - Layer
-    //--------------------------------------------------------------//
-    
-    class override var layerClass: AnyClass {
-        // Use tiled layer
-        return STTiledLayer.self
+    // Draw
+    struct DrawBucket {
+        let fontId: Int
+        let isClockwise: Bool
+        let needsToFlip: Bool
+        let ctFont: CTFont
+        var glyphs: [CGGlyph]
+        var positions: [CGPoint]
+        var frames: [CGRect]
     }
+    
+    var drawBuckets = [DrawBucket]()
     
     //--------------------------------------------------------------//
     // MARK: - Initialize
@@ -155,7 +164,43 @@ class STLabel: UIView {
         // Common init
         _init()
     }
+}
+#elseif os(macOS)
+class STLabel: NSView {
+    // Text
+    var text: String? {
+        didSet {
+            // Set needs layout
+            setNeedsLayout()
+        }
+    }
     
+    // Context
+    let context = STContext()
+}
+#endif
+
+#if os(iOS)
+extension STLabel {
+    //--------------------------------------------------------------//
+    // MARK: - Layer
+    //--------------------------------------------------------------//
+    
+    class override var layerClass: AnyClass {
+        // Use tiled layer
+        return STTiledLayer.self
+    }
+}
+#endif
+
+extension NSView {
+    func setNeedsLayout() {
+        // Set needs layout
+        needsLayout = true
+    }
+}
+
+extension STLabel {
     //--------------------------------------------------------------//
     // MARK: - Font
     //--------------------------------------------------------------//
@@ -413,18 +458,6 @@ class STLabel: UIView {
             cgContext.fill(rect)
         }
     }
-    
-    struct DrawBucket {
-        let fontId: Int
-        let isClockwise: Bool
-        let needsToFlip: Bool
-        let ctFont: CTFont
-        var glyphs: [CGGlyph]
-        var positions: [CGPoint]
-        var frames: [CGRect]
-    }
-    
-    var drawBuckets = [DrawBucket]()
     
     private func createDrawBcukets() {
         // Create draw buckets
