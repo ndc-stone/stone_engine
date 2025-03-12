@@ -2,7 +2,7 @@ stone_engineは、日本語の文字組版を実現する、テキストレン�
 
 ## 提供クラス
 
-stone_engineは、`STLabel`と`STTextView`というクラスを提供する。これは、UI KitにおけるUILabelとUITextViewを置き換えることを意図している。
+stone_engineは、`STLabel`と`STTextView`というクラスを提供する。これは、UIKitにおけるUILabelとUITextViewを置き換えることを意図している。
 
 ## STLabel
 
