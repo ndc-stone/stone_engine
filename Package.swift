@@ -17,7 +17,7 @@ let package = Package(
     targets: [
         .target(
             name: "stone_engine",
-            dependencies: []
+            path: "stone_engine"
         ),
     ]
 )
