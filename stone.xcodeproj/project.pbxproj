@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0B1BB1692BC291A50053D908 /* STTextSubstitutionGlyph.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B1BB1682BC291A50053D908 /* STTextSubstitutionGlyph.m */; };
 		0BA78B6C2CE483C4007EDDE2 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BA78B6A2CE483C4007EDDE2 /* ViewController.swift */; };
 		0BA78B6D2CE483C4007EDDE2 /* UIFont+Localized.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BA78B692CE483C4007EDDE2 /* UIFont+Localized.m */; };
 		0BA78B6E2CE483C4007EDDE2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BA78B612CE483C4007EDDE2 /* AppDelegate.swift */; };
@@ -30,11 +29,11 @@
 		0BE1B3752BD8E5A700948574 /* STText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BE1B3742BD8E5A700948574 /* STText.swift */; };
 		0BEEC9A82C4779C9001A60CF /* STTextView+Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BEEC9A72C4779C9001A60CF /* STTextView+Action.swift */; };
 		0BEEC9AA2C47853F001A60CF /* STLensView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BEEC9A92C47853F001A60CF /* STLensView.swift */; };
+		F1947EFB2D8271380092B87F /* STTextSubstitutionGlyph.swift in Resources */ = {isa = PBXBuildFile; fileRef = F1947EFA2D8271380092B87F /* STTextSubstitutionGlyph.swift */; };
+		F1947EFC2D82722C0092B87F /* STTextSubstitutionGlyph.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1947EFA2D8271380092B87F /* STTextSubstitutionGlyph.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0B1BB1672BC291A50053D908 /* STTextSubstitutionGlyph.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STTextSubstitutionGlyph.h; sourceTree = "<group>"; };
-		0B1BB1682BC291A50053D908 /* STTextSubstitutionGlyph.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STTextSubstitutionGlyph.m; sourceTree = "<group>"; };
 		0B1BB16A2BC291D10053D908 /* stone-engine-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "stone-engine-Bridging-Header.h"; sourceTree = "<group>"; };
 		0BA78B612CE483C4007EDDE2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0BA78B622CE483C4007EDDE2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -61,6 +60,7 @@
 		0BE1B3742BD8E5A700948574 /* STText.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = STText.swift; sourceTree = "<group>"; };
 		0BEEC9A72C4779C9001A60CF /* STTextView+Action.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "STTextView+Action.swift"; sourceTree = "<group>"; };
 		0BEEC9A92C47853F001A60CF /* STLensView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = STLensView.swift; sourceTree = "<group>"; };
+		F1947EFA2D8271380092B87F /* STTextSubstitutionGlyph.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STTextSubstitutionGlyph.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,8 +101,7 @@
 			isa = PBXGroup;
 			children = (
 				0BB5CDBF2BB54D2000A53CDD /* STFontManager.swift */,
-				0B1BB1672BC291A50053D908 /* STTextSubstitutionGlyph.h */,
-				0B1BB1682BC291A50053D908 /* STTextSubstitutionGlyph.m */,
+				F1947EFA2D8271380092B87F /* STTextSubstitutionGlyph.swift */,
 			);
 			path = font;
 			sourceTree = "<group>";
@@ -241,6 +240,7 @@
 			files = (
 				0BA78B6F2CE483C4007EDDE2 /* Assets.xcassets in Resources */,
 				0BA78B702CE483C4007EDDE2 /* Main.storyboard in Resources */,
+				F1947EFB2D8271380092B87F /* STTextSubstitutionGlyph.swift in Resources */,
 				0BA78B712CE483C4007EDDE2 /* LaunchScreen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -252,6 +252,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F1947EFC2D82722C0092B87F /* STTextSubstitutionGlyph.swift in Sources */,
 				0BB5CDC02BB54D2000A53CDD /* STFontManager.swift in Sources */,
 				0BEEC9A82C4779C9001A60CF /* STTextView+Action.swift in Sources */,
 				0BE1B3732BD8E31500948574 /* STTextView+Responder.swift in Sources */,
@@ -267,7 +268,6 @@
 				0BA78B6E2CE483C4007EDDE2 /* AppDelegate.swift in Sources */,
 				0BBF10282B9ECD1500031CAC /* STTiledLayer.swift in Sources */,
 				0BA9E2A22CA3BB160072D709 /* STKnobView.swift in Sources */,
-				0B1BB1692BC291A50053D908 /* STTextSubstitutionGlyph.m in Sources */,
 				0BB5CDC32BB5609700A53CDD /* STLayout.swift in Sources */,
 				0BBF10242B9ECBBA00031CAC /* STObject.swift in Sources */,
 				0BBF10212B9ECB3D00031CAC /* STLabel.swift in Sources */,
@@ -426,7 +426,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 240925;
-				DEVELOPMENT_TEAM = S77FC4545C;
+				DEVELOPMENT_TEAM = J588829DYC;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = sample/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "stone oss";
@@ -459,7 +459,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 240925;
-				DEVELOPMENT_TEAM = S77FC4545C;
+				DEVELOPMENT_TEAM = J588829DYC;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = sample/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "stone oss";
