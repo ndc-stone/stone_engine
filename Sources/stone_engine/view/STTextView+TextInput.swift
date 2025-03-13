@@ -103,18 +103,18 @@ extension STTextView: UITextInput {
     // MARK: - Text
     //--------------------------------------------------------------//
     
-    var hasText: Bool {
+    public var hasText: Bool {
         // Check text
         return text != nil
     }
     
-    func text(in range: UITextRange) -> String? {
+    public func text(in range: UITextRange) -> String? {
         // Get substring
         guard let range = range as? STTextRange, let text = text else { return nil }
         return String(text[range.range(text: text)])
     }
     
-    func insertText(_ text: String) {
+    public func insertText(_ text: String) {
         // Replace text
         let replaceTextRange: STTextRange
         if let markedTextRange = markedSTTextRange, !markedTextRange.isEmpty {
@@ -126,10 +126,10 @@ extension STTextView: UITextInput {
         replaceText(text, textRange: replaceTextRange)
     }
     
-    func replace(_ range: UITextRange, withText text: String) {
+    public func replace(_ range: UITextRange, withText text: String) {
     }
     
-    func deleteBackward() {
+    public func deleteBackward() {
         // For marked
         if let markedTextRange = markedSTTextRange, !markedTextRange.isEmpty {
             // Delete one character at marked text range
@@ -153,7 +153,7 @@ extension STTextView: UITextInput {
     // MARK: - Marked and selected
     //--------------------------------------------------------------//
     
-    var selectedTextRange: UITextRange? {
+    public var selectedTextRange: UITextRange? {
         get { selectedSTTextRange }
         set {
             // Set selected text range
@@ -167,12 +167,12 @@ extension STTextView: UITextInput {
         }
     }
     
-    var markedTextRange: UITextRange? {
+    public var markedTextRange: UITextRange? {
         get { markedSTTextRange }
         set { markedSTTextRange = newValue as? STTextRange }
     }
     
-    var markedTextStyle: [NSAttributedString.Key: Any]? {
+    public var markedTextStyle: [NSAttributedString.Key: Any]? {
         get {
             return nil
         }
@@ -215,11 +215,11 @@ extension STTextView: UITextInput {
         return lower ..< upper
     }
     
-    func setMarkedText(_ markedText: String?, selectedRange: NSRange) {
+    public func setMarkedText(_ markedText: String?, selectedRange: NSRange) {
         // Do not use this method
     }
     
-    func setAttributedMarkedText(_ markedAttrStr: NSAttributedString?, selectedRange: NSRange) {
+    public func setAttributedMarkedText(_ markedAttrStr: NSAttributedString?, selectedRange: NSRange) {
         // Get marked text
         let markedText = markedAttrStr?.string ?? ""
         
@@ -272,7 +272,7 @@ extension STTextView: UITextInput {
         self.markedRanges = markedRanges.isEmpty ? nil : markedRanges
     }
     
-    func unmarkText() {
+    public func unmarkText() {
         // Clear marked text range
         markedTextRange = nil
         markedRanges = nil
@@ -282,24 +282,24 @@ extension STTextView: UITextInput {
     // MARK: - Range and positions
     //--------------------------------------------------------------//
     
-    func textRange(from fromPosition: UITextPosition, to toPosition: UITextPosition) -> UITextRange? {
+    public func textRange(from fromPosition: UITextPosition, to toPosition: UITextPosition) -> UITextRange? {
         return nil
     }
     
-    func position(from position: UITextPosition, offset: Int) -> UITextPosition? {
+    public func position(from position: UITextPosition, offset: Int) -> UITextPosition? {
         return nil
     }
     
-    func position(from position: UITextPosition, in direction: UITextLayoutDirection, offset: Int) -> UITextPosition? {
+    public func position(from position: UITextPosition, in direction: UITextLayoutDirection, offset: Int) -> UITextPosition? {
         return nil
     }
     
-    var beginningOfDocument: UITextPosition {
+    public var beginningOfDocument: UITextPosition {
         // Create text position
         return STTextPosition(index: 0)
     }
     
-    var endOfDocument: UITextPosition {
+    public var endOfDocument: UITextPosition {
         // Create text position
         return STTextPosition(index: label.text?.count ?? 0)
     }
@@ -308,11 +308,11 @@ extension STTextView: UITextInput {
     // MARK: - Range and positions
     //--------------------------------------------------------------//
     
-    func compare(_ position: UITextPosition, to other: UITextPosition) -> ComparisonResult {
+    public func compare(_ position: UITextPosition, to other: UITextPosition) -> ComparisonResult {
         return .orderedSame
     }
     
-    func offset(from: UITextPosition, to toPosition: UITextPosition) -> Int {
+    public func offset(from: UITextPosition, to toPosition: UITextPosition) -> Int {
         return 0
     }
     
@@ -320,19 +320,19 @@ extension STTextView: UITextInput {
     // MARK: - Layout and writing direction
     //--------------------------------------------------------------//
     
-    func position(within range: UITextRange, farthestIn direction: UITextLayoutDirection) -> UITextPosition? {
+    public func position(within range: UITextRange, farthestIn direction: UITextLayoutDirection) -> UITextPosition? {
         return nil
     }
     
-    func characterRange(byExtending position: UITextPosition, in direction: UITextLayoutDirection) -> UITextRange? {
+    public func characterRange(byExtending position: UITextPosition, in direction: UITextLayoutDirection) -> UITextRange? {
         return nil
     }
     
-    func baseWritingDirection(for position: UITextPosition, in direction: UITextStorageDirection) -> NSWritingDirection {
+    public func baseWritingDirection(for position: UITextPosition, in direction: UITextStorageDirection) -> NSWritingDirection {
         return .natural
     }
     
-    func setBaseWritingDirection(_ writingDirection: NSWritingDirection, for range: UITextRange) {
+    public func setBaseWritingDirection(_ writingDirection: NSWritingDirection, for range: UITextRange) {
     }
     
     //--------------------------------------------------------------//
@@ -342,7 +342,7 @@ extension STTextView: UITextInput {
     static let underlineMargin: CGFloat = 4
     static let caretWidth: CGFloat = 2
     
-    func firstRect(for range: UITextRange) -> CGRect {
+    public func firstRect(for range: UITextRange) -> CGRect {
         // Get run
         let index = (range as! STTextRange).range.lowerBound
         guard index >= 0, index < label.context.runs.count else { return .zero }
@@ -355,7 +355,7 @@ extension STTextView: UITextInput {
         return convert(frame, from: label)
     }
     
-    func caretRect(for position: UITextPosition) -> CGRect {
+    public func caretRect(for position: UITextPosition) -> CGRect {
         // Get run at position
         let index = (position as! STTextPosition).index
         guard label.context.runs.count > 0 else {
@@ -371,7 +371,7 @@ extension STTextView: UITextInput {
         return .init(origin: run.position, size: .init(width: Self.caretWidth, height: fontSize + Self.underlineMargin))
     }
     
-    func closestPosition(to point: CGPoint) -> UITextPosition? {
+    public func closestPosition(to point: CGPoint) -> UITextPosition? {
         // Convert point
         let point = convert(point, to: label)
         
@@ -380,15 +380,15 @@ extension STTextView: UITextInput {
         return STTextPosition(index: runId)
     }
     
-    func selectionRects(for range: UITextRange) -> [UITextSelectionRect] {
+    public func selectionRects(for range: UITextRange) -> [UITextSelectionRect] {
         return []
     }
     
-    func closestPosition(to point: CGPoint, within range: UITextRange) -> UITextPosition? {
+    public func closestPosition(to point: CGPoint, within range: UITextRange) -> UITextPosition? {
         return nil
     }
     
-    func characterRange(at point: CGPoint) -> UITextRange? {
+    public func characterRange(at point: CGPoint) -> UITextRange? {
         return nil
     }
     
@@ -411,11 +411,11 @@ extension STTextView: UITextInput {
     // MARK: - Tokenizer
     //--------------------------------------------------------------//
     
-    var tokenizer: any UITextInputTokenizer {
+    public var tokenizer: any UITextInputTokenizer {
         return UITextInputStringTokenizer(textInput: self)
     }
     
-    var inputDelegate: UITextInputDelegate? {
+    public var inputDelegate: UITextInputDelegate? {
         get { nil }
         set (inputDelegate) {}
     }

@@ -26,7 +26,7 @@ extension Unicode.Scalar {
     }
 }
 
-enum STUnicodeCategory: Int, CaseIterable {
+public enum STUnicodeCategory: Int, CaseIterable {
     case c0Control
     case basicLatin
     case c1Control
@@ -206,7 +206,7 @@ enum STUnicodeCategory: Int, CaseIterable {
     case symbolsForLegacyComputing
     case unassigned
     
-    var range: Range<UInt32> {
+    public var range: Range<UInt32> {
     // Switch by self
     switch self {
     case .c0Control: return 0x0000 ..< 0x0020
@@ -391,12 +391,12 @@ enum STUnicodeCategory: Int, CaseIterable {
     }
 }
 
-enum STScript: Int, CaseIterable {
+public enum STScript: Int, CaseIterable {
     case latin
     case japanese
     case emoji
     
-    var unicodeCategories: [STUnicodeCategory] {
+    public var unicodeCategories: [STUnicodeCategory] {
         // Swtich by self
         switch self {
         case .latin: return [
@@ -429,47 +429,47 @@ enum STScript: Int, CaseIterable {
         }
     }
     
-    var notNeedsToClockwiseInTbRl: Bool {
+    public var notNeedsToClockwiseInTbRl: Bool {
         let notNeedsToClockwise: [STScript] = [.japanese, .emoji, ]
         return notNeedsToClockwise.contains(self)
     }
 }
 
-enum STTextAlign: Int, CaseIterable {
+public enum STTextAlign: Int, CaseIterable {
     case leading
     case center
     case trailng
     case justify
 }
 
-enum STDirectionAlign: Int, CaseIterable {
+public enum STDirectionAlign: Int, CaseIterable {
     case start
     case middle
     case end
 }
 
-enum STDirection: Int, CaseIterable {
+public enum STDirection: Int, CaseIterable {
     case lrTb
     case tbRl
 }
 
-enum STNewLineMode: Int, CaseIterable {
+public enum STNewLineMode: Int, CaseIterable {
     case lf
     case cr
     case crlf
 }
 
-enum STPunctuation: Int, CaseIterable {
+public enum STPunctuation: Int, CaseIterable {
     case whole
     case firstHalf
     case secondHalf
     case quarter
     
-    static let firstHalfPunctuationCharSet = CharacterSet(charactersIn: "、。）］｝〕〉》」』】〙〗〟｠")
-    static let secondHalfPunctuationCharSet = CharacterSet(charactersIn: "（［｛〔〈《「『【〘〖〝｟")
-    static let quarterPunctuationCharSet = CharacterSet(charactersIn: "・：；")
-    
-    static func valueOf(charatcter: Character) -> STPunctuation {
+    public static let firstHalfPunctuationCharSet = CharacterSet(charactersIn: "、。）］｝〕〉》」』】〙〗〟｠")
+    public static let secondHalfPunctuationCharSet = CharacterSet(charactersIn: "（［｛〔〈《「『【〘〖〝｟")
+    public static let quarterPunctuationCharSet = CharacterSet(charactersIn: "・：；")
+
+    public static func valueOf(charatcter: Character) -> STPunctuation {
         // Decide punctuation
         guard let scalar = charatcter.unicodeScalars.first else { return .whole }
         if firstHalfPunctuationCharSet.contains(scalar) { return .firstHalf }
@@ -479,42 +479,42 @@ enum STPunctuation: Int, CaseIterable {
     }
 }
 
-enum STPunctuationMode: Int, CaseIterable {
+public enum STPunctuationMode: Int, CaseIterable {
     case whole
     case half
     case stone
 }
 
-enum STKinsoku {
+public enum STKinsoku {
     static let notStartingCharSet = CharacterSet(charactersIn: " ,.?:;!)）]］｝、〕〉》」』】〙〗〟’”｠»ヽヾァィゥェォッャュョヮヵヶぁぃぅぇぉっゃゅょゎゕゖㇰㇱㇲㇳㇴㇵㇶㇷㇸㇹㇺㇻㇼㇽㇾㇿ々〻？!‼⁇⁈⁉。.™")
     static let notEndingCharSet = CharacterSet(charactersIn: "(（[［｛〔〈《「『【〘〖〝‘“｟«\"'")
     static let hangingCharSet = CharacterSet(charactersIn: "、。")
     
 }
 
-enum STRunVisibility: Int, CaseIterable {
+public enum STRunVisibility: Int, CaseIterable {
     case visible
     case invisible
     case ellipsis
 }
 
-struct STRun {
-    var tokenId: Int
-    var tokenRunIndex: Int
-    var fontId: Int
-    var char: Character
-    var punctuation: STPunctuation
-    var glyph: CGGlyph
-    var advance: CGSize
-    var boundingRect: CGRect
-    var position: CGPoint
-    var frame: CGRect
-    var visibility: STRunVisibility
-    var line: Int
-    
-    var isHidden: Bool { visibility == .invisible }
+public struct STRun {
+    public var tokenId: Int
+    public var tokenRunIndex: Int
+    public var fontId: Int
+    public var char: Character
+    public var punctuation: STPunctuation
+    public var glyph: CGGlyph
+    public var advance: CGSize
+    public var boundingRect: CGRect
+    public var position: CGPoint
+    public var frame: CGRect
+    public var visibility: STRunVisibility
+    public var line: Int
+
+    public var isHidden: Bool { visibility == .invisible }
 }
 
-struct STToken {
-    var runIdRange: Range<Int>
+public struct STToken {
+    public var runIdRange: Range<Int>
 }

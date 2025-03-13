@@ -9,12 +9,12 @@ This software is licensed under the MIT License. See LICENSE for details.
 
 import UIKit
 
-class STLabel: UIView {
+public class STLabel: UIView {
     // Text input
-    weak var textInput: UITextInput?
-    
+    public weak var textInput: UITextInput?
+
     // Text
-    var text: String? {
+    public var text: String? {
         didSet {
             // Set needs layout
             setNeedsLayout()
@@ -22,56 +22,56 @@ class STLabel: UIView {
     }
     
     // Layout
-    var fontSize: CGFloat {
+    public var fontSize: CGFloat {
         get { context.fontSize }
         set {
             context.fontSize = newValue
             setNeedsLayout()
         }
     }
-    var lineHeightScale: CGFloat {
+    public var lineHeightScale: CGFloat {
         get { context.lineHeightScale }
         set {
             context.lineHeightScale = newValue
             setNeedsLayout()
         }
     }
-    var textAlign: STTextAlign {
+    public var textAlign: STTextAlign {
         get { context.textAlign }
         set {
             context.textAlign = newValue
             setNeedsLayout()
         }
     }
-    var directionAlign: STDirectionAlign {
+    public var directionAlign: STDirectionAlign {
         get { context.directionAlign }
         set {
             context.directionAlign = newValue
             setNeedsLayout()
         }
     }
-    var direction: STDirection {
+    public var direction: STDirection {
         get { context.direction }
         set {
             context.direction = newValue
             setNeedsLayout()
         }
     }
-    var isAllowedTateChuYoko: Bool {
+    public var isAllowedTateChuYoko: Bool {
         get { context.isAllowedTateChuYoko }
         set {
             context.isAllowedTateChuYoko = newValue
             setNeedsLayout()
         }
     }
-    var adjustsFontSizeToFitWidth: Bool {
+    public var adjustsFontSizeToFitWidth: Bool {
         get { context.adjustsFontSizeToFitWidth }
         set {
             context.adjustsFontSizeToFitWidth = newValue
             setNeedsLayout()
         }
     }
-    var minimumScaleFactor: CGFloat {
+    public var minimumScaleFactor: CGFloat {
         get { context.minimumScaleFactor }
         set {
             context.minimumScaleFactor = newValue
@@ -80,14 +80,14 @@ class STLabel: UIView {
     }
     
     // Color
-    var textColor: UIColor {
+    public var textColor: UIColor {
         get { context.textColor }
         set {
             context.textColor = newValue
             setNeedsLayout()
         }
     }
-    var selectedAreaColor: UIColor {
+    public var selectedAreaColor: UIColor {
         get { context.selectedAreaColor }
         set {
             context.selectedAreaColor = newValue
@@ -96,21 +96,21 @@ class STLabel: UIView {
     }
     
     // Features
-    var punctuationMode: STPunctuationMode {
+    public var punctuationMode: STPunctuationMode {
         get { context.punctuationMode }
         set {
             context.punctuationMode = newValue
             setNeedsLayout()
         }
     }
-    var isKinsokuAvailable: Bool {
+    public var isKinsokuAvailable: Bool {
         get { context.isKinsokuAvailable }
         set {
             context.isKinsokuAvailable = newValue
             setNeedsLayout()
         }
     }
-    var isDividedByWords: Bool {
+    public var isDividedByWords: Bool {
         get { context.isDividedByWords }
         set {
             context.isDividedByWords = newValue
@@ -119,13 +119,13 @@ class STLabel: UIView {
     }
     
     // Context
-    let context = STContext()
-    
+    public let context = STContext()
+
     //--------------------------------------------------------------//
     // MARK: - Layer
     //--------------------------------------------------------------//
     
-    class override var layerClass: AnyClass {
+    class public override var layerClass: AnyClass {
         // Use tiled layer
         return STTiledLayer.self
     }
@@ -141,7 +141,7 @@ class STLabel: UIView {
         (layer as? STTiledLayer)?.context = context
     }
     
-    override init(frame: CGRect) {
+    public override init(frame: CGRect) {
         // Invoke super
         super.init(frame: frame)
         
@@ -149,7 +149,7 @@ class STLabel: UIView {
         _init()
     }
     
-    required init?(coder: NSCoder) {
+    public required init?(coder: NSCoder) {
         super.init(coder: coder)
         
         // Common init
@@ -160,12 +160,12 @@ class STLabel: UIView {
     // MARK: - Font
     //--------------------------------------------------------------//
     
-    func fontNames(script: STScript) -> [String] {
+    public func fontNames(script: STScript) -> [String] {
         // Pass to font manager
         return context.fontManager.fontNames(script: script)
     }
     
-    func setFontNames(_ fontNames: [String], script: STScript) {
+    public func setFontNames(_ fontNames: [String], script: STScript) {
         // Pass to font manager
         context.fontManager.setFontNames(fontNames, script: script)
         
@@ -173,12 +173,12 @@ class STLabel: UIView {
         setNeedsLayout()
     }
     
-    func fontScale(script: STScript) -> CGFloat {
+    public func fontScale(script: STScript) -> CGFloat {
         // Pass to font manager
         return context.fontManager.fontScale(script: script)
     }
     
-    func setFontScale(_ fontScale: CGFloat, script: STScript) {
+    public func setFontScale(_ fontScale: CGFloat, script: STScript) {
         // Pass to font manager
         context.fontManager.setFontScale(fontScale, script: script)
         
@@ -253,7 +253,7 @@ class STLabel: UIView {
         }
     }
     
-    override func sizeThatFits(_ size: CGSize) -> CGSize {
+    public override func sizeThatFits(_ size: CGSize) -> CGSize {
         /*
         // Use current rendered size
         switch direction {
@@ -292,7 +292,7 @@ class STLabel: UIView {
         return context.renderedSize
     }
     
-    override func layoutSubviews() {
+    public override func layoutSubviews() {
         // Invoke super
         super.layoutSubviews()
         
@@ -321,7 +321,7 @@ class STLabel: UIView {
         layer.setAffineTransform(.init(translationX: frame.width - contentSize.width, y: 0))
     }
     
-    override func layoutSublayers(of layer: CALayer) {
+    public override func layoutSublayers(of layer: CALayer) {
         // Invoke super
         super.layoutSublayers(of: layer)
         
@@ -535,7 +535,7 @@ class STLabel: UIView {
         }
     }
     
-    override func draw(_ dirtyRect: CGRect) {
+    public override func draw(_ dirtyRect: CGRect) {
         // Draw
         drawSelectedArea(dirtyRect)
         drawMarkedArea(dirtyRect)

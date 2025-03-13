@@ -55,7 +55,7 @@ class STParser {
         if char.unicodeScalars.first?.script == .japanese, context.direction == .tbRl {
             // Get vertical glyphs
             let fontName = CTFontCopyFullName(ctFont) as String
-            let vertGlyph = STTextVerticalSubstitutionGlyphWithGlyph(fontName, glyph)
+            let vertGlyph = STTextVerticalSubstitutionGlyphWithGlyph(fontName: fontName, glyph: glyph)
             if vertGlyph != 0 { glyph = vertGlyph }
         }
         
@@ -63,7 +63,7 @@ class STParser {
         var advance: CGSize = .zero
         CTFontGetAdvancesForGlyphs(ctFont, .horizontal, &glyph, &advance, 1)
         
-        // Get bouding rects
+        // Get bounding rects
         var boundingRect: CGRect = .zero
         CTFontGetBoundingRectsForGlyphs(ctFont, .horizontal, &glyph, &boundingRect, 1)
         

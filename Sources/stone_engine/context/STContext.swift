@@ -9,50 +9,50 @@ This software is licensed under the MIT License. See LICENSE for details.
 
 import UIKit
 
-class STContext {
-    static let cursorWide: CGFloat = 2
-    
+public class STContext {
+    public static let cursorWide: CGFloat = 2
+
     // Runs
-    var runs = [STRun]()
-    var tokens = [STToken]()
-    var lineCount = 0
-    
+    public var runs = [STRun]()
+    public var tokens = [STToken]()
+    public var lineCount = 0
+
     // Font
-    let fontManager = STFontManager()
-    
+    public let fontManager = STFontManager()
+
     // Layout
-    var fontSize: CGFloat = 17
-    var lineHeightScale: CGFloat = 1.0
-    var lineHeight: CGFloat { fontSize * lineHeightScale }
-    var lineGapHeight: CGFloat { fontSize * (lineHeightScale - 1) }
-    var textAlign: STTextAlign = .leading
-    var directionAlign: STDirectionAlign = .start
-    var direction: STDirection = .lrTb
-    var isAllowedTateChuYoko: Bool = true
-    var adjustsFontSizeToFitWidth: Bool = false
-    var minimumScaleFactor: CGFloat = 0
-    
+    public var fontSize: CGFloat = 17
+    public var lineHeightScale: CGFloat = 1.0
+    public var lineHeight: CGFloat { fontSize * lineHeightScale }
+    public var lineGapHeight: CGFloat { fontSize * (lineHeightScale - 1) }
+    public var textAlign: STTextAlign = .leading
+    public var directionAlign: STDirectionAlign = .start
+    public var direction: STDirection = .lrTb
+    public var isAllowedTateChuYoko: Bool = true
+    public var adjustsFontSizeToFitWidth: Bool = false
+    public var minimumScaleFactor: CGFloat = 0
+
     // Layout for adjusting
-    var adjustFontScale: CGFloat = 1.0
-    var adjustFontSize: CGFloat { fontSize * adjustFontScale }
-    var adjustLineHeight: CGFloat { adjustFontSize * lineHeightScale }
-    
+    public var adjustFontScale: CGFloat = 1.0
+    public var adjustFontSize: CGFloat { fontSize * adjustFontScale }
+    public var adjustLineHeight: CGFloat { adjustFontSize * lineHeightScale }
+
     // Color
-    var textColor: UIColor = .label
-    var selectedAreaColor: UIColor = .link
-    
+    public var textColor: UIColor = .label
+    public var selectedAreaColor: UIColor = .link
+
     // Features
-    var punctuationMode: STPunctuationMode = .stone
+    public var punctuationMode: STPunctuationMode = .stone
     //var isHalfPunctuation = true
-    var isKinsokuAvailable = true
-    var isDividedByWords = true
-    
+    public var isKinsokuAvailable = true
+    public var isDividedByWords = true
+
     // Render
-    var renderSize: CGSize = .zero
-    var renderedSize: CGSize = .zero
+    public var renderSize: CGSize = .zero
+    public var renderedSize: CGSize = .zero
 }
 
-extension STContext {
+public extension STContext {
     //--------------------------------------------------------------//
     // MARK: - Advance
     //--------------------------------------------------------------//

@@ -13,7 +13,5 @@ This software is licensed under the MIT License. See LICENSE for details.
 @interface UIFont (UIFontEx)
 
 + (NSArray<NSString*>*)availableFamilyNames:(NSArray*)languages;
-+ (NSString*)localizedFamilyName:(NSString*)familyName language:(NSString*)language;
-+ (NSString*)localizedFontName:(NSString*)fontName language:(NSString*)language;
 
 @end

@@ -9,8 +9,8 @@ This software is licensed under the MIT License. See LICENSE for details.
 
 import UIKit
 
-class STFontManager {
-    static let fontNamesNeedToFlip = [
+public class STFontManager {
+    public static let fontNamesNeedToFlip = [
         "AppleColorEmoji", 
     ]
     

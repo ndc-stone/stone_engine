@@ -9,14 +9,14 @@ This software is licensed under the MIT License. See LICENSE for details.
 
 import UIKit
 
-extension STTextView {
+public extension STTextView {
     //--------------------------------------------------------------//
     // MARK: - UIResponder
     //--------------------------------------------------------------//
     
-    override var canBecomeFirstResponder: Bool { true }
-    
-    override func becomeFirstResponder() -> Bool {
+    public override var canBecomeFirstResponder: Bool { true }
+
+    public override func becomeFirstResponder() -> Bool {
         // Invoke super
         let result = super.becomeFirstResponder()
         
@@ -29,7 +29,7 @@ extension STTextView {
         return result
     }
     
-    override func resignFirstResponder() -> Bool {
+    public override func resignFirstResponder() -> Bool {
         // Invoke super
         let result = super.resignFirstResponder()
         
@@ -43,7 +43,7 @@ extension STTextView {
     }
 }
 
-extension STTextView {
+public extension STTextView {
     //--------------------------------------------------------------//
     // MARK: - Keyboard handling
     //--------------------------------------------------------------//
