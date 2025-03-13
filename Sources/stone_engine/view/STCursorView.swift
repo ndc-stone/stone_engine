@@ -1,5 +1,5 @@
 /*
-STLensView.swift
+STCursorView.swift
 
 Author: Makoto Kinoshita (mkino@hmdt.jp)
 
@@ -9,31 +9,21 @@ This software is licensed under the MIT License. See LICENSE for details.
 
 import UIKit
 
-class STLensView: UIView {
+public class STCursorView: UIView {
     // Views
-    var labelImageView: UIImageView!
-    
+    public var cursorLayer: CALayer!
+
     //--------------------------------------------------------------//
     // MARK: - Initialize
     //--------------------------------------------------------------//
     
     private func _init() {
-        // Configure itself
-        layer.borderWidth = 1
-        layer.cornerRadius = 30
-        
-        // Create label image view
-        labelImageView = UIImageView(frame: .zero)
-        labelImageView.contentMode = .center
-        labelImageView.clipsToBounds = true
-        labelImageView.layer.cornerRadius = 30
-        addSubview(labelImageView)
-        
-        // Update appearance
-        updateLayerColor()
+        // Create cursor layer
+        cursorLayer = CALayer()
+        layer.addSublayer(cursorLayer)
     }
     
-    override init(frame: CGRect) {
+    public override init(frame: CGRect) {
         // Invoke super
         super.init(frame: frame)
         
@@ -48,7 +38,9 @@ class STLensView: UIView {
         // Common init
         _init()
     }
-    
+}
+
+public extension STCursorView {
     //--------------------------------------------------------------//
     // MARK: - View
     //--------------------------------------------------------------//
@@ -59,6 +51,7 @@ class STLensView: UIView {
         
         // Update appearance
         updateLayerColor()
+        updateHeartBeat()
     }
     
     //--------------------------------------------------------------//
@@ -66,9 +59,28 @@ class STLensView: UIView {
     //--------------------------------------------------------------//
     
     private func updateLayerColor() {
-        // Set layer border color
-        layer.borderColor = UIColor.light.cgColor
-        labelImageView.backgroundColor = .lightest
+        // Set layer background color
+        cursorLayer.backgroundColor = UIColor.label.cgColor
+    }
+    
+    private func updateHeartBeat() {
+        // For window
+        if window != nil {
+            // Add opacity animation
+            let opacityAnimation = CABasicAnimation()
+            opacityAnimation.fromValue = 1
+            opacityAnimation.toValue = 0
+            opacityAnimation.duration = 0.75
+            opacityAnimation.repeatCount = MAXFLOAT
+            opacityAnimation.timingFunction = CAMediaTimingFunction(name: .easeIn)
+            opacityAnimation.autoreverses = true
+            cursorLayer.add(opacityAnimation, forKey: "opacity")
+        }
+        // For no window
+        else {
+            // Remove animation
+            cursorLayer.removeAllAnimations()
+        }
     }
     
     //--------------------------------------------------------------//
@@ -76,13 +88,13 @@ class STLensView: UIView {
     //--------------------------------------------------------------//
     
     override func layoutSublayers(of layer: CALayer) {
-        var rect = CGRect.zero
-        
         // Invoke super
         super.layoutSublayers(of: layer)
         
-        // Layout label image view
-        rect = bounds
-        labelImageView.frame = rect
+        // Layout cursor layer without animation
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        cursorLayer.frame = bounds
+        CATransaction.commit()
     }
 }
