@@ -1,5 +1,5 @@
 /*
-STCursorView.swift
+STLensView.swift
 
 Author: Makoto Kinoshita (mkino@hmdt.jp)
 
@@ -9,21 +9,31 @@ This software is licensed under the MIT License. See LICENSE for details.
 
 import UIKit
 
-class STCursorView: UIView {
+public class STLensView: UIView {
     // Views
-    var cursorLayer: CALayer!
-    
+    public var labelImageView: UIImageView!
+
     //--------------------------------------------------------------//
     // MARK: - Initialize
     //--------------------------------------------------------------//
     
     private func _init() {
-        // Create cursor layer
-        cursorLayer = CALayer()
-        layer.addSublayer(cursorLayer)
+        // Configure itself
+        layer.borderWidth = 1
+        layer.cornerRadius = 30
+        
+        // Create label image view
+        labelImageView = UIImageView(frame: .zero)
+        labelImageView.contentMode = .center
+        labelImageView.clipsToBounds = true
+        labelImageView.layer.cornerRadius = 30
+        addSubview(labelImageView)
+        
+        // Update appearance
+        updateLayerColor()
     }
     
-    override init(frame: CGRect) {
+    public override init(frame: CGRect) {
         // Invoke super
         super.init(frame: frame)
         
@@ -31,27 +41,24 @@ class STCursorView: UIView {
         _init()
     }
     
-    required init?(coder: NSCoder) {
+    public required init?(coder: NSCoder) {
         // Invoke super
         super.init(coder: coder)
         
         // Common init
         _init()
     }
-}
-
-extension STCursorView {
+    
     //--------------------------------------------------------------//
     // MARK: - View
     //--------------------------------------------------------------//
     
-    override func didMoveToWindow() {
+    public override func didMoveToWindow() {
         // Invoke super
         super.didMoveToWindow()
         
         // Update appearance
         updateLayerColor()
-        updateHeartBeat()
     }
     
     //--------------------------------------------------------------//
@@ -59,42 +66,23 @@ extension STCursorView {
     //--------------------------------------------------------------//
     
     private func updateLayerColor() {
-        // Set layer background color
-        cursorLayer.backgroundColor = UIColor.label.cgColor
-    }
-    
-    private func updateHeartBeat() {
-        // For window
-        if window != nil {
-            // Add opacity animation
-            let opacityAnimation = CABasicAnimation()
-            opacityAnimation.fromValue = 1
-            opacityAnimation.toValue = 0
-            opacityAnimation.duration = 0.75
-            opacityAnimation.repeatCount = MAXFLOAT
-            opacityAnimation.timingFunction = CAMediaTimingFunction(name: .easeIn)
-            opacityAnimation.autoreverses = true
-            cursorLayer.add(opacityAnimation, forKey: "opacity")
-        }
-        // For no window
-        else {
-            // Remove animation
-            cursorLayer.removeAllAnimations()
-        }
+        // Set layer border color
+        layer.borderColor = UIColor.lightGray.cgColor
+        labelImageView.backgroundColor = .lightText
     }
     
     //--------------------------------------------------------------//
     // MARK: - Layout
     //--------------------------------------------------------------//
     
-    override func layoutSublayers(of layer: CALayer) {
+    public override func layoutSublayers(of layer: CALayer) {
+        var rect = CGRect.zero
+        
         // Invoke super
         super.layoutSublayers(of: layer)
         
-        // Layout cursor layer without animation
-        CATransaction.begin()
-        CATransaction.setDisableActions(true)
-        cursorLayer.frame = bounds
-        CATransaction.commit()
+        // Layout label image view
+        rect = bounds
+        labelImageView.frame = rect
     }
 }

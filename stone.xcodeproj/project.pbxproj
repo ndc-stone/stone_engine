@@ -3,39 +3,21 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0B1BB1692BC291A50053D908 /* STTextSubstitutionGlyph.m in Sources */ = {isa = PBXBuildFile; fileRef = 0B1BB1682BC291A50053D908 /* STTextSubstitutionGlyph.m */; };
 		0BA78B6C2CE483C4007EDDE2 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BA78B6A2CE483C4007EDDE2 /* ViewController.swift */; };
 		0BA78B6D2CE483C4007EDDE2 /* UIFont+Localized.m in Sources */ = {isa = PBXBuildFile; fileRef = 0BA78B692CE483C4007EDDE2 /* UIFont+Localized.m */; };
 		0BA78B6E2CE483C4007EDDE2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BA78B612CE483C4007EDDE2 /* AppDelegate.swift */; };
 		0BA78B6F2CE483C4007EDDE2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0BA78B622CE483C4007EDDE2 /* Assets.xcassets */; };
 		0BA78B702CE483C4007EDDE2 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0BA78B672CE483C4007EDDE2 /* Main.storyboard */; };
 		0BA78B712CE483C4007EDDE2 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0BA78B652CE483C4007EDDE2 /* LaunchScreen.storyboard */; };
-		0BA9E2A22CA3BB160072D709 /* STKnobView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BA9E2A12CA3BB160072D709 /* STKnobView.swift */; };
-		0BA9E2A42CA3D2950072D709 /* STTextView+Lens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BA9E2A32CA3D2950072D709 /* STTextView+Lens.swift */; };
-		0BB5CDBD2BB5411500A53CDD /* STParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BB5CDBC2BB5411500A53CDD /* STParser.swift */; };
-		0BB5CDC02BB54D2000A53CDD /* STFontManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BB5CDBF2BB54D2000A53CDD /* STFontManager.swift */; };
-		0BB5CDC32BB5609700A53CDD /* STLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BB5CDC22BB5609700A53CDD /* STLayout.swift */; };
-		0BBF10212B9ECB3D00031CAC /* STLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BBF101B2B9ECA1F00031CAC /* STLabel.swift */; };
-		0BBF10242B9ECBBA00031CAC /* STObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BBF10232B9ECBBA00031CAC /* STObject.swift */; };
-		0BBF10262B9ECC4600031CAC /* STContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BBF10252B9ECC4600031CAC /* STContext.swift */; };
-		0BBF10282B9ECD1500031CAC /* STTiledLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BBF10272B9ECD1500031CAC /* STTiledLayer.swift */; };
-		0BCBC13F2BEB589E000DB882 /* STCursorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BCBC13E2BEB589E000DB882 /* STCursorView.swift */; };
-		0BE1B36F2BD8C98F00948574 /* STTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BE1B36E2BD8C98F00948574 /* STTextView.swift */; };
-		0BE1B3712BD8CC3600948574 /* STTextView+TextInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BE1B3702BD8CC3600948574 /* STTextView+TextInput.swift */; };
-		0BE1B3732BD8E31500948574 /* STTextView+Responder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BE1B3722BD8E31500948574 /* STTextView+Responder.swift */; };
-		0BE1B3752BD8E5A700948574 /* STText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BE1B3742BD8E5A700948574 /* STText.swift */; };
-		0BEEC9A82C4779C9001A60CF /* STTextView+Action.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BEEC9A72C4779C9001A60CF /* STTextView+Action.swift */; };
-		0BEEC9AA2C47853F001A60CF /* STLensView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BEEC9A92C47853F001A60CF /* STLensView.swift */; };
+		F1B661EF2D827C0A00370BCA /* stone_engine in Frameworks */ = {isa = PBXBuildFile; productRef = F1B661EE2D827C0A00370BCA /* stone_engine */; };
+		F1B661F22D827C3500370BCA /* stone_engine in Frameworks */ = {isa = PBXBuildFile; productRef = F1B661F12D827C3500370BCA /* stone_engine */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0B1BB1672BC291A50053D908 /* STTextSubstitutionGlyph.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = STTextSubstitutionGlyph.h; sourceTree = "<group>"; };
-		0B1BB1682BC291A50053D908 /* STTextSubstitutionGlyph.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = STTextSubstitutionGlyph.m; sourceTree = "<group>"; };
-		0B1BB16A2BC291D10053D908 /* stone-engine-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "stone-engine-Bridging-Header.h"; sourceTree = "<group>"; };
 		0BA78B612CE483C4007EDDE2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		0BA78B622CE483C4007EDDE2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		0BA78B632CE483C4007EDDE2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -44,23 +26,8 @@
 		0BA78B682CE483C4007EDDE2 /* UIFont+Localized.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "UIFont+Localized.h"; sourceTree = "<group>"; };
 		0BA78B692CE483C4007EDDE2 /* UIFont+Localized.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "UIFont+Localized.m"; sourceTree = "<group>"; };
 		0BA78B6A2CE483C4007EDDE2 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
-		0BA9E2A12CA3BB160072D709 /* STKnobView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = STKnobView.swift; sourceTree = "<group>"; };
-		0BA9E2A32CA3D2950072D709 /* STTextView+Lens.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "STTextView+Lens.swift"; sourceTree = "<group>"; };
-		0BB5CDBC2BB5411500A53CDD /* STParser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = STParser.swift; sourceTree = "<group>"; };
-		0BB5CDBF2BB54D2000A53CDD /* STFontManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = STFontManager.swift; sourceTree = "<group>"; };
-		0BB5CDC22BB5609700A53CDD /* STLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = STLayout.swift; sourceTree = "<group>"; };
 		0BBF0FF82B9EC7AA00031CAC /* stone oss.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "stone oss.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		0BBF101B2B9ECA1F00031CAC /* STLabel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = STLabel.swift; sourceTree = "<group>"; };
-		0BBF10232B9ECBBA00031CAC /* STObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = STObject.swift; sourceTree = "<group>"; };
-		0BBF10252B9ECC4600031CAC /* STContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = STContext.swift; sourceTree = "<group>"; };
-		0BBF10272B9ECD1500031CAC /* STTiledLayer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = STTiledLayer.swift; sourceTree = "<group>"; };
-		0BCBC13E2BEB589E000DB882 /* STCursorView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = STCursorView.swift; sourceTree = "<group>"; };
-		0BE1B36E2BD8C98F00948574 /* STTextView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = STTextView.swift; sourceTree = "<group>"; };
-		0BE1B3702BD8CC3600948574 /* STTextView+TextInput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "STTextView+TextInput.swift"; sourceTree = "<group>"; };
-		0BE1B3722BD8E31500948574 /* STTextView+Responder.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "STTextView+Responder.swift"; sourceTree = "<group>"; };
-		0BE1B3742BD8E5A700948574 /* STText.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = STText.swift; sourceTree = "<group>"; };
-		0BEEC9A72C4779C9001A60CF /* STTextView+Action.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "STTextView+Action.swift"; sourceTree = "<group>"; };
-		0BEEC9A92C47853F001A60CF /* STLensView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = STLensView.swift; sourceTree = "<group>"; };
+		F1B661F32D827CC100370BCA /* stone-engine-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "stone-engine-Bridging-Header.h"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -68,6 +35,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F1B661F22D827C3500370BCA /* stone_engine in Frameworks */,
+				F1B661EF2D827C0A00370BCA /* stone_engine in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,6 +46,7 @@
 		0BA78B6B2CE483C4007EDDE2 /* sample */ = {
 			isa = PBXGroup;
 			children = (
+				F1B661F32D827CC100370BCA /* stone-engine-Bridging-Header.h */,
 				0BA78B612CE483C4007EDDE2 /* AppDelegate.swift */,
 				0BA78B622CE483C4007EDDE2 /* Assets.xcassets */,
 				0BA78B632CE483C4007EDDE2 /* Info.plist */,
@@ -89,36 +59,9 @@
 			path = sample;
 			sourceTree = "<group>";
 		};
-		0BB5CDBB2BB5411500A53CDD /* parse */ = {
-			isa = PBXGroup;
-			children = (
-				0BB5CDBC2BB5411500A53CDD /* STParser.swift */,
-			);
-			path = parse;
-			sourceTree = "<group>";
-		};
-		0BB5CDBE2BB54D2000A53CDD /* font */ = {
-			isa = PBXGroup;
-			children = (
-				0BB5CDBF2BB54D2000A53CDD /* STFontManager.swift */,
-				0B1BB1672BC291A50053D908 /* STTextSubstitutionGlyph.h */,
-				0B1BB1682BC291A50053D908 /* STTextSubstitutionGlyph.m */,
-			);
-			path = font;
-			sourceTree = "<group>";
-		};
-		0BB5CDC12BB5609700A53CDD /* layout */ = {
-			isa = PBXGroup;
-			children = (
-				0BB5CDC22BB5609700A53CDD /* STLayout.swift */,
-			);
-			path = layout;
-			sourceTree = "<group>";
-		};
 		0BBF0FEF2B9EC7AA00031CAC = {
 			isa = PBXGroup;
 			children = (
-				0BBF10142B9EC99D00031CAC /* stone_engine */,
 				0BA78B6B2CE483C4007EDDE2 /* sample */,
 				0BBF0FF92B9EC7AA00031CAC /* Products */,
 				0BBF101D2B9ECA9E00031CAC /* Frameworks */,
@@ -133,51 +76,11 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		0BBF10142B9EC99D00031CAC /* stone_engine */ = {
-			isa = PBXGroup;
-			children = (
-				0BBF10222B9ECBBA00031CAC /* context */,
-				0BB5CDBE2BB54D2000A53CDD /* font */,
-				0BB5CDC12BB5609700A53CDD /* layout */,
-				0BB5CDBB2BB5411500A53CDD /* parse */,
-				0BBF101A2B9ECA1F00031CAC /* view */,
-				0B1BB16A2BC291D10053D908 /* stone-engine-Bridging-Header.h */,
-			);
-			path = stone_engine;
-			sourceTree = "<group>";
-		};
-		0BBF101A2B9ECA1F00031CAC /* view */ = {
-			isa = PBXGroup;
-			children = (
-				0BCBC13E2BEB589E000DB882 /* STCursorView.swift */,
-				0BA9E2A12CA3BB160072D709 /* STKnobView.swift */,
-				0BBF101B2B9ECA1F00031CAC /* STLabel.swift */,
-				0BEEC9A92C47853F001A60CF /* STLensView.swift */,
-				0BE1B3742BD8E5A700948574 /* STText.swift */,
-				0BE1B36E2BD8C98F00948574 /* STTextView.swift */,
-				0BEEC9A72C4779C9001A60CF /* STTextView+Action.swift */,
-				0BA9E2A32CA3D2950072D709 /* STTextView+Lens.swift */,
-				0BE1B3722BD8E31500948574 /* STTextView+Responder.swift */,
-				0BE1B3702BD8CC3600948574 /* STTextView+TextInput.swift */,
-				0BBF10272B9ECD1500031CAC /* STTiledLayer.swift */,
-			);
-			path = view;
-			sourceTree = "<group>";
-		};
 		0BBF101D2B9ECA9E00031CAC /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		0BBF10222B9ECBBA00031CAC /* context */ = {
-			isa = PBXGroup;
-			children = (
-				0BBF10252B9ECC4600031CAC /* STContext.swift */,
-				0BBF10232B9ECBBA00031CAC /* STObject.swift */,
-			);
-			path = context;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -225,6 +128,9 @@
 				Base,
 			);
 			mainGroup = 0BBF0FEF2B9EC7AA00031CAC;
+			packageReferences = (
+				F1B661F02D827C3500370BCA /* XCLocalSwiftPackageReference "../stone_engine" */,
+			);
 			productRefGroup = 0BBF0FF92B9EC7AA00031CAC /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -252,26 +158,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0BB5CDC02BB54D2000A53CDD /* STFontManager.swift in Sources */,
-				0BEEC9A82C4779C9001A60CF /* STTextView+Action.swift in Sources */,
-				0BE1B3732BD8E31500948574 /* STTextView+Responder.swift in Sources */,
-				0BBF10262B9ECC4600031CAC /* STContext.swift in Sources */,
-				0BE1B3752BD8E5A700948574 /* STText.swift in Sources */,
-				0BCBC13F2BEB589E000DB882 /* STCursorView.swift in Sources */,
-				0BEEC9AA2C47853F001A60CF /* STLensView.swift in Sources */,
-				0BE1B3712BD8CC3600948574 /* STTextView+TextInput.swift in Sources */,
-				0BE1B36F2BD8C98F00948574 /* STTextView.swift in Sources */,
-				0BA9E2A42CA3D2950072D709 /* STTextView+Lens.swift in Sources */,
 				0BA78B6C2CE483C4007EDDE2 /* ViewController.swift in Sources */,
 				0BA78B6D2CE483C4007EDDE2 /* UIFont+Localized.m in Sources */,
 				0BA78B6E2CE483C4007EDDE2 /* AppDelegate.swift in Sources */,
-				0BBF10282B9ECD1500031CAC /* STTiledLayer.swift in Sources */,
-				0BA9E2A22CA3BB160072D709 /* STKnobView.swift in Sources */,
-				0B1BB1692BC291A50053D908 /* STTextSubstitutionGlyph.m in Sources */,
-				0BB5CDC32BB5609700A53CDD /* STLayout.swift in Sources */,
-				0BBF10242B9ECBBA00031CAC /* STObject.swift in Sources */,
-				0BBF10212B9ECB3D00031CAC /* STLabel.swift in Sources */,
-				0BB5CDBD2BB5411500A53CDD /* STParser.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -426,7 +315,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 240925;
-				DEVELOPMENT_TEAM = S77FC4545C;
+				DEVELOPMENT_TEAM = J588829DYC;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = sample/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "stone oss";
@@ -444,7 +333,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = jp.co.ndc.stone.oss;
 				PRODUCT_NAME = "stone oss";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "stone_engine/stone-engine-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "sample/stone-engine-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -459,7 +348,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 240925;
-				DEVELOPMENT_TEAM = S77FC4545C;
+				DEVELOPMENT_TEAM = J588829DYC;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = sample/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "stone oss";
@@ -477,7 +366,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = jp.co.ndc.stone.oss;
 				PRODUCT_NAME = "stone oss";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "stone_engine/stone-engine-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "sample/stone-engine-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -505,6 +394,36 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		F1B661F02D827C3500370BCA /* XCLocalSwiftPackageReference "../stone_engine" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../stone_engine;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		F1B661ED2D827C0A00370BCA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 11.9.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		F1B661EE2D827C0A00370BCA /* stone_engine */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F1B661ED2D827C0A00370BCA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = stone_engine;
+		};
+		F1B661F12D827C3500370BCA /* stone_engine */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = stone_engine;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 0BBF0FF02B9EC7AA00031CAC /* Project object */;
 }

@@ -4,7 +4,7 @@ import PackageDescription
 let package = Package(
     name: "stone_engine",
     platforms: [
-        .iOS(.v13), .macOS(.v10_15)
+        .iOS(.v15), .macOS(.v10_15)
     ],
     products: [
         .library(
@@ -12,12 +12,9 @@ let package = Package(
             targets: ["stone_engine"]
         ),
     ],
-    dependencies: [
-    ],
     targets: [
         .target(
-            name: "stone_engine",
-            dependencies: []
+            name: "stone_engine"
         ),
     ]
 )

@@ -16,9 +16,9 @@ class TrackpadPanGestureRecognizer: UIPanGestureRecognizer {
     }
 }
 
-class STTextView: UIScrollView {
+public class STTextView: UIScrollView {
     // Text
-    var text: String? {
+    public var text: String? {
         get { label.text }
         set {
             label.text = newValue
@@ -27,56 +27,56 @@ class STTextView: UIScrollView {
     }
     
     // Layout
-    var fontSize: CGFloat {
+    public var fontSize: CGFloat {
         get { label.fontSize }
         set {
             label.fontSize = newValue
             setNeedsLayout()
         }
     }
-    var lineHeightScale: CGFloat {
+    public var lineHeightScale: CGFloat {
         get { label.lineHeightScale }
         set {
             label.lineHeightScale = newValue
             setNeedsLayout()
         }
     }
-    var textAlign: STTextAlign {
+    public var textAlign: STTextAlign {
         get { label.textAlign }
         set {
             label.textAlign = newValue
             setNeedsLayout()
         }
     }
-    var directionAlign: STDirectionAlign {
+    public var directionAlign: STDirectionAlign {
         get { label.directionAlign }
         set {
             label.directionAlign = newValue
             setNeedsLayout()
         }
     }
-    var direction: STDirection {
+    public var direction: STDirection {
         get { label.direction }
         set {
             label.direction = newValue
             setNeedsLayout()
         }
     }
-    var isAllowedTateChuYoko: Bool {
+    public var isAllowedTateChuYoko: Bool {
         get { label.isAllowedTateChuYoko }
         set {
             label.isAllowedTateChuYoko = newValue
             setNeedsLayout()
         }
     }
-    var adjustsFontSizeToFitWidth: Bool {
+    public var adjustsFontSizeToFitWidth: Bool {
         get { label.adjustsFontSizeToFitWidth }
         set {
             label.adjustsFontSizeToFitWidth = newValue
             setNeedsLayout()
         }
     }
-    var minimumScaleFactor: CGFloat {
+    public var minimumScaleFactor: CGFloat {
         get { label.minimumScaleFactor }
         set {
             label.minimumScaleFactor = newValue
@@ -85,7 +85,7 @@ class STTextView: UIScrollView {
     }
     
     // Color
-    var textColor: UIColor {
+    public var textColor: UIColor {
         get { label.textColor }
         set {
             label.textColor = newValue
@@ -94,21 +94,21 @@ class STTextView: UIScrollView {
     }
     
     // Features
-    var punctuationMode: STPunctuationMode {
+    public var punctuationMode: STPunctuationMode {
         get { label.punctuationMode }
         set {
             label.punctuationMode = newValue
             setNeedsLayout()
         }
     }
-    var isKinsokuAvailable: Bool {
+    public var isKinsokuAvailable: Bool {
         get { label.isKinsokuAvailable }
         set {
             label.isKinsokuAvailable = newValue
             setNeedsLayout()
         }
     }
-    var isDividedByWords: Bool {
+    public var isDividedByWords: Bool {
         get { label.isDividedByWords }
         set {
             label.isDividedByWords = newValue
@@ -117,7 +117,7 @@ class STTextView: UIScrollView {
     }
     
     // Text input
-    var selectedSTTextRange = STTextRange(range: 0 ..< 0) {
+    public var selectedSTTextRange = STTextRange(range: 0 ..< 0) {
         didSet {
             // Update appearance
             updateCursorShown()
@@ -127,11 +127,11 @@ class STTextView: UIScrollView {
             setNeedsLayout()
         }
     } 
-    var markedSTTextRange: STTextRange?
-    var markedRanges: [(Range<Int>, Bool)]?
-    
+    public var markedSTTextRange: STTextRange?
+    public var markedRanges: [(Range<Int>, Bool)]?
+
     // Cursor
-    var isCursorShown: Bool = false {
+    public var isCursorShown: Bool = false {
         didSet {
             // Update appearance
             updateCursorShown()
@@ -141,32 +141,32 @@ class STTextView: UIScrollView {
         }
     }
     
-    var isCursorBeginSelected = false
-    var cursorRectForUpDown: CGRect = .zero
-    var needsToScrollToShowCurosr = false
-    
+    public var isCursorBeginSelected = false
+    public var cursorRectForUpDown: CGRect = .zero
+    public var needsToScrollToShowCurosr = false
+
     // Long press
-    var longPressPoint: CGPoint?
+    public var longPressPoint: CGPoint?
     var isLongPressing: Bool { longPressPoint != nil }
     
     // Knob drag
-    var isBeginKnobDragging: Bool?
-    var dragPivotIndex: Int?
-    var isKnobDragging: Bool { isBeginKnobDragging != nil }
-    
+    public var isBeginKnobDragging: Bool?
+    public var dragPivotIndex: Int?
+    public var isKnobDragging: Bool { isBeginKnobDragging != nil }
+
     // Lens
-    var needsToShowLens: Bool?
-    
+    public var needsToShowLens: Bool?
+
     // Menu
-    var needsToShowMenu: Bool?
-    
+    public var needsToShowMenu: Bool?
+
     // Views
-    var label: STLabel!
-    var cursorView: STCursorView!
-    var lensView: STLensView!
-    var beginKnobView: STKnobView!
-    var endKnobView: STKnobView!
-    
+    public var label: STLabel!
+    public var cursorView: STCursorView!
+    public var lensView: STLensView!
+    public var beginKnobView: STKnobView!
+    public var endKnobView: STKnobView!
+
     //--------------------------------------------------------------//
     // MARK: - Initialize
     //--------------------------------------------------------------//
@@ -229,7 +229,7 @@ class STTextView: UIScrollView {
     }
 }
 
-extension STTextView {
+public extension STTextView {
     //--------------------------------------------------------------//
     // MARK: - Apperance
     //--------------------------------------------------------------//
@@ -411,7 +411,7 @@ extension STTextView {
         }
     }
     
-    override func layoutSubviews() {
+    public override func layoutSubviews() {
         // Invoke super
         super.layoutSubviews()
         

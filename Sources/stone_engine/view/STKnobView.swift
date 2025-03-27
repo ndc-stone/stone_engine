@@ -9,19 +9,19 @@ This software is licensed under the MIT License. See LICENSE for details.
 
 import UIKit
 
-class STKnobView: UIView {
-    static let knobWide: CGFloat = 40
-    static let headWide: CGFloat = 10
-    static let barWidth: CGFloat = 2
-    
+public class STKnobView: UIView {
+    public static let knobWide: CGFloat = 40
+    public static let headWide: CGFloat = 10
+    public static let barWidth: CGFloat = 2
+
     // Properties
-    var isHorizontal: Bool = false {
+    public var isHorizontal: Bool = false {
         didSet {
             // Set needs layout
             layer.setNeedsLayout()
         }
     }
-    var isAtBegin: Bool = false {
+    public var isAtBegin: Bool = false {
         didSet {
             // Set needs layout
             layer.setNeedsLayout()
@@ -29,9 +29,9 @@ class STKnobView: UIView {
     }
     
     // Views
-    var headLayer: CALayer!
-    var barLayer: CALayer!
-    
+    public var headLayer: CALayer!
+    public var barLayer: CALayer!
+
     //--------------------------------------------------------------//
     // MARK: - Initialize
     //--------------------------------------------------------------//
@@ -47,7 +47,7 @@ class STKnobView: UIView {
         layer.addSublayer(barLayer)
     }
     
-    override init(frame: CGRect) {
+    public override init(frame: CGRect) {
         // Invoke super
         super.init(frame: frame)
         
@@ -55,7 +55,7 @@ class STKnobView: UIView {
         _init()
     }
     
-    required init?(coder: NSCoder) {
+    public required init?(coder: NSCoder) {
         // Invoke super
         super.init(coder: coder)
         
@@ -67,7 +67,7 @@ class STKnobView: UIView {
     // MARK: - View
     //--------------------------------------------------------------//
     
-    override func didMoveToWindow() {
+    public override func didMoveToWindow() {
         // Invoke super
         super.didMoveToWindow()
         
@@ -147,7 +147,7 @@ class STKnobView: UIView {
         barLayer.frame = rect
     }
     
-    override func layoutSublayers(of layer: CALayer) {
+    public override func layoutSublayers(of layer: CALayer) {
         // Invoke super
         super.layoutSublayers(of: layer)
         
