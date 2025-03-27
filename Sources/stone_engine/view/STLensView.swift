@@ -10,6 +10,19 @@ This software is licensed under the MIT License. See LICENSE for details.
 import UIKit
 
 public class STLensView: UIView {
+    // Color
+    static let lightBorderColor = UIColor(red: 0.745, green: 0.761, blue: 0.776, alpha: 1.0)
+    static let darkBorderColor = UIColor(red: 0.549, green: 0.569, blue: 0.588, alpha: 1.0)
+    static let lightImageBackgroundColor = UIColor(red: 0.976, green: 0.976, blue: 0.980, alpha: 1.0)
+    static let darkImageBackgroundColor = UIColor(red: 0.267, green: 0.271, blue: 0.294, alpha: 1.0)
+    
+    var borderColor: UIColor {
+        traitCollection.userInterfaceStyle == .dark ? Self.darkBorderColor : Self.lightBorderColor
+    }
+    var imageBackgroundColor: UIColor {
+        traitCollection.userInterfaceStyle == .dark ? Self.darkImageBackgroundColor : Self.lightImageBackgroundColor
+    }
+    
     // Views
     public var labelImageView: UIImageView!
 
@@ -67,8 +80,8 @@ public class STLensView: UIView {
     
     private func updateLayerColor() {
         // Set layer border color
-        layer.borderColor = UIColor.lightGray.cgColor
-        labelImageView.backgroundColor = .lightText
+        layer.borderColor = borderColor.cgColor
+        labelImageView.backgroundColor = imageBackgroundColor
     }
     
     //--------------------------------------------------------------//
