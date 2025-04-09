@@ -9,7 +9,7 @@ This software is licensed under the MIT License. See LICENSE for details.
 
 import UIKit
 
-public class STLensView: UIView {
+open class STLensView: UIView {
     // Color
     static let lightBorderColor = UIColor(red: 0.745, green: 0.761, blue: 0.776, alpha: 1.0)
     static let darkBorderColor = UIColor(red: 0.549, green: 0.569, blue: 0.588, alpha: 1.0)

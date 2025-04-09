@@ -9,7 +9,7 @@ This software is licensed under the MIT License. See LICENSE for details.
 
 import UIKit
 
-class STTiledLayer: CATiledLayer {
+open class STTiledLayer: CATiledLayer {
     // Context
     var context: STContext!
     
@@ -17,9 +17,9 @@ class STTiledLayer: CATiledLayer {
     // MARK: - Tiled layer
     //--------------------------------------------------------------//
     
-    override class func fadeDuration() -> CFTimeInterval { 0 }
+    open override class func fadeDuration() -> CFTimeInterval { 0 }
     
-    override var tileSize: CGSize {
+    open override var tileSize: CGSize {
         get { .init(width: 1024, height: 1024) }
         set {}
     }

@@ -9,7 +9,7 @@ This software is licensed under the MIT License. See LICENSE for details.
 
 import UIKit
 
-public class STKnobView: UIView {
+open class STKnobView: UIView {
     public static let knobWide: CGFloat = 40
     public static let headWide: CGFloat = 10
     public static let barWidth: CGFloat = 2

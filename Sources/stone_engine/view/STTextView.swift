@@ -9,16 +9,16 @@ This software is licensed under the MIT License. See LICENSE for details.
 
 import UIKit
 
-class TrackpadPanGestureRecognizer: UIPanGestureRecognizer {
-    override func shouldReceive(_ event: UIEvent) -> Bool {
+open class TrackpadPanGestureRecognizer: UIPanGestureRecognizer {
+    open override func shouldReceive(_ event: UIEvent) -> Bool {
         // Recieve only left click
         return event.buttonMask == .primary
     }
 }
 
-public class STTextView: UIScrollView {
+open class STTextView: UIScrollView {
     // Text
-    public var text: String? {
+    open var text: String? {
         get { label.text }
         set {
             label.text = newValue
@@ -27,56 +27,56 @@ public class STTextView: UIScrollView {
     }
     
     // Layout
-    public var fontSize: CGFloat {
+    open var fontSize: CGFloat {
         get { label.fontSize }
         set {
             label.fontSize = newValue
             setNeedsLayout()
         }
     }
-    public var lineHeightScale: CGFloat {
+    open var lineHeightScale: CGFloat {
         get { label.lineHeightScale }
         set {
             label.lineHeightScale = newValue
             setNeedsLayout()
         }
     }
-    public var textAlign: STTextAlign {
+    open var textAlign: STTextAlign {
         get { label.textAlign }
         set {
             label.textAlign = newValue
             setNeedsLayout()
         }
     }
-    public var directionAlign: STDirectionAlign {
+    open var directionAlign: STDirectionAlign {
         get { label.directionAlign }
         set {
             label.directionAlign = newValue
             setNeedsLayout()
         }
     }
-    public var direction: STDirection {
+    open var direction: STDirection {
         get { label.direction }
         set {
             label.direction = newValue
             setNeedsLayout()
         }
     }
-    public var isAllowedTateChuYoko: Bool {
+    open var isAllowedTateChuYoko: Bool {
         get { label.isAllowedTateChuYoko }
         set {
             label.isAllowedTateChuYoko = newValue
             setNeedsLayout()
         }
     }
-    public var adjustsFontSizeToFitWidth: Bool {
+    open var adjustsFontSizeToFitWidth: Bool {
         get { label.adjustsFontSizeToFitWidth }
         set {
             label.adjustsFontSizeToFitWidth = newValue
             setNeedsLayout()
         }
     }
-    public var minimumScaleFactor: CGFloat {
+    open var minimumScaleFactor: CGFloat {
         get { label.minimumScaleFactor }
         set {
             label.minimumScaleFactor = newValue
@@ -85,7 +85,7 @@ public class STTextView: UIScrollView {
     }
     
     // Color
-    public var textColor: UIColor {
+    open var textColor: UIColor {
         get { label.textColor }
         set {
             label.textColor = newValue
@@ -94,21 +94,21 @@ public class STTextView: UIScrollView {
     }
     
     // Features
-    public var punctuationMode: STPunctuationMode {
+    open var punctuationMode: STPunctuationMode {
         get { label.punctuationMode }
         set {
             label.punctuationMode = newValue
             setNeedsLayout()
         }
     }
-    public var isKinsokuAvailable: Bool {
+    open var isKinsokuAvailable: Bool {
         get { label.isKinsokuAvailable }
         set {
             label.isKinsokuAvailable = newValue
             setNeedsLayout()
         }
     }
-    public var isDividedByWords: Bool {
+    open var isDividedByWords: Bool {
         get { label.isDividedByWords }
         set {
             label.isDividedByWords = newValue
@@ -117,7 +117,7 @@ public class STTextView: UIScrollView {
     }
     
     // Text input
-    public var selectedSTTextRange = STTextRange(range: 0 ..< 0) {
+    open var selectedSTTextRange = STTextRange(range: 0 ..< 0) {
         didSet {
             // Update appearance
             updateCursorShown()
@@ -127,11 +127,11 @@ public class STTextView: UIScrollView {
             setNeedsLayout()
         }
     } 
-    public var markedSTTextRange: STTextRange?
-    public var markedRanges: [(Range<Int>, Bool)]?
+    open var markedSTTextRange: STTextRange?
+    open var markedRanges: [(Range<Int>, Bool)]?
 
     // Cursor
-    public var isCursorShown: Bool = false {
+    open var isCursorShown: Bool = false {
         didSet {
             // Update appearance
             updateCursorShown()
@@ -141,31 +141,31 @@ public class STTextView: UIScrollView {
         }
     }
     
-    public var isCursorBeginSelected = false
-    public var cursorRectForUpDown: CGRect = .zero
-    public var needsToScrollToShowCurosr = false
+    open var isCursorBeginSelected = false
+    open var cursorRectForUpDown: CGRect = .zero
+    open var needsToScrollToShowCurosr = false
 
     // Long press
-    public var longPressPoint: CGPoint?
+    open var longPressPoint: CGPoint?
     var isLongPressing: Bool { longPressPoint != nil }
     
     // Knob drag
-    public var isBeginKnobDragging: Bool?
-    public var dragPivotIndex: Int?
-    public var isKnobDragging: Bool { isBeginKnobDragging != nil }
+    open var isBeginKnobDragging: Bool?
+    open var dragPivotIndex: Int?
+    open var isKnobDragging: Bool { isBeginKnobDragging != nil }
 
     // Lens
-    public var needsToShowLens: Bool?
+    open var needsToShowLens: Bool?
 
     // Menu
-    public var needsToShowMenu: Bool?
+    open var needsToShowMenu: Bool?
 
     // Views
-    public var label: STLabel!
-    public var cursorView: STCursorView!
-    public var lensView: STLensView!
-    public var beginKnobView: STKnobView!
-    public var endKnobView: STKnobView!
+    open var label: STLabel!
+    open var cursorView: STCursorView!
+    open var lensView: STLensView!
+    open var beginKnobView: STKnobView!
+    open var endKnobView: STKnobView!
 
     //--------------------------------------------------------------//
     // MARK: - Initialize
@@ -220,7 +220,7 @@ public class STTextView: UIScrollView {
         _init()
     }
     
-    required init?(coder: NSCoder) {
+    required public init?(coder: NSCoder) {
         // Invoke super
         super.init(coder: coder)
         
@@ -272,10 +272,10 @@ public extension STTextView {
     // MARK: - Font
     //--------------------------------------------------------------//
     
-    func fontNames(script: STScript) -> [String] { label.fontNames(script: script) }
-    func setFontNames(_ fontNames: [String], script: STScript) { label.setFontNames(fontNames, script: script) }
-    func fontScale(script: STScript) -> CGFloat { label.fontScale(script: script) }
-    func setFontScale(_ fontScale: CGFloat, script: STScript) { label.setFontScale(fontScale, script: script) }
+    open func fontNames(script: STScript) -> [String] { label.fontNames(script: script) }
+    open func setFontNames(_ fontNames: [String], script: STScript) { label.setFontNames(fontNames, script: script) }
+    open func fontScale(script: STScript) -> CGFloat { label.fontScale(script: script) }
+    open func setFontScale(_ fontScale: CGFloat, script: STScript) { label.setFontScale(fontScale, script: script) }
     
     //--------------------------------------------------------------//
     // MARK: - Layout
@@ -411,7 +411,7 @@ public extension STTextView {
         }
     }
     
-    public override func layoutSubviews() {
+    open override func layoutSubviews() {
         // Invoke super
         super.layoutSubviews()
         

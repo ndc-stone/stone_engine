@@ -9,7 +9,7 @@ This software is licensed under the MIT License. See LICENSE for details.
 
 import UIKit
 
-extension STTextView {
+public extension STTextView {
     //--------------------------------------------------------------//
     // MARK: - Range
     //--------------------------------------------------------------//

@@ -9,7 +9,7 @@ This software is licensed under the MIT License. See LICENSE for details.
 
 import UIKit
 
-public class STFontManager {
+open class STFontManager {
     public static let fontNamesNeedToFlip = [
         "AppleColorEmoji", 
     ]

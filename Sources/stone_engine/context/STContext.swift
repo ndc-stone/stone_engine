@@ -9,7 +9,7 @@ This software is licensed under the MIT License. See LICENSE for details.
 
 import UIKit
 
-public class STContext {
+open class STContext {
     public static let cursorWide: CGFloat = 2
 
     // Runs
@@ -50,9 +50,7 @@ public class STContext {
     // Render
     public var renderSize: CGSize = .zero
     public var renderedSize: CGSize = .zero
-}
-
-public extension STContext {
+    
     //--------------------------------------------------------------//
     // MARK: - Advance
     //--------------------------------------------------------------//

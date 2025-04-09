@@ -9,7 +9,7 @@ This software is licensed under the MIT License. See LICENSE for details.
 
 import UIKit
 
-public class STTextPosition: UITextPosition, Comparable {
+open class STTextPosition: UITextPosition, Comparable {
     // Index
     public var index: Int
 
@@ -32,7 +32,7 @@ public class STTextPosition: UITextPosition, Comparable {
     }
 }
 
-public class STTextRange: UITextRange {
+open class STTextRange: UITextRange {
     // Range
     var range: Range<Int>
     

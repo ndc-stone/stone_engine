@@ -9,7 +9,7 @@ This software is licensed under the MIT License. See LICENSE for details.
 
 import UIKit
 
-public class STCursorView: UIView {
+open class STCursorView: UIView {
     // Views
     public var cursorLayer: CALayer!
 
@@ -31,7 +31,7 @@ public class STCursorView: UIView {
         _init()
     }
     
-    required init?(coder: NSCoder) {
+    required public init?(coder: NSCoder) {
         // Invoke super
         super.init(coder: coder)
         
