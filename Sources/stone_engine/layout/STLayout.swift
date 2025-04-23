@@ -615,7 +615,8 @@ class STLayout {
         }
         
         // Set rendered size
-        context.renderedSize = .init(width: maxX, height: maxY)
+        let height = max(context.lineHeight * CGFloat(context.lineCount), maxY)
+        context.renderedSize = .init(width: maxX, height: height)
     }
     
     private func updateVisibility() {
