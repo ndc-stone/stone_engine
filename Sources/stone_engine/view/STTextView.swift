@@ -227,9 +227,7 @@ open class STTextView: UIScrollView {
         // Common init
         _init()
     }
-}
-
-public extension STTextView {
+    
     //--------------------------------------------------------------//
     // MARK: - Apperance
     //--------------------------------------------------------------//
