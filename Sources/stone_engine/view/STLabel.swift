@@ -121,6 +121,8 @@ open class STLabel: UIView {
     // Context
     public let context = STContext()
 
+    private var needsToLayout: Bool = false
+    
     //--------------------------------------------------------------//
     // MARK: - Layer
     //--------------------------------------------------------------//
@@ -325,6 +327,21 @@ open class STLabel: UIView {
             self.alignLayerToRight(layer: layer)
         }
         #endif
+    }
+    
+    open func layoutThatFits(_ size: CGSize) -> CGSize {
+        // Check needs to layout
+        guard needsToLayout || context.renderSize != size else { return context.renderedSize }
+        
+        // Layout
+        context.renderSize = size
+        STLayout(context: context).layout()
+        
+        // Clear flag
+        needsToLayout = false
+        
+        // Get rendered size
+        return context.renderedSize
     }
     
     //--------------------------------------------------------------//
