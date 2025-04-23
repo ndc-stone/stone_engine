@@ -55,7 +55,7 @@ open class STContext {
     // MARK: - Advance
     //--------------------------------------------------------------//
     
-    func advance(token: STToken) -> CGFloat {
+    public func advance(token: STToken) -> CGFloat {
         // Calc with runs
         return token.runIdRange.map({ runs[$0] }).reduce(0) { $0 + $1.advance.width }
     }
@@ -64,12 +64,12 @@ open class STContext {
     // MARK: - Token and run
     //--------------------------------------------------------------//
     
-    func isLastInToken(run: STRun) -> Bool {
+    public func isLastInToken(run: STRun) -> Bool {
         // Check token run index
         return run.tokenRunIndex >= tokens[run.tokenId].runIdRange.count - 1
     }
     
-    func runIndexes(line: Int) -> Range<Int>? {
+    public func runIndexes(line: Int) -> Range<Int>? {
         // Find runs at line
         var lower: Int = -1
         var upper: Int = -1
@@ -90,27 +90,27 @@ open class STContext {
         return lower ..< upper + 1
     }
     
-    func line(at runId: Int) -> Int {
+    public func line(at runId: Int) -> Int {
         // Get line
         guard runs.count > 0 else { return 0 }
         if runId < runs.count - 1 { return runs[runId].line }
         else { return runs.last!.line }
     }
     
-    func isNewline(at runId: Int) -> Bool {
+    public func isNewline(at runId: Int) -> Bool {
         // Check newline
         guard runs.count > 0 else { return false }
         if runId < runs.count - 1 { return runs[runId].char.isNewline }
         else { return runs.last!.char.isNewline }
     }
     
-    func tokenString(runId: Int) -> String? {
+    public func tokenString(runId: Int) -> String? {
         // Get token string
         guard runId < runs.count - 1 else { return nil }
         return tokenString(tokenId: runs[runId].tokenId)
     }
     
-    func tokenString(tokenId: Int) -> String? {
+    public func tokenString(tokenId: Int) -> String? {
         // Get token string
         guard tokenId < tokens.count - 1 else { return nil }
         return tokens[tokenId].runIdRange.reduce("") { "\($0!)\(runs[$1].char)" }
@@ -120,7 +120,7 @@ open class STContext {
     // MARK: - Geometry
     //--------------------------------------------------------------//
     
-    func firstRunFrame(line: Int) -> CGRect {
+    public func firstRunFrame(line: Int) -> CGRect {
         // Decide run rect
         var rect: CGRect = .zero
         switch direction {
@@ -139,7 +139,7 @@ open class STContext {
         return rect
     }
     
-    func runFrameWithLineGap(at index: Int) -> CGRect {
+    public func runFrameWithLineGap(at index: Int) -> CGRect {
         // For line 0
         if runs[index].line == 0 { return runs[index].frame }
         
@@ -161,7 +161,7 @@ open class STContext {
         return runFrame
     }
     
-    func cursorFrame(at index: Int) -> CGRect {
+    public func cursorFrame(at index: Int) -> CGRect {
         // Decide cursor frame
         var cursorFrame: CGRect = .zero
         switch direction {
@@ -409,7 +409,7 @@ open class STContext {
         return index
     }
     
-    func closestRunIndex(to point: CGPoint, range: Range<Int>? = nil) -> Int {
+    public func closestRunIndex(to point: CGPoint, range: Range<Int>? = nil) -> Int {
         // Check run count
         guard runs.count > 0 else { return 0 }
         
@@ -456,7 +456,7 @@ open class STContext {
         return nil
     }
     
-    func hitRunIndex(to point: CGPoint, range: Range<Int>? = nil) -> Int? {
+    public func hitRunIndex(to point: CGPoint, range: Range<Int>? = nil) -> Int? {
         // Switch by direction
         switch direction {
         case .lrTb: return hitRunIndexH(to: point, range: range)
@@ -468,13 +468,13 @@ open class STContext {
     // MARK: - Tate chu yoko
     //--------------------------------------------------------------//
     
-    func isTateChuYoko(token: STToken) -> Bool {
+    public func isTateChuYoko(token: STToken) -> Bool {
         // Check with first run
         guard let runId = token.runIdRange.first, runId < runs.count else { return false }
         return isTateChuYoko(run: runs[runId])
     }
     
-    func isTateChuYoko(run: STRun) -> Bool {
+    public func isTateChuYoko(run: STRun) -> Bool {
         // Check flag
         guard isAllowedTateChuYoko else { return false }
         
@@ -497,7 +497,7 @@ open class STContext {
     // MARK: - Clockwise rotation
     //--------------------------------------------------------------//
     
-    func isClockwise(run: STRun) -> Bool {
+    public func isClockwise(run: STRun) -> Bool {
         // Check script
         guard !fontManager.script(fontId: run.fontId).notNeedsToClockwiseInTbRl else { return false }
         
@@ -512,7 +512,7 @@ open class STContext {
     // MARK: - Adjust
     //--------------------------------------------------------------//
     
-    var isTruncated: Bool {
+    public var isTruncated: Bool {
         // Check visibility
         for run in runs.reversed() {
             if run.visibility == .invisible || run.visibility == .ellipsis { return true }
