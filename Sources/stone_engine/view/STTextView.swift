@@ -281,7 +281,7 @@ public extension STTextView {
     // MARK: - Layout
     //--------------------------------------------------------------//
     
-    private func layoutLabel() {
+    open func layoutLabel() {
         // Decide label size
         let contentFrame = CGRect(origin: .zero, size: frame.size).inset(by: contentInset)
         let renderSize = contentFrame.size
@@ -324,7 +324,7 @@ public extension STTextView {
         }
     }
     
-    private func layoutCursorView() {
+    open func layoutCursorView() {
         // Check cursor shown
         guard isCursorShown else { return }
         
@@ -362,7 +362,7 @@ public extension STTextView {
         cursorView.frame = cursorFrame
     }
     
-    private func layoutKnobViews() {
+    open func layoutKnobViews() {
         var rect = CGRect.zero
         
         // Check knob view shown
