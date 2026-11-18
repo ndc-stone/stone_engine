@@ -13,7 +13,6 @@
 		0BA78B6F2CE483C4007EDDE2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0BA78B622CE483C4007EDDE2 /* Assets.xcassets */; };
 		0BA78B702CE483C4007EDDE2 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0BA78B672CE483C4007EDDE2 /* Main.storyboard */; };
 		0BA78B712CE483C4007EDDE2 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0BA78B652CE483C4007EDDE2 /* LaunchScreen.storyboard */; };
-		F1B661EF2D827C0A00370BCA /* stone_engine in Frameworks */ = {isa = PBXBuildFile; productRef = F1B661EE2D827C0A00370BCA /* stone_engine */; };
 		F1B661F22D827C3500370BCA /* stone_engine in Frameworks */ = {isa = PBXBuildFile; productRef = F1B661F12D827C3500370BCA /* stone_engine */; };
 /* End PBXBuildFile section */
 
@@ -36,7 +35,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				F1B661F22D827C3500370BCA /* stone_engine in Frameworks */,
-				F1B661EF2D827C0A00370BCA /* stone_engine in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -56,7 +54,7 @@
 				0BA78B692CE483C4007EDDE2 /* UIFont+Localized.m */,
 				0BA78B6A2CE483C4007EDDE2 /* ViewController.swift */,
 			);
-			path = sample;
+			name = sample;
 			sourceTree = "<group>";
 		};
 		0BBF0FEF2B9EC7AA00031CAC = {
@@ -129,7 +127,7 @@
 			);
 			mainGroup = 0BBF0FEF2B9EC7AA00031CAC;
 			packageReferences = (
-				F1B661F02D827C3500370BCA /* XCLocalSwiftPackageReference "../stone_engine" */,
+				F1B661F02D827C3500370BCA /* XCLocalSwiftPackageReference ".." */,
 			);
 			productRefGroup = 0BBF0FF92B9EC7AA00031CAC /* Products */;
 			projectDirPath = "";
@@ -317,7 +315,7 @@
 				CURRENT_PROJECT_VERSION = 240925;
 				DEVELOPMENT_TEAM = VNCJ5ZUDL5;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = sample/Info.plist;
+				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "stone oss";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
@@ -333,7 +331,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = jp.co.ndc.stone.oss;
 				PRODUCT_NAME = "stone oss";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "sample/stone-engine-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "stone-engine-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -350,7 +348,7 @@
 				CURRENT_PROJECT_VERSION = 240925;
 				DEVELOPMENT_TEAM = VNCJ5ZUDL5;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = sample/Info.plist;
+				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "stone oss";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
@@ -366,7 +364,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = jp.co.ndc.stone.oss;
 				PRODUCT_NAME = "stone oss";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "sample/stone-engine-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "stone-engine-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -396,29 +394,13 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		F1B661F02D827C3500370BCA /* XCLocalSwiftPackageReference "../stone_engine" */ = {
+		F1B661F02D827C3500370BCA /* XCLocalSwiftPackageReference ".." */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = ../stone_engine;
+			relativePath = ..;
 		};
 /* End XCLocalSwiftPackageReference section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		F1B661ED2D827C0A00370BCA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 11.9.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
 /* Begin XCSwiftPackageProductDependency section */
-		F1B661EE2D827C0A00370BCA /* stone_engine */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = F1B661ED2D827C0A00370BCA /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = stone_engine;
-		};
 		F1B661F12D827C3500370BCA /* stone_engine */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = stone_engine;

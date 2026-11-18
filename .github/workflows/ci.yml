@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macos:
+    name: macOS tests
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Run tests
+        run: swift test
+
+  ios:
+    name: iOS tests
+    runs-on: macos-26
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - name: Run tests
+        run: >-
+          xcodebuild test
+          -scheme stone_engine
+          -destination 'platform=iOS Simulator,name=iPad Pro 11-inch (M5),OS=26.5'
+
+  sample:
+    name: Sample app build
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build sample
+        run: >-
+          xcodebuild build
+          -project sample/stone.xcodeproj
+          -scheme stone
+          -destination 'generic/platform=iOS Simulator'
+          CODE_SIGNING_ALLOWED=NO
