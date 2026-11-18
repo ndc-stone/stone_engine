@@ -29,6 +29,12 @@ xcodebuild test -scheme stone_engine-Package -destination 'platform=iOS Simulato
 xcodebuild build -project sample/stone.xcodeproj -scheme stone -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO
 ```
 
+SwiftUIサンプルのビルド:
+
+```bash
+xcodebuild build -project sample/SwiftUI/StoneEngineSwiftUISample.xcodeproj -scheme StoneEngineSwiftUISample -destination 'generic/platform=macOS' CODE_SIGNING_ALLOWED=NO
+```
+
 ### スナップショット
 
 レイアウトと描画の期待値は`Tests/stone_engineTests/__Snapshots__`に、OSごとに置いている。
