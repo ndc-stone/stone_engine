@@ -7,6 +7,7 @@ Copyright 2024 Nihon Design Center. All rights reserved.
 This software is licensed under the MIT License. See LICENSE for details.
 */
 
+#if os(iOS)
 import UIKit
 
 open class STTextPosition: UITextPosition, Comparable {
@@ -101,3 +102,4 @@ class STTextSelectionRect: UITextSelectionRect {
     override var containsStart: Bool { true }
     override var containsEnd: Bool { true }
 }
+#endif

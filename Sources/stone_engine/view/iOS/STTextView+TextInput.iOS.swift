@@ -7,6 +7,7 @@ Copyright 2024 Nihon Design Center. All rights reserved.
 This software is licensed under the MIT License. See LICENSE for details.
 */
 
+#if os(iOS)
 import UIKit
 
 public extension STTextView {
@@ -584,3 +585,4 @@ extension STTextView: UITextInputDelegate {
     public func conversationContext(_ context: UIConversationContext?, didChange textInput: (any UITextInput)?) {
     }
 }
+#endif
