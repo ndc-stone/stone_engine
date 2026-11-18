@@ -10,12 +10,12 @@ This software is licensed under the MIT License. See LICENSE for details.
 import UIKit
 import stone_engine
 
-let catcherText = "If you really want to hear about it, the first thing you'll probably want to know is where I was born, an what my lousy childhood was like, and how my parents were occupied and all before they had me, and all that David Copperfield kind of crap, but I don't feel like going into it, if you want to know the truth. In the first place, that stuff bores me, and in the second place, my parents would have about two hemorrhages apiece if I told anything pretty personal about them. They're quite touchy about anything like that, especially my father. They're nice and all--I'm not saying that--but they're also touchy as hell. Besides, I'm not going to tell you my whole goddam autobiography or anything. I'll just tell you about this madman stuff that happened to me around last Christmas just before I got pretty run-down and had to come out here and take it easy. I mean that's all I told D.B. about, and he's my brother and all. He's in Hollywood. That isn't too far from this crumby place, and he comes over and visits me practically every week end. He's going to drive me home when I go home next month maybe. He just got a Jaguar. One of those little English jobs that can do around two hundred miles an hour. It cost him damn near four thousand bucks. He's got a lot of dough, now. He didn't use to. He used to be just a regular writer, when he was home. He wrote this terrific book of short stories, The Secret Goldfish, in case you never heard of him. The best one in it was \"The Secret Goldfish.\" It was about this little kid that wouldn't let anybody look at his goldfish because he'd bought it with his own money. It killed me. Now he's out in Hollywood, D.B., being a prostitute. If there's one thing I hate, it's the movies. Don't even mention them to me."
+let englishText = "Every line of text on a screen is the result of hundreds of small decisions. A layout engine has to measure each character, choose where the line should break, and decide what to do when a word doesn't quite fit. On paper, those decisions were made once and printed forever. On a phone, they're made again whenever someone rotates the device, changes the font size, or opens the same document in a narrow window. That's why a good engine needs to be both careful and fast.\n\nConsider a simple paragraph. It may contain ordinary words, numbers like 1,024 or 3.14, abbreviations such as e.g. and U.S.A., hyphenated terms like well-known, and a phrase in \"double quotes\" or 'single quotes'. Each of them behaves a little differently at the end of a line. Punctuation shouldn't be left alone at the start of the next one, and an opening bracket (like this one) shouldn't be stranded at the end of the previous one.\n\nNone of this is visible when it works. Readers simply keep reading, line after line, without ever thinking about the machinery underneath. That quiet result is the whole point of typesetting, and it's what this sample is here to help you test."
 
 let rashomonText = "　ある日の暮方の事である。一人の下人が、羅生門の下で雨やみを待っていた。\n　広い門の下には、この男のほかに誰もいない。ただ、所々丹塗の剥げた、大きな円柱に、蟋蟀が一匹とまっている。羅生門が、朱雀大路にある以上は、この男のほかにも、雨やみをする市女笠や揉烏帽子が、もう二三人はありそうなものである。それが、この男のほかには誰もいない。"
 
-let yoshuText = 
-    "　洋酒といえば、だれでも最初に思い浮かべるのがウイスキー。いわば洋酒のシンボル的な存在なのだが、英語表記が［一般に〔米〕では Whiskey,〔英〕では Whisky.］であることはあまり知られていない。米英両国では、このスペルの差で自国産と輸入品を区別しているという。わが和製ウイスキーの“Whisky”という英国式表示は、手本にしたスコッチのフォルムに倣ったものであり、それ以上の意味はないようだ。カナ表記にしても、ごくまれに〈ウヰスキー〉という書き方を見かけるが、これとて差別化を意図したものではなく、単にカナづかいの時代性にすぎない。"
+let mixedText = 
+    "　文字組みといえば、多くの人が最初に思い浮かべるのは本や雑誌の紙面だろう。しかし画面の上の文章にも、同じように組版の工夫がある。英語でいう［一般に〔活字を組む作業は〕Typesetting,〔文字の設計や扱い全般は〕Typography.］という言葉は、日本語の文章を扱うアプリでもそのまま重要な意味を持つ。たとえば iPhone や iPad の画面では、1行の長さは機種や向きによって変わり、40字だった行が次の瞬間には25字になることもある。そのたびに「行頭に句読点を置かない」「閉じ括弧を行頭に送らない」といった禁則処理をやり直さなければならない。和文と欧文が混ざると、さらに難しくなる。Stone Engine 1.0 のような英数字を含む語は途中で折り返さないほうが読みやすいし、縦書きでは 12 や 2024 といった数字を縦中横にするか、横に寝かせるかも判断しなければならない。（括弧の中の文章）や『書名』、そして約物が連続する箇所――こうした細部の積み重ねが、読みやすさを左右する。読者に意識されないことこそ、よい組版の証しなのである。"
 
 class RootController: UITableViewController {
     override func viewDidLoad() {
@@ -326,9 +326,9 @@ class EditTextController: UIViewController, UITextViewDelegate {
         stTextView?.text = textView.text
     }
     
-    @IBAction func catcherAction(_ sender: AnyObject) {
+    @IBAction func englishAction(_ sender: AnyObject) {
         // Set text
-        textView.text = catcherText
+        textView.text = englishText
         
         // Notify it
         textViewDidChange(textView)
@@ -342,9 +342,9 @@ class EditTextController: UIViewController, UITextViewDelegate {
         textViewDidChange(textView)
     }
     
-    @IBAction func yoshuAction(_ sender: AnyObject) {
+    @IBAction func mixedAction(_ sender: AnyObject) {
         // Set text
-        textView.text = yoshuText
+        textView.text = mixedText
         
         // Notify it
         textViewDidChange(textView)
