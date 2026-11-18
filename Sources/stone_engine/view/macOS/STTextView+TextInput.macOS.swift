@@ -295,14 +295,36 @@ extension STTextView: NSTextInputClient {
     
     public func firstRect(forCharacterRange range: NSRange, actualRange: NSRangePointer?) -> NSRect {
         // Get run
+        let runs = label.context.runs
         let index = range.location == NSNotFound ? 0 : range.location
-        guard index >= 0, index < label.context.runs.count else { return .zero }
-        let run = label.context.runs[index]
-        
-        // Decide rect
+        guard index >= 0, index < runs.count else { return .zero }
+        let run = runs[index]
+
+        // Union the runs in the range on the first run's line, so the input method
+        // places its candidate window beside the whole composition, not over it
         var frame = run.frame
-        frame.size.height += Self.underlineMargin
-        frame = convert(frame, to: nil)
+        let upperIndex = range.location == NSNotFound ? index + 1 : min(index + range.length, runs.count)
+        var lastIndex = index
+        for i in index ..< upperIndex {
+            let r = runs[i]
+            guard r.line == run.line else { break }
+            lastIndex = i
+            guard !r.isNewline, !r.isHidden else { continue }
+            frame = frame.union(r.frame)
+        }
+        actualRange?.pointee = NSRange(location: index, length: range.length == 0 ? 0 : lastIndex - index + 1)
+
+        // Leave room for the underline, below in horizontal and left in vertical
+        switch direction {
+        case .lrTb:
+            frame.size.height += Self.underlineMargin
+        case .tbRl:
+            frame.origin.x -= Self.underlineMargin
+            frame.size.width += Self.underlineMargin
+        }
+
+        // Convert from label, where run frames live, so insets and scrolling count
+        frame = label.convert(frame, to: nil)
         if let window = window {
             frame = window.convertToScreen(frame)
         }
@@ -310,6 +332,12 @@ extension STTextView: NSTextInputClient {
         return frame
     }
     
+    public func drawsVerticallyForCharacter(at charIndex: Int) -> Bool {
+        // Tell the input method about vertical writing, so it puts its candidate
+        // window beside the column instead of below it
+        return direction == .tbRl
+    }
+
     public func characterIndex(for point: NSPoint) -> Int {
         return 0
     }

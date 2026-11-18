@@ -341,7 +341,9 @@ open class STContext {
         for i in range {
             // Check line
             guard i >= 0 && i < runs.count else { continue }
-            guard runs[i].line >= line - 1 && runs[i].line <= line + 1 else { continue }
+            // Stay on the closest line, so a click past a short line's end goes to
+            // its end rather than to a nearer run on the line above or below
+            guard runs[i].line == line else { continue }
             let runFrame = runs[i].frame
             
             // For new line
@@ -423,8 +425,9 @@ open class STContext {
         var minDistance: CGFloat = .greatestFiniteMagnitude
         var index = 0
         for i in range {
-            // Check run
-            guard runs[i].line >= line - 1 && runs[i].line <= line + 1 else { continue }
+            // Check run. Stay on the closest line, so a click past a short line's end
+            // goes to its end rather than to a nearer run on the line beside it
+            guard runs[i].line == line else { continue }
             let runFrame = runs[i].frame
             
             // For new line
