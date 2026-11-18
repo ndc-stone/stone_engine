@@ -1,5 +1,15 @@
 # 変更履歴
 
+## 0.2.1
+
+### 追加
+
+- `STContext`、`STParser`、`STLayout`を公開し、印刷などでエンジンを直接使えるように変更
+- `STFontManager`のフォント指定と取得のメソッドを公開
+- `STTextRange.range`、`STIsAlnum`を公開
+- `STTextView`のスクロール位置、選択範囲の表示、置換、選択解除のメソッドを公開
+- `STTextView`、`STKnobView`、`STCursorView`の一部をサブクラスで上書きできるように変更
+
 ## 0.2.0
 
 ### 互換性のない変更

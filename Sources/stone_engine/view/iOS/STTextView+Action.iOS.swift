@@ -15,7 +15,7 @@ extension STTextView {
     // MARK: - Action
     //--------------------------------------------------------------//
     
-    @objc func tapAction(_ recognizer: UITapGestureRecognizer) {
+    @objc open func tapAction(_ recognizer: UITapGestureRecognizer) {
         // For not first responder
         if !isFirstResponder {
             // Make itself first responder
@@ -143,7 +143,7 @@ extension STTextView {
         }
     }
     
-    @objc func knobPanAction(_ recognizer: UIPanGestureRecognizer) {
+    @objc public func knobPanAction(_ recognizer: UIPanGestureRecognizer) {
         // Get text position
         let point = recognizer.location(in: self)
         guard let textRange = selectedTextRange as? STTextRange else { return }

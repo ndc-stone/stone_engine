@@ -40,7 +40,7 @@ open class STTextPosition: UITextPosition, Comparable {
 
 open class STTextRange: UITextRange {
     // Range
-    var range: Range<Int>
+    public var range: Range<Int>
     
     // Initialize
     public init(range: Range<Int>) {
@@ -134,7 +134,7 @@ open class STTextPosition: NSObject, Comparable {
 
 open class STTextRange: NSObject {
     // Range
-    var range: Range<Int>
+    public var range: Range<Int>
     
     // Initialize
     public init(range: Range<Int>) {

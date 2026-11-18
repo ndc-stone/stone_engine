@@ -181,7 +181,7 @@ extension STFontManager {
         return possibleFontNames.firstIndex(of: fontName)
     }
 
-    func ctFont(fontId: Int, size: CGFloat, isClockwise: Bool = false) -> CTFont {
+    public func ctFont(fontId: Int, size: CGFloat, isClockwise: Bool = false) -> CTFont {
         // Decide font size
         let script = possibleScripts[fontId]
         let fontScale = scriptFontScales[script]!
@@ -256,7 +256,7 @@ extension STFontManager {
         return scriptFontNames[script]!
     }
     
-    func setFontNames(_ fontNames: [String], script: STScript) {
+    public func setFontNames(_ fontNames: [String], script: STScript) {
         // Set font name
         scriptFontNames[script] = fontNames
         
@@ -298,7 +298,7 @@ extension STFontManager {
     // MARK: - Script
     //--------------------------------------------------------------//
     
-    func script(fontId: Int) -> STScript {
+    public func script(fontId: Int) -> STScript {
         // Get script
         return possibleScripts[fontId]
     }
@@ -375,7 +375,7 @@ extension STFontManager {
     // MARK: - Refresh
     //--------------------------------------------------------------//
     
-    func refresh() {
+    public func refresh() {
         // Refresh possible font names and scripts
         var possibleFontNames = [String]()
         var possibleScripts = [STScript]()

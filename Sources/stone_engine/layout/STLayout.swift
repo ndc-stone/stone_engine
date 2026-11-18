@@ -13,12 +13,12 @@ import UIKit
 import Cocoa
 #endif
 
-class STLayout {
-    static let willLayout = Notification.Name("STLayoutWillLayout")
-    static let didLayout = Notification.Name("STLayoutDidLayout")
+public class STLayout {
+    public static let willLayout = Notification.Name("STLayoutWillLayout")
+    public static let didLayout = Notification.Name("STLayoutDidLayout")
     
     // Context
-    let context: STContext
+    public let context: STContext
     
     // Current position
     private var runId: Int = 0
@@ -41,7 +41,7 @@ class STLayout {
     // MARK: - Initialize
     //--------------------------------------------------------------//
     
-    init(context: STContext) {
+    public init(context: STContext) {
         self.context = context
     }
     
@@ -1119,7 +1119,7 @@ class STLayout {
     // MARK: - Layout
     //--------------------------------------------------------------//
     
-    func layout() {
+    public func layout() {
         // Notify it
         NotificationCenter.default.post(name: Self.willLayout, object: self)
         
