@@ -79,10 +79,8 @@ open class STKnobView: UIView {
     // MARK: - Appearance
     //--------------------------------------------------------------//
     
-    private func updateLayerColor() {
+    func updateLayerColor() {
         // Set layer background color
-        //headLayer.backgroundColor = UIColor.darkest(userInterfaceStyle: traitCollection.userInterfaceStyle).cgColor
-        //barLayer.backgroundColor = UIColor.darkest(userInterfaceStyle: traitCollection.userInterfaceStyle).cgColor
         headLayer.backgroundColor = UIColor.label.cgColor
         barLayer.backgroundColor = UIColor.label.cgColor
     }
@@ -152,7 +150,11 @@ open class STKnobView: UIView {
         super.layoutSublayers(of: layer)
         
         // Layout head and bar layer
-        if isHorizontal { layoutSublayersH(of: layer) }
-        else { layoutSublayersV(of: layer) }
+        if isHorizontal {
+            layoutSublayersH(of: layer)
+        }
+        else {
+            layoutSublayersV(of: layer)
+        }
     }
 }

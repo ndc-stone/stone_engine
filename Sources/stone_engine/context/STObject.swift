@@ -7,7 +7,11 @@ Copyright 2024 Nihon Design Center. All rights reserved.
 This software is licensed under the MIT License. See LICENSE for details.
 */
 
+#if os(iOS)
 import UIKit
+#elseif os(macOS)
+import Cocoa
+#endif
 
 extension Unicode.Scalar {
     var unicodeCategory: STUnicodeCategory? {
@@ -18,6 +22,14 @@ extension Unicode.Scalar {
     }
     
     var script: STScript? {
+        // Emoji are scattered over blocks that are otherwise plain text
+        // (Dingbats, Miscellaneous Technical, Arrows, Letterlike Symbols, ...),
+        // so a character whose Unicode default is colour emoji presentation is
+        // classified by property rather than by block. Characters that are only
+        // emoji when asked to be (Emoji=Yes, Emoji_Presentation=No: '#', '0',
+        // '©', '↩', '❤' ...) keep their block's script and stay text.
+        if properties.isEmojiPresentation { return .emoji }
+
         // Find script
         guard let unicodeCategory = unicodeCategory else { return nil }
         return STScript.allCases.first { script in
@@ -52,6 +64,7 @@ public enum STUnicodeCategory: Int, CaseIterable {
     case arabicExtendedB
     case arabicExtendedA
     case devanagari
+    case bengali
     case gurmukhi
     case gujarati
     case oriya
@@ -192,7 +205,13 @@ public enum STUnicodeCategory: Int, CaseIterable {
     case arabicPresentationFormsB
     case halfwidthAndFullwidthForms
     case specials
-    
+
+    case mahjongTiles
+    case dominoTiles
+    case playingCards
+    case enclosedAlphanumericSupplement
+    case regionalIndicatorSymbol
+    case enclosedIdeographicSupplement
     case miscellaneousSymbolsAndPictographs
     case emoticons
     case ornametalDingbats
@@ -211,7 +230,7 @@ public enum STUnicodeCategory: Int, CaseIterable {
     switch self {
     case .c0Control: return 0x0000 ..< 0x0020
     case .basicLatin: return 0x0020 ..< 0x0080
-    case .c1Control: return 0x0080 ..< 0x009f
+    case .c1Control: return 0x0080 ..< 0x00a0
     case .latin1Supplement: return 0x00a0 ..< 0x0100
     case .latinExtendedA: return 0x0100 ..< 0x0180
     case .latinExtendedB: return 0x0180 ..< 0x0250
@@ -234,6 +253,7 @@ public enum STUnicodeCategory: Int, CaseIterable {
     case .arabicExtendedB: return 0x0870 ..< 0x08a0
     case .arabicExtendedA: return 0x08a0 ..< 0x0900
     case .devanagari: return 0x0900 ..< 0x0980
+    case .bengali: return 0x0980 ..< 0x0a00
     case .gurmukhi: return 0x0a00 ..< 0x0a80
     case .gujarati: return 0x0a80 ..< 0x0b00
     case .oriya: return 0x0b00 ..< 0x0b80
@@ -253,7 +273,7 @@ public enum STUnicodeCategory: Int, CaseIterable {
     case .cherokee: return 0x13a0 ..< 0x1400
     case .unifiedCanadianAboriginalSyllabics: return 0x1400 ..< 0x1680
     case .ogham: return 0x1680 ..< 0x16a0
-    case .runic: return 0x1680 ..< 0x1700
+    case .runic: return 0x16a0 ..< 0x1700
     case .tagalog: return 0x1700 ..< 0x1720
     case .hanunoo: return 0x1720 ..< 0x1740
     case .buhid: return 0x1740 ..< 0x1760
@@ -264,7 +284,7 @@ public enum STUnicodeCategory: Int, CaseIterable {
     case .limbu: return 0x1900 ..< 0x1950
     case .taiLe: return 0x1950 ..< 0x1980
     case .newTaiLue: return 0x1980 ..< 0x19e0
-    case .khmerSymbols: return 0x19a0 ..< 0x1a00
+    case .khmerSymbols: return 0x19e0 ..< 0x1a00
     case .buginese: return 0x1a00 ..< 0x1a20
     case .taiTham: return 0x1a20 ..< 0x1ab0
     case .combiningDiacriticalMarksExtended: return 0x1ab0 ..< 0x1b00
@@ -374,7 +394,13 @@ public enum STUnicodeCategory: Int, CaseIterable {
     case .arabicPresentationFormsB: return 0xfe70 ..< 0xff00
     case .halfwidthAndFullwidthForms: return 0xff00 ..< 0xfff0
     case .specials: return 0xfff0 ..< 0x10000
-    
+
+    case .mahjongTiles: return 0x1f000 ..< 0x1f030
+    case .dominoTiles: return 0x1f030 ..< 0x1f0a0
+    case .playingCards: return 0x1f0a0 ..< 0x1f100
+    case .enclosedAlphanumericSupplement: return 0x1f100 ..< 0x1f1e6
+    case .regionalIndicatorSymbol: return 0x1f1e6 ..< 0x1f200
+    case .enclosedIdeographicSupplement: return 0x1f200 ..< 0x1f300
     case .miscellaneousSymbolsAndPictographs: return 0x1f300 ..< 0x1f600
     case .emoticons: return 0x1f600 ..< 0x1f650
     case .ornametalDingbats: return 0x1f650 ..< 0x1f680
@@ -403,6 +429,7 @@ public enum STScript: Int, CaseIterable {
             .basicLatin, 
         ]
         case .japanese: return [
+            .arrows,
             .cjkCompatibility, 
             .cjkCompatibilityForms, 
             .cjkCompatibilityIdeographs, 
@@ -411,6 +438,8 @@ public enum STScript: Int, CaseIterable {
             .cjkSymbolsAndPunctuation, 
             .cjkUnifiedIdeographs, 
             .cjkUnifiedIdeographsExtensionA, 
+            .dingbats,
+            .enclosedAlphanumerics,
             .enclosedCjkLettesAndMonths, 
             .halfwidthAndFullwidthForms, 
             .hiragana, 
@@ -418,13 +447,22 @@ public enum STScript: Int, CaseIterable {
             .katakanaPhoneticExtensions, 
         ]
         case .emoji: return [
-            .dingbats, 
+            .dominoTiles,
             .emoticons,
-            .miscellaneousSymbols,  
-            .miscellaneousSymbolsAndPictographs, 
-            .supplementalSymbolsAndPictographs, 
-            .symbolsAndPictographsExtendedA, 
-            .transportAndMapSymbols, 
+            .enclosedAlphanumericSupplement,
+            .enclosedIdeographicSupplement,
+            .geometricShapes,
+            .geometricShapesExtended,
+            .mahjongTiles,
+            .miscellaneousSymbols,
+            .miscellaneousSymbolsAndArrows,
+            .miscellaneousSymbolsAndPictographs,
+            .ornametalDingbats,
+            .playingCards,
+            .regionalIndicatorSymbol,
+            .supplementalSymbolsAndPictographs,
+            .symbolsAndPictographsExtendedA,
+            .transportAndMapSymbols,
         ]
         }
     }
@@ -485,11 +523,12 @@ public enum STPunctuationMode: Int, CaseIterable {
     case stone
 }
 
+// Scalar sets rather than CharacterSet: these are looked up per character while
+// parsing, and CharacterSet.contains is far slower than a native Set lookup.
 public enum STKinsoku {
-    static let notStartingCharSet = CharacterSet(charactersIn: " ,.?:;!)）]］｝、〕〉》」』】〙〗〟’”｠»ヽヾァィゥェォッャュョヮヵヶぁぃぅぇぉっゃゅょゎゕゖㇰㇱㇲㇳㇴㇵㇶㇷㇸㇹㇺㇻㇼㇽㇾㇿ々〻？!‼⁇⁈⁉。.™")
-    static let notEndingCharSet = CharacterSet(charactersIn: "(（[［｛〔〈《「『【〘〖〝‘“｟«\"'")
-    static let hangingCharSet = CharacterSet(charactersIn: "、。")
-    
+    static let notStartingCharSet: Set<Unicode.Scalar> = Set(" ,.?:;!)）]］｝、〕〉》」』】〙〗〟’”｠»ヽヾァィゥェォッャュョヮヵヶぁぃぅぇぉっゃゅょゎゕゖㇰㇱㇲㇳㇴㇵㇶㇷㇸㇹㇺㇻㇼㇽㇾㇿ々〻？！：；!‼⁇⁈⁉。.™".unicodeScalars)
+    static let notEndingCharSet: Set<Unicode.Scalar> = Set("(（[［｛〔〈《「『【〘〖〝‘“｟«\"'".unicodeScalars)
+    static let hangingCharSet: Set<Unicode.Scalar> = Set("、。".unicodeScalars)
 }
 
 public enum STRunVisibility: Int, CaseIterable {
@@ -498,11 +537,31 @@ public enum STRunVisibility: Int, CaseIterable {
     case ellipsis
 }
 
+// Character classifications resolved once while parsing, so the layout never has
+// to consult Unicode properties or character sets per run.
+public struct STRunFlags: OptionSet {
+    public let rawValue: UInt8
+
+    public init(rawValue: UInt8) {
+        self.rawValue = rawValue
+    }
+
+    public static let newline = STRunFlags(rawValue: 1 << 0)
+    public static let number = STRunFlags(rawValue: 1 << 1)
+    public static let notEnding = STRunFlags(rawValue: 1 << 2)
+    public static let notStarting = STRunFlags(rawValue: 1 << 3)
+    public static let hanging = STRunFlags(rawValue: 1 << 4)
+}
+
+// Deliberately holds no Character. Keeping every field trivial lets the runs
+// array be copied with memcpy and keeps ARC out of the layout loop; the
+// characters themselves live alongside it in STContext.runChars.
 public struct STRun {
     public var tokenId: Int
     public var tokenRunIndex: Int
     public var fontId: Int
-    public var char: Character
+    public var scalar: UInt32
+    public var flags: STRunFlags
     public var punctuation: STPunctuation
     public var glyph: CGGlyph
     public var advance: CGSize
@@ -512,7 +571,14 @@ public struct STRun {
     public var visibility: STRunVisibility
     public var line: Int
 
-    public var isHidden: Bool { visibility == .invisible }
+    public var isNewline: Bool {
+        flags.contains(.newline)
+    }
+
+    public var isHidden: Bool {
+        visibility == .invisible
+    }
+
 }
 
 public struct STToken {

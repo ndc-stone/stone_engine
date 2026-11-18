@@ -60,6 +60,8 @@ open class STTextView: UIScrollView {
         set {
             label.direction = newValue
             setNeedsLayout()
+            
+            updateKnobViews()
         }
     }
     open var isAllowedTateChuYoko: Bool {
@@ -83,12 +85,40 @@ open class STTextView: UIScrollView {
             setNeedsLayout()
         }
     }
+    open var isFixedWidth: Bool {
+        get { label.isFixedWidth }
+        set {
+            label.isFixedWidth = newValue
+            setNeedsLayout()
+        }
+    }
+    open var hasSelectedAreaLineGap: Bool {
+        get { label.hasSelectedAreaLineGap }
+        set {
+            label.hasSelectedAreaLineGap = newValue
+            setNeedsLayout()
+        }
+    }
     
     // Color
     open var textColor: UIColor {
         get { label.textColor }
         set {
             label.textColor = newValue
+            setNeedsLayout()
+        }
+    }
+    open var selectedTextColor: UIColor {
+        get { label.selectedTextColor }
+        set {
+            label.selectedTextColor = newValue
+            setNeedsLayout()
+        }
+    }
+    open var selectedAreaColor: UIColor {
+        get { label.selectedAreaColor }
+        set {
+            label.selectedAreaColor = newValue
             setNeedsLayout()
         }
     }
@@ -156,17 +186,35 @@ open class STTextView: UIScrollView {
 
     // Lens
     open var needsToShowLens: Bool?
-
+    
+    // Trackpad pan
+    open var trackpadPivotIndex: Int?
+    
     // Menu
     open var needsToShowMenu: Bool?
-
+    
     // Views
     open var label: STLabel!
     open var cursorView: STCursorView!
     open var lensView: STLensView!
     open var beginKnobView: STKnobView!
     open var endKnobView: STKnobView!
+    private var editMenuInteraction: UIEditMenuInteraction!
+    
+    // Lens support
+    open var lensSupport: STTextViewLensSupport!
+    
+    // Tokenizer
+    open var _tokenizer: UITextInputStringTokenizer?
+    
+    // Undo
+    let _undoManager = STUndoManager()
+    open override var undoManager: UndoManager? { _undoManager }
 
+    // Key repeat
+    var keyRepeatTimer: Timer?
+    var keyRepeatAction: (() -> Void)?
+    
     //--------------------------------------------------------------//
     // MARK: - Initialize
     //--------------------------------------------------------------//
@@ -192,6 +240,14 @@ open class STTextView: UIScrollView {
         beginKnobView.isAtBegin = true
         endKnobView = STKnobView(frame: .zero)
         
+        // Create lens support
+        lensSupport = STTextViewLensSupport(textView: self)
+        
+        // Setup edit menu interaction
+        let menuInteraction = UIEditMenuInteraction(delegate: nil)
+        label.addInteraction(menuInteraction)
+        self.editMenuInteraction = menuInteraction
+        
         // Add gesture recognizers
         let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapAction(_:)))
         tapRecognizer.delegate = self
@@ -210,6 +266,9 @@ open class STTextView: UIScrollView {
         
         let endKnobPanRecognizer = UIPanGestureRecognizer(target: self, action: #selector(knobPanAction(_:)))
         endKnobView.addGestureRecognizer(endKnobPanRecognizer)
+        
+        // Configure undo manager
+        _undoManager.textView = self
     }
     
     override init(frame: CGRect) {
@@ -231,6 +290,49 @@ open class STTextView: UIScrollView {
     //--------------------------------------------------------------//
     // MARK: - Apperance
     //--------------------------------------------------------------//
+    
+    func adjustedContentOffset(targetContentOffset: CGPoint) -> CGPoint {
+        // Adjust content offset
+        switch direction {
+        case .lrTb:
+            let line = max((targetContentOffset.y / label.context.lineHeight).rounded(), 0)
+            let y = label.context.lineHeight * line
+            return .init(x: targetContentOffset.x, y: y)
+        case .tbRl:
+            let line = (targetContentOffset.x / label.context.lineHeight).rounded()
+            let x = label.context.lineHeight * line
+            return .init(x: x, y: targetContentOffset.y)
+        }
+    }
+    
+    func showSelectedRange() {
+        // Get run rect for selected range
+        let index = selectedSTTextRange.range.lowerBound
+        guard index < label.context.runs.count else { return }
+        let run = label.context.runs[index]
+        let rect = run.frame
+        
+        // Decide content offset
+        var offset = contentOffset
+        switch label.context.direction {
+        case .lrTb:
+            break
+        case .tbRl:
+            // Decide offset
+            if contentSize.width + contentInset.left + contentInset.right <= bounds.width {
+                offset = .init(x: -contentInset.left, y: 0)
+            }
+            else {
+                offset = .init(x: rect.midX - bounds.width * 0.5, y: 0)
+                if offset.x < -contentInset.left { offset.x = -contentInset.left }
+                else if offset.x > contentSize.width + contentInset.right - bounds.width { offset.x = contentSize.width + contentInset.right - bounds.width }
+            }
+        }
+        
+        // Set content offset
+        offset = adjustedContentOffset(targetContentOffset: offset)
+        contentOffset = offset
+    }
     
     private func updateCursorShown() {
         // Decide cursor shown
@@ -263,6 +365,37 @@ open class STTextView: UIScrollView {
             // Hide knob views
             beginKnobView.removeFromSuperview()
             endKnobView.removeFromSuperview()
+        }
+    }
+    
+    private var selectedRect: CGRect {
+        // Get selection rects
+        guard let selectedTextRange = selectedTextRange else { return label.context.cursorFrame(at: 0) }
+        let selectionRects = selectionRects(for: selectedTextRange)
+        guard selectionRects.count > 0 else { return label.context.cursorFrame(at: 0) }
+        
+        // Unite rects
+        var unitedRect: CGRect = .zero
+        for selectionRect in selectionRects {
+            let rect = (selectionRect as! STTextSelectionRect).rect
+            if unitedRect.isEmpty { unitedRect = rect }
+            else { unitedRect = unitedRect.union(rect) }
+        }
+        
+        return unitedRect
+    }
+    
+    func updateMenu() {
+        // Show menu
+        let rect = selectedRect
+        let needsToShowMenu = needsToShowMenu ?? false
+        if !rect.isEmpty && needsToShowMenu && !UIMenuController.shared.isMenuVisible {
+            if !isFirstResponder { label.becomeFirstResponder() }
+            UIMenuController.shared.showMenu(from: label, rect: rect)
+        }
+        // Hide menu
+        else if (rect.isEmpty || !needsToShowMenu) && UIMenuController.shared.isMenuVisible {
+            UIMenuController.shared.hideMenu()
         }
     }
     
@@ -302,7 +435,7 @@ open class STTextView: UIScrollView {
         // Set content size
         contentSize = label.frame.size
         
-        // Switch by direction
+        // Update content offset
         switch direction {
         case .lrTb:
             break
@@ -310,7 +443,8 @@ open class STTextView: UIScrollView {
             // Keep right X position
             let offsetX: CGFloat
             if oldSize.width < bounds.width {
-                offsetX = -contentInset.right
+                //offsetX = -contentInset.right
+                offsetX = 0
             }
             else {
                 let rx = oldSize.width - (oldOffset.x + bounds.width)
@@ -428,3 +562,4 @@ open class STTextView: UIScrollView {
         layoutKnobViews()
     }
 }
+
