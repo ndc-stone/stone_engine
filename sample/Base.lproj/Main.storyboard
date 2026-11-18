@@ -417,9 +417,9 @@
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="0F4-TQ-28k">
                                         <rect key="frame" x="0.0" y="0.0" width="417" height="34.5"/>
                                         <state key="normal" title="Button"/>
-                                        <buttonConfiguration key="configuration" style="gray" title="The Catcher in the Rye"/>
+                                        <buttonConfiguration key="configuration" style="gray" title="English"/>
                                         <connections>
-                                            <action selector="catcherAction:" destination="tps-HB-1DD" eventType="touchUpInside" id="B4d-1F-ut2"/>
+                                            <action selector="englishAction:" destination="tps-HB-1DD" eventType="touchUpInside" id="B4d-1F-ut2"/>
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="OCO-Kx-c93">
@@ -434,9 +434,9 @@
                                         <rect key="frame" x="584.5" y="0.0" width="420" height="34.5"/>
                                         <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                         <state key="normal" title="Button"/>
-                                        <buttonConfiguration key="configuration" style="gray" title="問わずがたりの洋酒外史"/>
+                                        <buttonConfiguration key="configuration" style="gray" title="和欧混植"/>
                                         <connections>
-                                            <action selector="yoshuAction:" destination="tps-HB-1DD" eventType="touchUpInside" id="1kg-xz-2Hx"/>
+                                            <action selector="mixedAction:" destination="tps-HB-1DD" eventType="touchUpInside" id="1kg-xz-2Hx"/>
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ZfC-4R-Qgs">
