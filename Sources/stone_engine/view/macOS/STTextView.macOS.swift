@@ -317,7 +317,7 @@ open class STTextView: NSScrollView {
         isWindowKey = false
     }
 
-    override init(frame: CGRect) {
+    public override init(frame: CGRect) {
         // Invoke super
         super.init(frame: frame)
         

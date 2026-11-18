@@ -3,24 +3,14 @@ STLayoutSnapshotTests.swift
 
 代表的な組版パターンのレイアウト結果を、まとめて 1 つのテキストと突き合わせる。
 
-期待値は `__Snapshots__/layout.txt`。個々の不変条件テストと違って
+期待値は `__Snapshots__/<OS>/layout.txt`。個々の不変条件テストと違って
 「今の組版がどう見えるか」を丸ごと固定するので、最適化やリファクタで
 意図せず配置が変わったときにここが落ちる。
 
 期待値の更新（記録モード）:
-    TEST_RUNNER_SNAPSHOT_RECORD=1 xcodebuild test -scheme stone \
-        -destination 'platform=macOS' -only-testing:stoneEngineTests/STLayoutSnapshotTests
-  xcodebuild は TEST_RUNNER_ で始まる環境変数だけを、接頭辞を外して
-  テストプロセスへ渡す（Xcode から走らせるならスキームの環境変数に
-  SNAPSHOT_RECORD=1 を足す）。
-  テストはサンドボックス内で動くのでソースへは直接書けない。実行すると
-  新しい内容をアプリのコンテナの一時ファイルへ書き出し、そこから期待値へ
-  コピーするコマンドをログに出す。
-
-  コンテナが外から読めない環境では、記録モードがログにも本文を出すので
-  そちらから拾える:
-      TEST_RUNNER_SNAPSHOT_RECORD=1 xcodebuild test ... 2>&1 \
-          | grep '^§' | sed 's/^§//' > stoneEngineTests/__Snapshots__/layout.txt
+    SNAPSHOT_RECORD=1 swift test --filter STLayoutSnapshotTests
+  新しい内容を一時ファイルへ書き出し、期待値へコピーするコマンドをログに出す。
+  iOS Simulator では環境変数名を TEST_RUNNER_SNAPSHOT_RECORD にして xcodebuild test を使う。
 */
 
 import XCTest

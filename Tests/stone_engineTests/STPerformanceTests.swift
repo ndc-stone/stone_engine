@@ -11,12 +11,9 @@ STPerformanceTests.swift
 それだけで 17 秒かかり、0.3 秒で終わるほかのユニットテストの足を引っ張る。
 合否を持たない計測なので、既定では飛ばして環境変数で明示的に呼び出す:
 
-    TEST_RUNNER_MEASURE_PERFORMANCE=1 xcodebuild test -scheme stone \
-        -destination 'platform=macOS' -only-testing:stoneEngineTests/STPerformanceTests
+    MEASURE_PERFORMANCE=1 swift test --filter STPerformanceTests
 
-（xcodebuild は TEST_RUNNER_ で始まる環境変数だけを、接頭辞を外して
-テストプロセスへ渡す。Xcode から走らせるならスキームの環境変数に
-MEASURE_PERFORMANCE=1 を足す）
+（iOS Simulator では環境変数名を TEST_RUNNER_MEASURE_PERFORMANCE にして xcodebuild test を使う）
 */
 
 import XCTest

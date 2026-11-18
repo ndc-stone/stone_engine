@@ -1,12 +1,50 @@
-stone_engineは、日本語の文字組版を実現する、テキストレンダリングエンジンである。
+stone_engineは、日本語の文字組版を実現する、iOS / macOS向けのテキストレンダリングエンジンである。
+
+## 対応環境
+
+- iOS 17以降
+- macOS 14以降
+- Swift 5.9以降
+
+## 導入
+
+Swift Package Managerで導入する。`Package.swift`に次を追加する。
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/ndc-stone/stone_engine.git", from: "0.2.0"),
+],
+targets: [
+    .target(name: "YourApp", dependencies: ["stone_engine"]),
+]
+```
+
+Xcodeでは、File > Add Package Dependencies...から同じURLを指定する。
+
+## 使い方
+
+```swift
+import stone_engine
+
+let textView = STTextView(frame: view.bounds)
+textView.direction = .tbRl  // 縦書き
+textView.fontSize = 17
+textView.lineHeightScale = 1.625
+textView.text = "吾輩は猫である。名前はまだ無い。"
+view.addSubview(textView)
+```
+
+縦書きで表示範囲の両端の行を欠けずに表示するには、`STTextView`の幅を行送り（`fontSize * lineHeightScale`）の整数倍にする。
+
+iOS版のサンプルアプリは`sample/stone.xcodeproj`にある。
 
 ## 目的
 
-stone_engineは、iOS上で動作するテキストレンダリングエンジンである。
-その第一義の目的は、日本語の高度な組版を実現することである。具体的には、縦書き、禁足処理、約物処理、文字種ごとのスケーリングが挙げられる。
+stone_engineは、iOSおよびmacOS上で動作するテキストレンダリングエンジンである。
+その第一義の目的は、日本語の高度な組版を実現することである。具体的には、縦書き、禁則処理、約物処理、文字種ごとのスケーリングが挙げられる。
 また従来の紙媒体によるページ分割を前提とした組版とは違い、電子媒体による大きさに制約のない画面上での組版を模索するものである。
 
-副次的な目的として、プログラマにとって直接内部構造を触ることのできるレンダリングエジンがほしい、という欲求がある。
+副次的な目的として、プログラマにとって直接内部構造を触ることのできるレンダリングエンジンがほしい、という欲求がある。
 あらゆるOSやプラットフォームにとって、テキストのレンダリングとは極めて基本的な機能の一つであり、十分な機能のものがすでに与えられている。
 iOSであれば、UIKitのUILabelやUITextView、Swift UIのTextなどがそれにあたる。
 それらは使い勝手は問題ないものであるが、その一方で高度にブラックボックス化されており、内部情報に十分にアクセスすることはできない。
@@ -37,12 +75,9 @@ iOSであれば、UIKitのUILabelやUITextView、Swift UIのTextなどがそれ�
 あらゆるアプリの基底として使われるものであり、そこには高い実行速度が求められる。
 stone_engineは、実行速度を最優先として、そのアーキテクチャ、データ構成、使用言語などを決めていく。
 
-たとえば、現状ではフォントのGSUBテーブルを辿るために、C言語を用いている。
-これはそれが実行速度を高めるよりよい方法と考えているからである。
-
 ## 提供クラス
 
-stone_engineは、`STLabel`と`STTextView`というクラスを提供する。これは、UIKitにおけるUILabelとUITextViewを置き換えることを意図している。
+stone_engineは、`STLabel`と`STTextView`というクラスを提供する。これは、UIKitやAppKitにおけるラベルとテキストビューを置き換えることを意図している。
 
 ## STLabel
 
@@ -139,3 +174,10 @@ STLabelでは、文字種ごとに表示するスケールを指定すること�
 
 STTextViewは、テキストの編集を行うためのビュークラスである。STLabelが持つ特徴をすべて有する。
 
+## 開発
+
+テストの実行方法や、変更を提案する手順は[CONTRIBUTING.md](CONTRIBUTING.md)を参照。変更履歴は[CHANGELOG.md](CHANGELOG.md)にある。
+
+## ライセンス
+
+[MIT License](LICENSE)
