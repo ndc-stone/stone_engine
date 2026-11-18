@@ -135,14 +135,6 @@ public struct STTextEditor {
             isSettingText = true
             textView.text = text
             isSettingText = false
-
-            // Keep selection in text
-            let count = text.count
-            let range = textView.selectedSTTextRange.range
-            if range.upperBound > count {
-                let lowerBound = min(range.lowerBound, count)
-                textView.selectedSTTextRange = STTextRange(range: lowerBound ..< count)
-            }
         }
     }
 }

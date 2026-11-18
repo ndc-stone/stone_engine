@@ -27,10 +27,27 @@ open class STTextView: UIScrollView {
         get { label.text }
         set {
             label.text = newValue
+            keepTextRangesInText()
             setNeedsLayout()
 
             // Notify it
             NotificationCenter.default.post(name: STTextView.textChanged, object: self)
+        }
+    }
+
+    private func keepTextRangesInText() {
+        // Get text length
+        let count = text?.count ?? 0
+
+        // Keep selected range in text
+        let selectedRange = selectedSTTextRange.range
+        if selectedRange.upperBound > count {
+            selectedSTTextRange = STTextRange(range: min(selectedRange.lowerBound, count) ..< count)
+        }
+
+        // Keep marked range in text
+        if let markedRange = markedSTTextRange?.range, markedRange.upperBound > count {
+            markedSTTextRange = STTextRange(range: min(markedRange.lowerBound, count) ..< count)
         }
     }
     

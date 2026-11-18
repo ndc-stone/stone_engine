@@ -7,6 +7,10 @@
 - iOSの`STTextView`に、本文の変更を伝える`STTextView.textChanged`通知を追加
 - SwiftUI用のライブラリ`StoneEngineSwiftUI`を追加（`STLabelView`、`STTextEditor`）
 
+### 修正
+
+- `STTextView.text`を短くしたとき、選択範囲が本文の外に残ってクラッシュすることがある不具合を修正
+
 ## 0.2.1
 
 ### 追加
