@@ -5,6 +5,7 @@
 ### 追加
 
 - iOSの`STTextView`に、本文の変更を伝える`STTextView.textChanged`通知を追加
+- SwiftUI用のライブラリ`StoneEngineSwiftUI`を追加（`STLabelView`、`STTextEditor`）
 
 ## 0.2.1
 

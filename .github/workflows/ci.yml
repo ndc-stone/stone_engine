@@ -34,7 +34,7 @@ jobs:
       - name: Run tests
         run: >-
           xcodebuild test
-          -scheme stone_engine
+          -scheme stone_engine-Package
           -destination 'platform=iOS Simulator,name=iPad Pro 11-inch (M5),OS=26.5'
 
   sample:

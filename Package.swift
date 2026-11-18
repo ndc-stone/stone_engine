@@ -11,10 +11,22 @@ let package = Package(
             name: "stone_engine",
             targets: ["stone_engine"]
         ),
+        .library(
+            name: "StoneEngineSwiftUI",
+            targets: ["StoneEngineSwiftUI"]
+        ),
     ],
     targets: [
         .target(
             name: "stone_engine"
+        ),
+        .target(
+            name: "StoneEngineSwiftUI",
+            dependencies: ["stone_engine"]
+        ),
+        .testTarget(
+            name: "StoneEngineSwiftUITests",
+            dependencies: ["StoneEngineSwiftUI"]
         ),
         .testTarget(
             name: "stone_engineTests",
