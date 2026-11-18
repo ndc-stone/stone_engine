@@ -17,6 +17,10 @@ open class TrackpadPanGestureRecognizer: UIPanGestureRecognizer {
     }
 }
 
+extension STTextView {
+    public static let textChanged = Notification.Name("STTextViewTextChanged")
+}
+
 open class STTextView: UIScrollView {
     // Text
     open var text: String? {
@@ -24,6 +28,9 @@ open class STTextView: UIScrollView {
         set {
             label.text = newValue
             setNeedsLayout()
+
+            // Notify it
+            NotificationCenter.default.post(name: STTextView.textChanged, object: self)
         }
     }
     

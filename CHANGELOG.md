@@ -1,5 +1,11 @@
 # 変更履歴
 
+## 未リリース
+
+### 追加
+
+- iOSの`STTextView`に、本文の変更を伝える`STTextView.textChanged`通知を追加
+
 ## 0.2.1
 
 ### 追加
