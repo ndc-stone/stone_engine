@@ -68,6 +68,9 @@ open class STContext {
     public var renderSize: CGSize = .zero
     public var renderedSize: CGSize = .zero
     
+    // Incremented every layout, to know whether runs have changed
+    public var layoutVersion: Int = 0
+    
     //--------------------------------------------------------------//
     // MARK: - Advance
     //--------------------------------------------------------------//

@@ -1123,6 +1123,9 @@ class STLayout {
         // Notify it
         NotificationCenter.default.post(name: Self.willLayout, object: self)
         
+        // Update layout version
+        context.layoutVersion += 1
+        
         // Initialize
         emAscent = context.fontManager.primaryAscent(size: context.adjustFontSize)
         context.lineCount = 0

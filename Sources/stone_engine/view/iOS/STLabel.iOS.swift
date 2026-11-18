@@ -266,6 +266,11 @@ open class STLabel: UIView {
         backgroundColor = .systemBackground
         layer.contentsGravity = .right
         (layer as? STTiledLayer)?.context = context
+
+        // Draw again for colors of new appearance (layout is skipped if nothing changed)
+        registerForTraitChanges([UITraitUserInterfaceStyle.self, UITraitAccessibilityContrast.self]) { (label: STLabel, previousTraitCollection: UITraitCollection) in
+            label.setNeedsDisplay()
+        }
     }
     
     public override init(frame: CGRect) {
@@ -317,21 +322,31 @@ open class STLabel: UIView {
     // MARK: - Layout
     //--------------------------------------------------------------//
     
+    // Render size used for the last layout. context.renderSize is not compared instead,
+    // because layout extends it (e.g. for hanging punctuation).
+    private var laidOutRenderSize: CGSize?
+    
     open func needsToLayout(size: CGSize) -> Bool {
         // Check flag
         guard !needsToLayout else { return true }
         
         // Check size
+        guard let laidOutRenderSize else { return true }
         switch direction {
         case .lrTb:
-            if context.renderSize == size { return false }
-            if size.height == 0 && context.renderSize.width == size.width { return false }
+            if laidOutRenderSize == size { return false }
+            if size.height == 0 && laidOutRenderSize.width == size.width { return false }
         case .tbRl:
-            if context.renderSize == size { return false }
-            if size.width == 0 && context.renderSize.height == size.height { return false }
+            if laidOutRenderSize == size { return false }
+            if size.width == 0 && laidOutRenderSize.height == size.height { return false }
         }
         
         return true
+    }
+    
+    /// Render size to layout with for bounds size
+    open func renderSize(forBounds size: CGSize) -> CGSize {
+        return size
     }
     
     open func adjustWithScale(_ scale: CGFloat) -> Bool {
@@ -379,10 +394,13 @@ open class STLabel: UIView {
     
     open func parseAndLayout() {
         // Check needs to layout
-        guard needsToLayout(size: bounds.size) else { return }
+        let renderSize = renderSize(forBounds: bounds.size)
+        guard needsToLayout(size: renderSize) else { return }
         
         // Set render size
-        context.renderSize = bounds.size
+        context.renderSize = renderSize
+        laidOutRenderSize = renderSize
+        needsToLayout = false
         context.adjustFontScale = 1.0
         
         // Refresh font manager
@@ -429,12 +447,29 @@ open class STLabel: UIView {
         return context.renderedSize
     }
     
+    // Inputs of draw buckets, to skip creating them again while scrolling
+    private struct DrawBucketsKey: Equatable {
+        let layoutVersion: Int
+        let selectedRange: Range<Int>
+        let size: CGSize
+    }
+    private var drawBucketsKey: DrawBucketsKey?
+    
     open override func layoutSubviews() {
         // Invoke super
         super.layoutSubviews()
         
         // Parse and layout
         parseAndLayout()
+        
+        // Check layout, selection and size
+        let key = DrawBucketsKey(
+            layoutVersion: context.layoutVersion, 
+            selectedRange: (textInput?.selectedTextRange as? STTextRange)?.range ?? 0 ..< 0, 
+            size: bounds.size
+        )
+        guard key != drawBucketsKey else { return }
+        drawBucketsKey = key
         
         // Create draw buckets
         createDrawBcukets()
@@ -475,11 +510,15 @@ open class STLabel: UIView {
     }
     
     open func layoutThatFits(_ size: CGSize) -> CGSize {
+        // Decide render size in the same way as layout with bounds, not to layout again with different size
+        let size = renderSize(forBounds: size)
+        
         // Check needs to layout
         guard needsToLayout(size: size) else { return context.renderedSize }
         
         // Pares and layout
         context.renderSize = size
+        laidOutRenderSize = size
         STParser(context: context).parse(text: text)
         STLayout(context: context).layout()
         
@@ -704,6 +743,10 @@ open class STLabel: UIView {
         // Get CG context
         guard let cgContext = UIGraphicsGetCurrentContext() else { return }
         
+        // Decide rect to draw, with margin for glyphs drawn outside of run frame
+        let margin = context.fontSize
+        let drawRect = dirtyRect.insetBy(dx: -margin, dy: -margin)
+        
         // Draw buckets
         for bucket in drawBuckets {
             // Set text color
@@ -712,6 +755,7 @@ open class STLabel: UIView {
             // Draw glyphs
             if bucket.needsToFlip {
                 for i in 0 ..< bucket.glyphs.count {
+                    guard bucket.frames[i].intersects(drawRect) else { continue }
                     var transform: CGAffineTransform = .identity
                     transform = transform.translatedBy(x: 0, y: bucket.positions[i].y * 2)
                     transform = transform.scaledBy(x: 1, y: -1)
@@ -722,7 +766,14 @@ open class STLabel: UIView {
                 }
             }
             else {
-                CTFontDrawGlyphs(bucket.ctFont, bucket.glyphs, bucket.positions, bucket.glyphs.count, cgContext)
+                // Draw only glyphs in rect
+                var glyphs = [CGGlyph]()
+                var positions = [CGPoint]()
+                for i in 0 ..< bucket.glyphs.count where bucket.frames[i].intersects(drawRect) {
+                    glyphs.append(bucket.glyphs[i])
+                    positions.append(bucket.positions[i])
+                }
+                CTFontDrawGlyphs(bucket.ctFont, glyphs, positions, glyphs.count, cgContext)
             }
         }
     }
