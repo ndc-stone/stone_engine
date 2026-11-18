@@ -163,7 +163,7 @@ extension STTextView: UITextInput {
         
         // Replace
         for range in sortedRanges.reversed() {
-            guard range.upperBound < text.count else { continue }
+            guard range.upperBound <= text.count else { continue }
             text.replaceSubrange(text.index(text.startIndex, offsetBy: range.lowerBound) ..< text.index(text.startIndex, offsetBy: range.upperBound), with: replaceText)
         }
         

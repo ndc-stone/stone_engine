@@ -300,9 +300,14 @@ open class STTextView: UIScrollView {
             let y = label.context.lineHeight * line
             return .init(x: targetContentOffset.x, y: y)
         case .tbRl:
-            let line = (targetContentOffset.x / label.context.lineHeight).rounded()
-            let x = label.context.lineHeight * line
-            return .init(x: x, y: targetContentOffset.y)
+            // Lines are laid out from the right edge of label, so align the right edge of visible area to the right edge of a line.
+            // Right inset is not shown, and the left most position is the last one that fits in left inset.
+            let lineHeight = label.context.lineHeight
+            let rightMostX = label.frame.maxX - bounds.width
+            guard lineHeight > 0, rightMostX > 0 else { return targetContentOffset }
+            let maxLine = ((rightMostX + contentInset.left) / lineHeight).rounded(.down)
+            let line = min(max(((rightMostX - targetContentOffset.x) / lineHeight).rounded(), 0), maxLine)
+            return .init(x: rightMostX - lineHeight * line, y: targetContentOffset.y)
         }
     }
     
