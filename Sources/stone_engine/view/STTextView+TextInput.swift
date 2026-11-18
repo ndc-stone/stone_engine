@@ -53,7 +53,7 @@ public extension STTextView {
     // MARK: - Replace
     //--------------------------------------------------------------//
     
-    private func replaceText(_ replaceText: String, textRange: STTextRange) {
+    func replaceText(_ replaceText: String, textRange: STTextRange) {
         // Get current text
         var text = self.text ?? ""
         
@@ -74,19 +74,18 @@ public extension STTextView {
             // Set text
             self.text = text
             
-            // Register undo
-            /*
-            _undoManager._registerUndo(withTarget: self, handler: { target in
-                // Replace text
-                target._replaceText(replacedText, textRange: insertedRange)
-                
-                // Set selected range
-                self._selectedTextRange = oldSelectedRange
-                
-                // Clear marked text range
-                self._markedTextRange = nil
-            })
-            */
+            // Stack text replacement
+            _undoManager.stackTextReplacement(
+                replacedText: replacedText, 
+                insertedRange: insertedRange, 
+                selectedRanage: oldSelectedRange
+            )
+            
+            // For new line
+            if replaceText == "\n" {
+                // Register undo
+                _undoManager.register()
+            }
         }
         
         // Set selected text range
@@ -105,7 +104,8 @@ extension STTextView: UITextInput {
     
     public var hasText: Bool {
         // Check text
-        return text != nil
+        guard let text = text else { return false }
+        return !text.isEmpty
     }
     
     public func text(in range: UITextRange) -> String? {
@@ -118,15 +118,59 @@ extension STTextView: UITextInput {
         // Replace text
         let replaceTextRange: STTextRange
         if let markedTextRange = markedSTTextRange, !markedTextRange.isEmpty {
-            replaceTextRange = markedTextRange
+            replaceTextRange = STTextRange(start: markedTextRange.start, end: markedTextRange.start)
         }
         else {
             replaceTextRange = selectedSTTextRange
         }
         replaceText(text, textRange: replaceTextRange)
+        
+        // Update marked text range
+        if let markedTextRange = markedSTTextRange, !markedTextRange.isEmpty {
+            self.markedTextRange = STTextRange(
+                range: markedTextRange.range.lowerBound + text.count ..< markedTextRange.range.upperBound + text.count
+            )
+        }
     }
     
-    public func replace(_ range: UITextRange, withText text: String) {
+    public func replace(_ range: UITextRange, withText replaceText: String) {
+        // Check range
+        guard var text = text else { return }
+        guard let range = (range as? STTextRange)?.range else { return }
+        guard range.upperBound <= text.count else { return }
+        
+        // Replace
+        text.replaceSubrange(text.index(text.startIndex, offsetBy: range.lowerBound) ..< text.index(text.startIndex, offsetBy: range.upperBound), with: replaceText)
+        
+        // Set text
+        self.text = text
+        
+        // Set selected text range
+        let lastIndex = range.lowerBound + replaceText.count
+        selectedSTTextRange = STTextRange(range: lastIndex ..< lastIndex)
+    }
+    
+    func replaceAll(_ ranges: [UITextRange], withText replaceText: String) {
+        // Check text
+        guard var text = text else { return }
+        
+        // Sort ranges
+        let ranges = ranges.compactMap({ ($0 as? STTextRange)?.range })
+        let sortedRanges = ranges.sorted { range0, range1 in
+            return range0.lowerBound < range1.lowerBound
+        }
+        
+        // Replace
+        for range in sortedRanges.reversed() {
+            guard range.upperBound < text.count else { continue }
+            text.replaceSubrange(text.index(text.startIndex, offsetBy: range.lowerBound) ..< text.index(text.startIndex, offsetBy: range.upperBound), with: replaceText)
+        }
+        
+        // Set text
+        self.text = text
+        
+        // Clear selected text range
+        selectedTextRange = nil
     }
     
     public func deleteBackward() {
@@ -154,10 +198,17 @@ extension STTextView: UITextInput {
     //--------------------------------------------------------------//
     
     public var selectedTextRange: UITextRange? {
-        get { selectedSTTextRange }
+        get {
+            return selectedSTTextRange
+        }
         set {
             // Set selected text range
-            selectedSTTextRange = newValue as! STTextRange
+            if let range = newValue as? STTextRange {
+                selectedSTTextRange = range
+            }
+            else {
+                selectedSTTextRange = STTextRange(range: 0 ..< 0)
+            }
             
             // Set needs display
             label.setNeedsDisplay()
@@ -167,9 +218,23 @@ extension STTextView: UITextInput {
         }
     }
     
+    public var selectedText: String? {
+        // Get range
+        guard let range = selectedTextRange as? STTextRange else { return nil }
+        guard range.range.lowerBound < range.range.upperBound else { return nil }
+        
+        // Decide selected text
+        guard let text = text else { return nil }
+        return String(text[range.range(text: text)])
+    }
+    
     public var markedTextRange: UITextRange? {
-        get { markedSTTextRange }
-        set { markedSTTextRange = newValue as? STTextRange }
+        get {
+            return markedSTTextRange
+        }
+        set {
+            markedSTTextRange = newValue as? STTextRange
+        }
     }
     
     public var markedTextStyle: [NSAttributedString.Key: Any]? {
@@ -276,6 +341,9 @@ extension STTextView: UITextInput {
         // Clear marked text range
         markedTextRange = nil
         markedRanges = nil
+        
+        // Register undo
+        _undoManager.register()
     }
     
     //--------------------------------------------------------------//
@@ -283,11 +351,20 @@ extension STTextView: UITextInput {
     //--------------------------------------------------------------//
     
     public func textRange(from fromPosition: UITextPosition, to toPosition: UITextPosition) -> UITextRange? {
-        return nil
+        // Create range
+        guard let fromIndex = (fromPosition as? STTextPosition)?.index else { return nil }
+        guard let toIndex = (toPosition as? STTextPosition)?.index else { return nil }
+        return fromIndex < toIndex ? STTextRange(range: fromIndex ..< toIndex) : STTextRange(range: toIndex ..< fromIndex)
     }
     
     public func position(from position: UITextPosition, offset: Int) -> UITextPosition? {
-        return nil
+        // Create position
+        guard let index = (position as? STTextPosition)?.index else { return nil }
+        guard let text = text else { return nil }
+        var shiftedIndex = index + offset
+        if shiftedIndex < 0 { shiftedIndex = 0 }
+        else if shiftedIndex >= text.count { shiftedIndex = text.count }
+        return STTextPosition(index: shiftedIndex)
     }
     
     public func position(from position: UITextPosition, in direction: UITextLayoutDirection, offset: Int) -> UITextPosition? {
@@ -309,11 +386,18 @@ extension STTextView: UITextInput {
     //--------------------------------------------------------------//
     
     public func compare(_ position: UITextPosition, to other: UITextPosition) -> ComparisonResult {
-        return .orderedSame
+        // Compare index
+        guard let index = (position as? STTextPosition)?.index, let otherInex = (other as? STTextPosition)?.index else { return .orderedSame }
+        if index < otherInex { return .orderedAscending }
+        else if index > otherInex { return .orderedDescending }
+        else { return .orderedSame }
     }
     
-    public func offset(from: UITextPosition, to toPosition: UITextPosition) -> Int {
-        return 0
+    public func offset(from fromPosition: UITextPosition, to toPosition: UITextPosition) -> Int {
+        // Calc offset
+        guard let fromIndex = (fromPosition as? STTextPosition)?.index else { return 0 }
+        guard let toIndex = (toPosition as? STTextPosition)?.index else { return 0 }
+        return toIndex - fromIndex 
     }
     
     //--------------------------------------------------------------//
@@ -329,7 +413,7 @@ extension STTextView: UITextInput {
     }
     
     public func baseWritingDirection(for position: UITextPosition, in direction: UITextStorageDirection) -> NSWritingDirection {
-        return .natural
+        return .leftToRight
     }
     
     public func setBaseWritingDirection(_ writingDirection: NSWritingDirection, for range: UITextRange) {
@@ -381,11 +465,65 @@ extension STTextView: UITextInput {
     }
     
     public func selectionRects(for range: UITextRange) -> [UITextSelectionRect] {
-        return []
+        // Get range
+        var selectionRects = [STTextSelectionRect]()
+        let range = (range as! STTextRange).range
+        
+        // For length 0
+        if range.lowerBound == range.upperBound {
+            // Decide selection rect
+            let index = range.lowerBound
+            if index >= label.context.runs.count, label.context.runs.count > 0 {
+                // Use at end
+                var runRect = label.context.runs[label.context.runs.count - 1].frame
+                runRect.size.height += Self.underlineMargin
+                switch direction {
+                case .lrTb: selectionRects.append(.init(rect: .init(x: runRect.maxX, y: runRect.minY, width: 1, height: runRect.height), isVertical: false))
+                case .tbRl: selectionRects.append(.init(rect: .init(x: runRect.minX, y: runRect.maxY, width: runRect.width, height: 1), isVertical: true))
+                }
+            }
+            else if index < label.context.runs.count {
+                // Use at begin
+                var runRect = label.context.runs[index].frame
+                runRect.size.height += Self.underlineMargin
+                switch direction {
+                case .lrTb: selectionRects.append(.init(rect: .init(x: runRect.minX, y: runRect.minY, width: 1, height: runRect.height), isVertical: false))
+                case .tbRl: selectionRects.append(.init(rect: .init(x: runRect.minX, y: runRect.minY, width: runRect.width, height: 1), isVertical: true))
+                }
+            }
+        }
+        // For larger than runs
+        else if range.lowerBound >= label.context.runs.count, label.context.runs.count > 0 {
+            // Use at end
+            var runRect = label.context.runs[label.context.runs.count - 1].frame
+            runRect.size.height += Self.underlineMargin
+            switch direction {
+            case .lrTb: selectionRects.append(.init(rect: .init(x: runRect.maxX, y: runRect.minY, width: 1, height: runRect.height), isVertical: false))
+            case .tbRl: selectionRects.append(.init(rect: .init(x: runRect.minX, y: runRect.maxY, width: runRect.width, height: 1), isVertical: true))
+            }
+        }
+        // For other
+        else {
+            // Get selection rects
+            for index in range.lowerBound ..< range.upperBound {
+                // Add selection rect
+                guard index >= 0, index < label.context.runs.count else { continue }
+                var runRect = label.context.runs[index].frame
+                runRect.size.height += Self.underlineMargin
+                selectionRects.append(.init(rect: runRect, isVertical: direction == .tbRl))
+            }
+        }
+        
+        return selectionRects
     }
     
     public func closestPosition(to point: CGPoint, within range: UITextRange) -> UITextPosition? {
-        return nil
+        // Convert point
+        let point = convert(point, to: label)
+        
+        // Get closest run index
+        let index = label.context.closestRunIndex(to: point)
+        return STTextPosition(index: index)
     }
     
     public func characterRange(at point: CGPoint) -> UITextRange? {
@@ -412,11 +550,37 @@ extension STTextView: UITextInput {
     //--------------------------------------------------------------//
     
     public var tokenizer: any UITextInputTokenizer {
-        return UITextInputStringTokenizer(textInput: self)
+        // Create tokenizer
+        if _tokenizer == nil {
+            _tokenizer = UITextInputStringTokenizer(textInput: self)
+        }
+        
+        return _tokenizer!
     }
     
     public var inputDelegate: UITextInputDelegate? {
-        get { nil }
-        set (inputDelegate) {}
+        get {
+            return self
+        }
+        set (inputDelegate) {
+        }
+    }
+}
+
+extension STTextView: UITextInputDelegate {
+    public func selectionWillChange(_ textInput: UITextInput?) {
+    }
+    
+    public func selectionDidChange(_ textInput: UITextInput?) {
+    }
+    
+    public func textWillChange(_ textInput: UITextInput?) {
+    }
+    
+    public func textDidChange(_ textInput: UITextInput?) {
+    }
+    
+    @available(iOS 18.4, *)
+    public func conversationContext(_ context: UIConversationContext?, didChange textInput: (any UITextInput)?) {
     }
 }

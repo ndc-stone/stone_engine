@@ -7,19 +7,26 @@ Copyright 2024 Nihon Design Center. All rights reserved.
 This software is licensed under the MIT License. See LICENSE for details.
 */
 
+#if os(iOS)
 import UIKit
+#elseif os(macOS)
+import Cocoa
+#endif
 
 open class STContext {
     public static let cursorWide: CGFloat = 2
 
     // Runs
     public var runs = [STRun]()
+    // Characters in run order. Held here rather than in STRun so that STRun stays
+    // trivially copyable and the layout loop is free of ARC traffic.
+    public var runChars = [Character]()
     public var tokens = [STToken]()
     public var lineCount = 0
 
     // Font
     public let fontManager = STFontManager()
-
+    
     // Layout
     public var fontSize: CGFloat = 17
     public var lineHeightScale: CGFloat = 1.0
@@ -31,6 +38,8 @@ open class STContext {
     public var isAllowedTateChuYoko: Bool = true
     public var adjustsFontSizeToFitWidth: Bool = false
     public var minimumScaleFactor: CGFloat = 0
+    public var isFixedWidth: Bool = false
+    public var isSingleLine: Bool = false
 
     // Layout for adjusting
     public var adjustFontScale: CGFloat = 1.0
@@ -38,12 +47,20 @@ open class STContext {
     public var adjustLineHeight: CGFloat { adjustFontSize * lineHeightScale }
 
     // Color
+    #if os(iOS)
     public var textColor: UIColor = .label
+    public var selectedTextColor: UIColor = .label
     public var selectedAreaColor: UIColor = .link
+    public var markedTextColor: UIColor = .label
+    #elseif os(macOS)
+    public var textColor: NSColor = .black // .label
+    public var selectedTextColor: NSColor = .black // .label
+    public var selectedAreaColor: NSColor = .blue // .link
+    public var markedTextColor: NSColor = .black // .label
+    #endif
 
     // Features
     public var punctuationMode: STPunctuationMode = .stone
-    //var isHalfPunctuation = true
     public var isKinsokuAvailable = true
     public var isDividedByWords = true
 
@@ -86,7 +103,12 @@ open class STContext {
         }
         
         // Create range
-        guard lower != -1 || upper == -1 else { return nil }
+        if lower == -1 {
+            return runs.count ..< runs.count
+        }
+        else if upper == -1 {
+            return lower ..< lower + 1
+        }
         return lower ..< upper + 1
     }
     
@@ -100,20 +122,20 @@ open class STContext {
     public func isNewline(at runId: Int) -> Bool {
         // Check newline
         guard runs.count > 0 else { return false }
-        if runId < runs.count - 1 { return runs[runId].char.isNewline }
-        else { return runs.last!.char.isNewline }
+        if runId < runs.count - 1 { return runs[runId].isNewline }
+        else { return runs.last!.isNewline }
     }
     
     public func tokenString(runId: Int) -> String? {
         // Get token string
-        guard runId < runs.count - 1 else { return nil }
+        guard runs.indices.contains(runId) else { return nil }
         return tokenString(tokenId: runs[runId].tokenId)
     }
     
     public func tokenString(tokenId: Int) -> String? {
         // Get token string
-        guard tokenId < tokens.count - 1 else { return nil }
-        return tokens[tokenId].runIdRange.reduce("") { "\($0!)\(runs[$1].char)" }
+        guard tokens.indices.contains(tokenId) else { return nil }
+        return String(runChars[tokens[tokenId].runIdRange])
     }
     
     //--------------------------------------------------------------//
@@ -166,26 +188,44 @@ open class STContext {
         var cursorFrame: CGRect = .zero
         switch direction {
         case .lrTb:
+            // Cursor y and height are derived from lineHeight (per-line box), not from the
+            // run's own font metrics. Otherwise the caret inherits the run font's ascent /
+            // scale and, e.g., emoji runs (AppleColorEmoji has a larger ascent) would shift
+            // the caret up relative to surrounding text. The run frame is only read for x.
             if runs.count == 0 {
                 let runFrame = firstRunFrame(line: 0)
                 cursorFrame.size.width = Self.cursorWide
-                cursorFrame.size.height = runFrame.height
+                cursorFrame.size.height = fontSize
                 cursorFrame.origin.x = runFrame.minX - cursorFrame.width * 0.5
-                cursorFrame.origin.y = runFrame.minY
+                cursorFrame.origin.y = 0
             }
             else if index < runs.count {
                 let runFrame = runs[index].frame
+                let line = runs[index].line
                 cursorFrame.size.width = Self.cursorWide
-                cursorFrame.size.height = runFrame.height
+                cursorFrame.size.height = fontSize
                 cursorFrame.origin.x = runFrame.minX - cursorFrame.width * 0.5
-                cursorFrame.origin.y = runFrame.minY
+                cursorFrame.origin.y = CGFloat(line) * lineHeight
             }
             else {
-                let runFrame = runs[runs.count - 1].frame
-                cursorFrame.size.width = Self.cursorWide
-                cursorFrame.size.height = runFrame.height
-                cursorFrame.origin.x = runFrame.maxX - cursorFrame.width * 0.5
-                cursorFrame.origin.y = runFrame.minY
+                // For new line
+                if isNewline(at: runs.count - 1) {
+                    let line = runs[runs.count - 1].line + 1
+                    let runFrame = firstRunFrame(line: line)
+                    cursorFrame.size.width = Self.cursorWide
+                    cursorFrame.size.height = fontSize
+                    cursorFrame.origin.x = runFrame.maxX - cursorFrame.width * 0.5
+                    cursorFrame.origin.y = CGFloat(line) * lineHeight
+                }
+                // For other
+                else {
+                    let runFrame = runs[runs.count - 1].frame
+                    let line = runs[runs.count - 1].line
+                    cursorFrame.size.width = Self.cursorWide
+                    cursorFrame.size.height = fontSize
+                    cursorFrame.origin.x = runFrame.maxX - cursorFrame.width * 0.5
+                    cursorFrame.origin.y = CGFloat(line) * lineHeight
+                }
             }
         case .tbRl:
             if runs.count == 0 {
@@ -214,11 +254,22 @@ open class STContext {
                 }
             }
             else {
-                let runFrame = runs[runs.count - 1].frame
-                cursorFrame.size.width = runFrame.width
-                cursorFrame.size.height = Self.cursorWide
-                cursorFrame.origin.x = runFrame.minX
-                cursorFrame.origin.y = runFrame.maxY - cursorFrame.height * 0.5
+                // For new line
+                if isNewline(at: runs.count - 1) {
+                    let runFrame = firstRunFrame(line: runs[runs.count - 1].line + 1)
+                    cursorFrame.size.width = runFrame.width
+                    cursorFrame.size.height = Self.cursorWide
+                    cursorFrame.origin.x = runFrame.minX
+                    cursorFrame.origin.y = runFrame.maxY - cursorFrame.height * 0.5
+                }
+                // For other
+                else {
+                    let runFrame = runs[runs.count - 1].frame
+                    cursorFrame.size.width = runFrame.width
+                    cursorFrame.size.height = Self.cursorWide
+                    cursorFrame.origin.x = runFrame.minX
+                    cursorFrame.origin.y = runFrame.maxY - cursorFrame.height * 0.5
+                }
             }
         }
         
@@ -254,6 +305,7 @@ open class STContext {
         var line = -1
         for i in range {
             // Check run
+            guard i >= 0 && i < runs.count else { continue }
             guard runs[i].line != line else { continue }
             
             // Get first run frame
@@ -285,11 +337,12 @@ open class STContext {
         var index = 0
         for i in range {
             // Check line
+            guard i >= 0 && i < runs.count else { continue }
             guard runs[i].line >= line - 1 && runs[i].line <= line + 1 else { continue }
             let runFrame = runs[i].frame
             
             // For new line
-            if runs[i].char.isNewline {
+            if runs[i].isNewline {
                 // Calc distance
                 let d = distance(from: runFrame, to: point)
                 if d < minDistance {
@@ -372,7 +425,7 @@ open class STContext {
             let runFrame = runs[i].frame
             
             // For new line
-            if runs[i].char.isNewline {
+            if runs[i].isNewline {
                 // Calc distance
                 let d = distance(from: runFrame, to: point)
                 if d < minDistance {
@@ -476,7 +529,7 @@ open class STContext {
     
     public func isTateChuYoko(run: STRun) -> Bool {
         // Check flag
-        guard isAllowedTateChuYoko else { return false }
+        guard isAllowedTateChuYoko && !isFixedWidth else { return false }
         
         // Check script
         guard !fontManager.script(fontId: run.fontId).notNeedsToClockwiseInTbRl else { return false }
@@ -485,7 +538,7 @@ open class STContext {
         guard direction == .tbRl else { return false }
         
         // For number token
-        if tokens[run.tokenId].runIdRange.map({ runs[$0] }).first(where: { !$0.char.isNumber }) == nil {
+        if tokens[run.tokenId].runIdRange.map({ runs[$0] }).first(where: { !$0.flags.contains(.number) }) == nil {
             // Check token count
             return tokens[run.tokenId].runIdRange.count <= 2
         }

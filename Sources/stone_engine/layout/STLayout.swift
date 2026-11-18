@@ -7,7 +7,11 @@ Copyright 2024 Nihon Design Center. All rights reserved.
 This software is licensed under the MIT License. See LICENSE for details.
 */
 
+#if os(iOS)
 import UIKit
+#elseif os(macOS)
+import Cocoa
+#endif
 
 class STLayout {
     static let willLayout = Notification.Name("STLayoutWillLayout")
@@ -25,9 +29,13 @@ class STLayout {
     private var y: CGFloat = 0
     private var minX: CGFloat { 0 }
     private var minY: CGFloat { 0 }
-    private var maxX: CGFloat { context.renderSize.width }
-    private var maxY: CGFloat { context.renderSize.height }
+    // For single line, never break by width/height so the text stays on one line
+    private var maxX: CGFloat { context.isSingleLine ? .greatestFiniteMagnitude : context.renderSize.width }
+    private var maxY: CGFloat { context.isSingleLine ? .greatestFiniteMagnitude : context.renderSize.height }
     private var tmpX: CGFloat?
+
+    // The ascent the line's em box is measured from, for this layout pass
+    private var emAscent: CGFloat = 0
     
     //--------------------------------------------------------------//
     // MARK: - Initialize
@@ -42,186 +50,270 @@ class STLayout {
     //--------------------------------------------------------------//
     
     private func layoutRunLrTb() {
+        // Get local reference to current run
+        var currentRun = context.runs[runId]
+        
         // Set line
-        context.runs[runId].line = context.lineCount
+        currentRun.line = context.lineCount
         
         // For new line
-        if context.runs[runId].char.isNewline {
+        if currentRun.isNewline {
             // Layout run with 0 width
-            context.runs[runId].position = .init(x: x, y: y)
-            context.runs[runId].frame = .init(
+            currentRun.position = .init(x: x, y: y)
+            currentRun.frame = .init(
                 x: x, 
-                y: y - context.fontManager.ascent(fontId: context.runs[runId].fontId, size: context.adjustFontSize), 
+                y: y - context.fontManager.ascent(fontId: currentRun.fontId, size: context.adjustFontSize), 
                 width: 0, 
                 height: context.fontSize)
         }
         // For other
         else {
+            // Cache frequently accessed values
+            let advanceWidth = currentRun.advance.width
+            let punctuation = currentRun.punctuation
+            
             // Decide position x and frame width
             var posX: CGFloat = x
-            var width: CGFloat = context.runs[runId].advance.width
-            switch context.punctuationMode {
-            case .whole:
-                // Do nothing
-                break
-            case .half:
-                // Set position x and frame
-                switch context.runs[runId].punctuation {
+            var width: CGFloat = advanceWidth
+            if context.isFixedWidth {
+                posX += (context.fontSize - width) * 0.5
+                width = context.fontSize
+            }
+            else {
+                switch context.punctuationMode {
                 case .whole:
+                    // Do nothing
                     break
-                case .firstHalf:
-                    width = context.runs[runId].advance.width * 0.5
-                case .secondHalf:
-                    posX = x - context.runs[runId].advance.width * 0.5
-                    width = context.runs[runId].advance.width * 0.5
-                case .quarter:
-                    posX = x - context.runs[runId].advance.width * 0.25
-                    width = context.runs[runId].advance.width * 0.5
-                }
-            case .stone:
-                // Check with prev run
-                if runId > 0 {
-                    // For first half and second half, like '」「'
-                    if context.runs[runId - 1].punctuation == .firstHalf && context.runs[runId].punctuation == .secondHalf {
-                        posX = x - context.runs[runId].advance.width * 0.5
-                        width = context.runs[runId].advance.width * 0.5
+                case .half:
+                    // Set position x and frame
+                    switch punctuation {
+                    case .whole:
+                        break
+                    case .firstHalf:
+                        width = advanceWidth * 0.5
+                    case .secondHalf:
+                        posX = x - advanceWidth * 0.5
+                        width = advanceWidth * 0.5
+                    case .quarter:
+                        posX = x - advanceWidth * 0.25
+                        width = advanceWidth * 0.5
                     }
-                    // For second half and second half, like '「「'
-                    else if context.runs[runId - 1].punctuation == .secondHalf && context.runs[runId].punctuation == .secondHalf {
-                        posX = x - context.runs[runId].advance.width * 0.5
-                        width = context.runs[runId].advance.width * 0.5
+                case .stone:
+                    // Check with prev run.
+                    //
+                    // Only within the line. The run before the first one of a line
+                    // sits on the line above, where it is no neighbour: squeezing
+                    // against it here and then again in goNextLine(), which has its
+                    // own rule for an opening bracket at the start of a line, pulls
+                    // the line half an em too far left. It then ends short of the
+                    // measure, and the bracket is drawn half outside the block.
+                    if runId > lineStartRunId {
+                        let prevPunctuation = context.runs[runId - 1].punctuation
+                        // For first half and second half, like '」「'
+                        if prevPunctuation == .firstHalf && punctuation == .secondHalf {
+                            posX = x - advanceWidth * 0.5
+                            width = advanceWidth * 0.5
+                        }
+                        // For second half and second half, like '「「'
+                        else if prevPunctuation == .secondHalf && punctuation == .secondHalf {
+                            posX = x - advanceWidth * 0.5
+                            width = advanceWidth * 0.5
+                        }
+                        // For quater and second half, like '・「'
+                        else if prevPunctuation == .quarter && punctuation == .secondHalf {
+                            posX = x - advanceWidth * 0.5
+                            width = advanceWidth * 0.5
+                        }
                     }
-                    // For quater and second half, like '・「'
-                    else if context.runs[runId - 1].punctuation == .quarter && context.runs[runId].punctuation == .secondHalf {
-                        posX = x - context.runs[runId].advance.width * 0.5
-                        width = context.runs[runId].advance.width * 0.5
-                    }
-                }
-                
-                // Check with next run
-                if runId + 1 < context.runs.count {
-                    // For first half and first half, like '。」'
-                    if context.runs[runId].punctuation == .firstHalf && context.runs[runId + 1].punctuation == .firstHalf {
-                        width = context.runs[runId].advance.width * 0.5
-                    }
-                    // For first half and quarter, like '」・'
-                    else if context.runs[runId].punctuation == .firstHalf && context.runs[runId + 1].punctuation == .quarter {
-                        width = context.runs[runId].advance.width * 0.5
+                    
+                    // Check with next run
+                    if runId + 1 < context.runs.count {
+                        let nextPunctuation = context.runs[runId + 1].punctuation
+                        // For first half and first half, like '。」'
+                        if punctuation == .firstHalf && nextPunctuation == .firstHalf {
+                            width = advanceWidth * 0.5
+                        }
+                        // For first half and quarter, like '」・'
+                        else if punctuation == .firstHalf && nextPunctuation == .quarter {
+                            width = advanceWidth * 0.5
+                        }
                     }
                 }
             }
             
             // Layout run
-            context.runs[runId].position = .init(x: posX, y: y)
-            context.runs[runId].frame = .init(
-                x: x, 
-                y: y - context.fontManager.ascent(fontId: context.runs[runId].fontId, size: context.adjustFontSize), 
-                width: width, 
-                height: context.adjustFontSize * context.fontManager.fontScale(fontId: context.runs[runId].fontId))
+            if context.fontManager.needsToFlip(fontId: currentRun.fontId, glyph: currentRun.glyph) {
+                // An emoji is drawn from its own font at its own scale, so neither
+                // its advance nor its bounding box matches the text around it, and
+                // its ascent reaches far above the baseline - AppleColorEmoji sets
+                // it at about 1.25 em. Measuring its frame from that ascent puts
+                // the frame where the glyph is not: the ink lands lower and taller
+                // than the frame says, the line's runs no longer share a box, and
+                // the box the line occupies spills into the next one.
+                //
+                // Give it the line's em box instead, and centre its ink in it, the
+                // way the vertical layout already does. The flipped draw path puts
+                // the ink at
+                // [position.y - boundingRect.maxY - boundingRect.height,
+                //  position.y - boundingRect.maxY], hence the y below.
+                let boundingRect = currentRun.boundingRect
+                let emTop = y - emAscent
+                let inkTop = emTop + (context.adjustFontSize - boundingRect.height) * 0.5
+                currentRun.position = .init(
+                    x: posX,
+                    y: inkTop + boundingRect.height + boundingRect.maxY)
+                currentRun.frame = .init(
+                    x: x,
+                    y: emTop,
+                    width: width,
+                    height: context.adjustFontSize)
+            }
+            else {
+                currentRun.position = .init(x: posX, y: y)
+                currentRun.frame = .init(
+                    x: x, 
+                    y: y - context.fontManager.ascent(fontId: currentRun.fontId, size: context.adjustFontSize), 
+                    width: width, 
+                    height: context.adjustFontSize * context.fontManager.fontScale(fontId: currentRun.fontId))
+            }
         }
+        
+        // Update the run in the array
+        context.runs[runId] = currentRun
     }
     
     private func layoutRunTbRl() {
+        // Get local reference to current run
+        var currentRun = context.runs[runId]
+        
         // Set line
-        context.runs[runId].line = context.lineCount
+        currentRun.line = context.lineCount
         
         // For new line
-        if context.runs[runId].char.isNewline {
+        if currentRun.isNewline {
             // Layout run with 0 height
-            context.runs[runId].position = .init(
+            currentRun.position = .init(
                 x: x, 
-                y: y + context.adjustFontSize - context.fontManager.descent(fontId: context.runs[runId].fontId, size: context.adjustFontSize))
-            context.runs[runId].frame = .init(
+                y: y + context.adjustFontSize - context.fontManager.descent(fontId: currentRun.fontId, size: context.adjustFontSize))
+            currentRun.frame = .init(
                 x: x, 
                 y: y, 
                 width: context.fontSize, 
                 height: 0)
         }
         // For clockwise
-        else if context.isClockwise(run: context.runs[runId]) {
+        else if context.isClockwise(run: currentRun) {
+            // Cache frequently accessed values
+            let advanceWidth = currentRun.advance.width
+            
             // Layout run in clockwise
-            context.runs[runId].position = .init(
-                x: x + context.fontManager.descent(fontId: context.runs[runId].fontId, size: context.adjustFontSize), 
-                y: y)
-            context.runs[runId].frame = .init(
+            var posY = y
+            var height = advanceWidth
+            if context.isFixedWidth {
+                posY += (context.fontSize - advanceWidth) * 0.5
+                height = context.fontSize
+            }
+            
+            currentRun.position = .init(
+                x: x + context.fontManager.descent(fontId: currentRun.fontId, size: context.adjustFontSize), 
+                y: posY)
+            currentRun.frame = .init(
                 x: x, 
                 y: y, 
                 width: context.adjustFontSize, 
-                height: context.runs[runId].advance.width)
+                height: height)
         }
         // For not clockwise
         else {
+            // Cache frequently accessed values
+            let punctuation = currentRun.punctuation
+            let fontId = currentRun.fontId
+            let adjustFontSize = context.adjustFontSize
+            
             // Decide position y and frame height
-            var posY = y + context.adjustFontSize - context.fontManager.descent(fontId: context.runs[runId].fontId, size: context.adjustFontSize)
-            var height = context.adjustFontSize
+            var posY = y + adjustFontSize - context.fontManager.descent(fontId: fontId, size: adjustFontSize)
+            var height = adjustFontSize
             switch context.punctuationMode {
             case .whole:
                 // Do nothing
                 break
             case .half:
                 // Set position y and frame
-                switch context.runs[runId].punctuation {
+                switch punctuation {
                 case .whole:
                     break
                 case .firstHalf:
-                    height = context.adjustFontSize * 0.5
+                    height = adjustFontSize * 0.5
                 case .secondHalf:
-                    posY -= context.adjustFontSize * 0.5
-                    height = context.adjustFontSize * 0.5
+                    posY -= adjustFontSize * 0.5
+                    height = adjustFontSize * 0.5
                 case .quarter:
-                    posY -= context.adjustFontSize * 0.25
-                    height = context.adjustFontSize * 0.5
+                    posY -= adjustFontSize * 0.25
+                    height = adjustFontSize * 0.5
                 }
             case .stone:
-                // Check with prev run
-                if runId > 0 {
+                // Check with prev run. Only within the line - see layoutRunLrTb.
+                if runId > lineStartRunId {
+                    let prevPunctuation = context.runs[runId - 1].punctuation
                     // For first half and second half, like '」「'
-                    if context.runs[runId - 1].punctuation == .firstHalf && context.runs[runId].punctuation == .secondHalf {
-                        posY -= context.adjustFontSize * 0.5
-                        height = context.adjustFontSize * 0.5
+                    if prevPunctuation == .firstHalf && punctuation == .secondHalf {
+                        posY -= adjustFontSize * 0.5
+                        height = adjustFontSize * 0.5
                     }
                     // For second half and second half, like '「「'
-                    else if context.runs[runId - 1].punctuation == .secondHalf && context.runs[runId].punctuation == .secondHalf {
-                        posY -= context.adjustFontSize * 0.5
-                        height = context.adjustFontSize * 0.5
+                    else if prevPunctuation == .secondHalf && punctuation == .secondHalf {
+                        posY -= adjustFontSize * 0.5
+                        height = adjustFontSize * 0.5
                     }
                     // For quater and second half, like '・「'
-                    else if context.runs[runId - 1].punctuation == .quarter && context.runs[runId].punctuation == .secondHalf {
-                        posY -= context.adjustFontSize * 0.5
-                        height = context.adjustFontSize * 0.5
+                    else if prevPunctuation == .quarter && punctuation == .secondHalf {
+                        posY -= adjustFontSize * 0.5
+                        height = adjustFontSize * 0.5
                     }
                 }
                 
                 // Check with next run
                 if runId + 1 < context.runs.count {
+                    let nextPunctuation = context.runs[runId + 1].punctuation
                     // For first half and first half, like '。」'
-                    if context.runs[runId].punctuation == .firstHalf && context.runs[runId + 1].punctuation == .firstHalf {
-                        height = context.adjustFontSize * 0.5
+                    if punctuation == .firstHalf && nextPunctuation == .firstHalf {
+                        height = adjustFontSize * 0.5
                     }
                     // For first half and quarter, like '」・'
-                    else if context.runs[runId].punctuation == .firstHalf && context.runs[runId + 1].punctuation == .quarter {
-                        height = context.adjustFontSize * 0.5
+                    else if punctuation == .firstHalf && nextPunctuation == .quarter {
+                        height = adjustFontSize * 0.5
                     }
                 }
             }
             
             // Layout run
-            if context.fontManager.needsToFlip(fontId: context.runs[runId].fontId) {
-                context.runs[runId].position = .init(
-                    x: x, 
-                    y: y + context.adjustFontSize - context.fontManager.descent(fontId: context.runs[runId].fontId, size: context.adjustFontSize) * 0.5)
+            if context.fontManager.needsToFlip(fontId: fontId, glyph: currentRun.glyph) {
+                // An emoji is drawn from its own font at its own scale, so neither
+                // its advance nor its bounding box matches the text around it and
+                // putting it on the baseline would leave it off the grid. Centre
+                // its bounding box in the em box instead, on both axes.
+                // The flipped draw path puts the ink at
+                // [position.y - boundingRect.maxY - boundingRect.height,
+                //  position.y - boundingRect.maxY], hence the y below.
+                let boundingRect = currentRun.boundingRect
+                currentRun.position = .init(
+                    x: x + (adjustFontSize - currentRun.advance.width) * 0.5,
+                    y: y + (adjustFontSize + boundingRect.height) * 0.5 + boundingRect.maxY)
             }
             else {
-                context.runs[runId].position = .init(
+                currentRun.position = .init(
                     x: x, 
                     y: posY)
             }
-            context.runs[runId].frame = .init(
+            currentRun.frame = .init(
                 x: x, 
                 y: y, 
-                width: context.runs[runId].advance.width, 
+                width: currentRun.advance.width, 
                 height: height)
         }
+        
+        // Update the run in the array
+        context.runs[runId] = currentRun
     }
     
     private func layoutRun() {
@@ -237,85 +329,97 @@ class STLayout {
     //--------------------------------------------------------------//
     
     private func goNextLineLrTb() {
-        // Swtich by punctuation mode
-        switch context.punctuationMode {
-        case .stone:
-            // For second half begin run, like '「'
-            if context.runs[lineStartRunId].punctuation == .secondHalf {
-                // Set position and frame
-                let dx = context.runs[lineStartRunId].advance.width * 0.5
-                var position = context.runs[lineStartRunId].position
-                position.x -= dx
-                context.runs[lineStartRunId].position = position
-                var frame = context.runs[lineStartRunId].frame
-                frame.size.width = context.runs[lineStartRunId].advance.width * 0.5
-                context.runs[lineStartRunId].frame = frame
-                
-                // Shift rest runs
-                for runId in lineStartRunId + 1 ..< self.runId {
-                    position = context.runs[runId].position
+        // For not fixed width
+        if !context.isFixedWidth {
+            // Swtich by punctuation mode
+            switch context.punctuationMode {
+            case .stone:
+                // For second half begin run, like '「'
+                if context.runs[lineStartRunId].punctuation == .secondHalf {
+                    // Set position and frame
+                    let dx = context.runs[lineStartRunId].advance.width * 0.5
+                    var position = context.runs[lineStartRunId].position
                     position.x -= dx
-                    context.runs[runId].position = position
-                    frame = context.runs[runId].frame
-                    frame.origin.x -= dx
+                    context.runs[lineStartRunId].position = position
+                    var frame = context.runs[lineStartRunId].frame
+                    frame.size.width = context.runs[lineStartRunId].advance.width * 0.5
+                    context.runs[lineStartRunId].frame = frame
+                    
+                    // Shift rest runs
+                    if lineStartRunId + 1 < self.runId {
+                        for runId in lineStartRunId + 1 ..< self.runId + 1 {
+                            position = context.runs[runId].position
+                            position.x -= dx
+                            context.runs[runId].position = position
+                            frame = context.runs[runId].frame
+                            frame.origin.x -= dx
+                            context.runs[runId].frame = frame
+                        }
+                    }
+                }
+                
+                // For first half end run, link '。'
+                if context.runs[runId].punctuation == .firstHalf {
+                    // Set frame
+                    var frame = context.runs[runId].frame
+                    frame.size.width = context.runs[runId].advance.width * 0.5
                     context.runs[runId].frame = frame
                 }
+            default: break
             }
-            
-            // For first half end run, link '。'
-            if context.runs[runId].punctuation == .firstHalf {
-                // Set frame
-                var frame = context.runs[runId].frame
-                frame.size.width = context.runs[runId].advance.width * 0.5
-                context.runs[runId].frame = frame
-            }
-        default: break
         }
         
         // Go next line
         x = minX
         y += context.adjustLineHeight
+        tmpX = nil
     }
     
     private func goNextLineTbRl() {
-        // Swtich by punctuation mode
-        switch context.punctuationMode {
-        case .stone:
-            // For second half begin run, like '「'
-            if context.runs[lineStartRunId].punctuation == .secondHalf {
-                // Set position and frame
-                let dy = context.adjustFontSize * 0.5
-                var position = context.runs[lineStartRunId].position
-                position.y -= dy
-                context.runs[lineStartRunId].position = position
-                var frame = context.runs[lineStartRunId].frame
-                frame.size.height = context.adjustFontSize * 0.5
-                context.runs[lineStartRunId].frame = frame
-                
-                // Shift rest runs
-                for runId in lineStartRunId + 1 ..< self.runId {
-                    position = context.runs[runId].position
+        // For not fixed width
+        if !context.isFixedWidth {
+            // Swtich by punctuation mode
+            switch context.punctuationMode {
+            case .stone:
+                // For second half begin run, like '「'
+                if context.runs[lineStartRunId].punctuation == .secondHalf {
+                    // Set position and frame
+                    let dy = context.adjustFontSize * 0.5
+                    var position = context.runs[lineStartRunId].position
                     position.y -= dy
-                    context.runs[runId].position = position
-                    frame = context.runs[runId].frame
-                    frame.origin.y -= dy
+                    context.runs[lineStartRunId].position = position
+                    var frame = context.runs[lineStartRunId].frame
+                    frame.size.height = context.adjustFontSize * 0.5
+                    context.runs[lineStartRunId].frame = frame
+                    
+                    // Shift rest runs
+                    if lineStartRunId + 1 < self.runId {
+                        for runId in lineStartRunId + 1 ..< self.runId + 1 {
+                            position = context.runs[runId].position
+                            position.y -= dy
+                            context.runs[runId].position = position
+                            frame = context.runs[runId].frame
+                            frame.origin.y -= dy
+                            context.runs[runId].frame = frame
+                        }
+                    }
+                }
+                
+                // For first half end run, link '。'
+                if context.runs[runId].punctuation == .firstHalf {
+                    // Set frame
+                    var frame = context.runs[runId].frame
+                    frame.size.height = context.adjustFontSize * 0.5
                     context.runs[runId].frame = frame
                 }
+            default: break
             }
-            
-            // For first half end run, link '。'
-            if context.runs[runId].punctuation == .firstHalf {
-                // Set frame
-                var frame = context.runs[runId].frame
-                frame.size.height = context.adjustFontSize * 0.5
-                context.runs[runId].frame = frame
-            }
-        default: break
         }
         
         // Go next line
         x -= context.adjustLineHeight
         y = 0
+        tmpX = nil
     }
     
     private func goNextLine() {
@@ -334,21 +438,25 @@ class STLayout {
     }
     
     private func goNextCharLrTb() {
-        // Move position
-        x += context.runs[runId].frame.width
+        // Cache current run reference
+        let currentRun = context.runs[runId]
         
-        // For new line
-        if context.runs[runId].char.isNewline {
-            // Go next line
-            goNextLine()
-            return
+        // Move position
+        if context.isFixedWidth {
+            x += context.fontSize
+        }
+        else {
+            x += currentRun.frame.width
         }
         
         // Check next run
         if runId + 1 < context.runs.count {
+            // Cache current and next run data
+            let tokenId = currentRun.tokenId
+            let nextRun = context.runs[runId + 1]
+            let nextTokenId = nextRun.tokenId
+            
             // Check with token advance
-            let tokenId = context.runs[runId].tokenId
-            let nextTokenId = context.runs[runId + 1].tokenId
             if tokenId != nextTokenId {
                 if x + context.advance(token: context.tokens[nextTokenId]) > maxX {
                     // Go next line
@@ -357,7 +465,7 @@ class STLayout {
             }
             // Check with run advance
             else {
-                if x + context.runs[runId + 1].advance.width > maxX {
+                if x + nextRun.advance.width > maxX {
                     // Go next line
                     goNextLine()
                 }
@@ -366,15 +474,18 @@ class STLayout {
     }
     
     private func goNextCharTbRl() {
+        // Cache current run reference
+        let currentRun = context.runs[runId]
+        
         // Check tate chu yoko
-        if context.isTateChuYoko(run: context.runs[runId]) {
+        if context.isTateChuYoko(run: currentRun) {
             // For not last
-            guard context.isLastInToken(run: context.runs[runId]) else {
+            guard context.isLastInToken(run: currentRun) else {
                 // Keep current x
                 if tmpX == nil { tmpX = x }
                 
                 // Move position
-                x += context.runs[runId].frame.width
+                x += currentRun.frame.width
                 return
             }
             
@@ -386,10 +497,15 @@ class STLayout {
         }
         
         // Move position
-        y += context.runs[runId].frame.height
+        if context.isFixedWidth {
+            y += context.fontSize
+        }
+        else {
+            y += currentRun.frame.height
+        }
         
         // For new line
-        if context.runs[runId].char.isNewline {
+        if currentRun.isNewline {
             // Go next line
             goNextLine()
             return
@@ -397,9 +513,12 @@ class STLayout {
         
         // Check next run
         if runId + 1 < context.runs.count {
+            // Cache current and next run data
+            let tokenId = currentRun.tokenId
+            let nextRun = context.runs[runId + 1]
+            let nextTokenId = nextRun.tokenId
+            
             // Check with token advance
-            let tokenId = context.runs[runId].tokenId
-            let nextTokenId = context.runs[runId + 1].tokenId
             if tokenId != nextTokenId {
                 if y + context.advance(token: context.tokens[nextTokenId]) > maxY {
                     // Go next line
@@ -428,12 +547,44 @@ class STLayout {
     // MARK: - Process kinshoku
     //--------------------------------------------------------------//
     
+    private func processNotEndingAndStartingForHanging() {
+        // For new line
+        guard !context.runs[runId].isNewline else { return }
+        
+        // Decide next line start run
+        var nextStartRun: STRun?
+        if runId < context.runs.count {
+            if runId + 1 < context.runs.count {
+                nextStartRun = context.runs[runId + 1]
+            }
+        }
+        
+        // For hanging
+        if let run = nextStartRun, run.flags.contains(.hanging) {
+            // Increment run ID
+            runId += 1
+            
+            // Layout run
+            layoutRun()
+            
+            // Extend geometry with hanging
+            switch context.direction {
+            case .lrTb: context.renderSize.width += context.fontSize * 0.25
+            case .tbRl: context.renderSize.height += context.fontSize * 0.25
+            }
+        }
+    }
+    
     private func processNotEndingAndStarting() {
         // Check features
+        guard !context.isFixedWidth else {
+            processNotEndingAndStartingForHanging()
+            return
+        }
         guard context.isKinsokuAvailable else { return }
         
         // For new line
-        guard !context.runs[runId].char.isNewline else { return }
+        guard !context.runs[runId].isNewline else { return }
         
         // Declare closure for decrease run ID
         let decreaseRunId: (() -> Void) = {
@@ -442,7 +593,7 @@ class STLayout {
             let token = self.context.tokens[tokenId]
             
             // Decrease run ID
-            self.runId -= token.runIdRange.count
+            self.runId = token.runIdRange.lowerBound - 1
             if self.runId < self.lineStartRunId {
                 self.runId = self.lineStartRunId
             }
@@ -461,14 +612,14 @@ class STLayout {
             }
             
             // For not ending or starting
-            if let run = endRun, let scalr = run.char.unicodeScalars.first, STKinsoku.notEndingCharSet.contains(scalr) {
+            if let run = endRun, run.flags.contains(.notEnding) {
                 // Decrease run ID
                 decreaseRunId()
                 continue
             }
             
             // For not starting
-            if let run = nextStartRun, let scalr = run.char.unicodeScalars.first, STKinsoku.notStartingCharSet.contains(scalr) {
+            if let run = nextStartRun, run.flags.contains(.notStarting) {
                 // Decrease run ID
                 decreaseRunId()
                 continue
@@ -483,31 +634,56 @@ class STLayout {
     //--------------------------------------------------------------//
     
     private func shiftPositionLrTb() {
-        // Decide min y and max y
-        var minY: CGFloat = .greatestFiniteMagnitude
-        for i in 0 ..< context.runs.count {
-            guard context.runs[i].line == 0 else { break }
-            minY = min(minY, context.runs[i].frame.minY)
+        // Shift against the grid the lines sit on, not against the run frames.
+        //
+        // A run's frame is its own font's ascent above the shared baseline, and
+        // fonts do not agree on that. A newline run carries no glyph at all and
+        // only inherits the font of the character before it. Measuring the block
+        // from those means the whole document moves depending on which fonts
+        // happen to land on the first line, and the text stops sitting on the
+        // grid the visible area is sized to - a line then reaches into the next
+        // line's box, and a scroll cannot show both edges whole.
+        let lineHeight = context.adjustLineHeight
+        let renderHeight = context.renderSize.height
+
+        // The grid the lines sit on
+        let gridTop = -emAscent
+        let gridBottom = gridTop + lineHeight * CGFloat(context.lineCount)
+
+        // How far the glyphs actually reach. A font whose ascent is taller than
+        // the one the grid is measured from would otherwise be cut at the top, so
+        // the block has to hold both. Shifting by one amount keeps the lines a
+        // line height apart whichever it turns out to be.
+        var inkTop = CGFloat.greatestFiniteMagnitude
+        var inkBottom = -CGFloat.greatestFiniteMagnitude
+        for run in context.runs {
+            // Skip the runs that carry no glyph of their own. A newline only
+            // inherits the font of the character before it.
+            guard !run.isNewline else { continue }
+            inkTop = min(inkTop, run.frame.minY)
+            inkBottom = max(inkBottom, run.frame.maxY)
         }
-        var maxY: CGFloat = 0
-        for i in (0 ..< context.runs.count).reversed() {
-            guard context.runs[i].line == context.lineCount - 1 else { break }
-            maxY = max(maxY, context.runs[i].frame.maxY)
-        }
-        guard minY < .greatestFiniteMagnitude && maxY > .greatestFiniteMagnitude * -1 else { return }
-        
-        // Decide dy
+
+        let blockTop = min(gridTop, inkTop)
+        let blockBottom = max(gridBottom, inkBottom == -CGFloat.greatestFiniteMagnitude ? gridBottom : inkBottom)
+        let blockHeight = blockBottom - blockTop
+
+        // Decide dy. Every case is expressed against the pre-shift coordinates.
         let dy: CGFloat
         switch context.directionAlign {
-        case .start: dy = -minY
-        case .middle: dy = (context.renderSize.height - (maxY - minY)) * 0.5
-        case .end: dy = context.renderSize.height - maxY
+        case .start: dy = -blockTop
+        case .middle: dy = -blockTop + (renderHeight - blockHeight) * 0.5
+        case .end: dy = renderHeight - blockBottom
         }
-        
-        // Shift y
-        for i in 0 ..< context.runs.count {
-            context.runs[i].position.y += dy
-            context.runs[i].frame = context.runs[i].frame.shift(dx: 0, dy: dy)
+
+        // Walk the runs in place. Going through context.runs for every element
+        // costs a uniqueness check and a bounds check on each access.
+        context.runs.withUnsafeMutableBufferPointer { runs in
+            // Shift y
+            for i in 0 ..< runs.count {
+                runs[i].position.y += dy
+                runs[i].frame = runs[i].frame.shift(dx: 0, dy: dy)
+            }
         }
     }
     
@@ -528,8 +704,8 @@ class STLayout {
         }
         
         // Calc gap and diff
-        let gap = (context.renderSize.width - total) / CGFloat(tokenCount)
         let diff = context.renderSize.width - total
+        let gap = diff / CGFloat(max(tokenCount - 1, 1))
         
         // Switch by text align
         switch context.textAlign {
@@ -552,30 +728,46 @@ class STLayout {
         case .justify:
             // Check last run
             guard runIdRange.upperBound < context.runs.count else { return }
-            guard !context.runs[runIdRange.upperBound - 1].char.isNewline else { break }
+            guard !context.runs[runIdRange.upperBound - 1].isNewline else { break }
             
-            // Align to justify
-            var x = context.runs[runIdRange.lowerBound].position.x
+            // Align to justify. Only the gaps are added, and the runs keep the
+            // spacing the layout gave them - which is what `total` above was
+            // measured from, so the line comes out exactly the measure wide.
+            //
+            // Rebuilding every position from a running cursor instead, advancing
+            // by frame.maxX - position.x, counts the overhang of a squeezed
+            // opening bracket twice: stone mode draws such a bracket half an em
+            // left of its cell, so that difference is not the cell's width. Two
+            // of them on one line pushed it a whole character past the measure.
+            var dx: CGFloat = 0
             var prevTokeId = context.runs[runIdRange.lowerBound].tokenId
-            for i in runIdRange {
+            for index in 0 ..< runIdRange.count {
+                // For first
+                if index == 0 { continue }
+                
+                // Get run ID
+                let i = runIdRange.lowerBound + index
+                
                 // Check token ID
                 if context.runs[i].tokenId != prevTokeId {
+                    // Increase dx
+                    dx += gap
+                    
+                    // Set token ID
                     prevTokeId = context.runs[i].tokenId
-                    x += gap
                 }
                 
                 // Shift x
-                let dx = x - context.runs[i].position.x
                 context.runs[i].position.x += dx
                 context.runs[i].frame = context.runs[i].frame.shift(dx: dx, dy: 0)
-                
-                // Move x
-                x += context.runs[i].frame.width
             }
         }
     }
     
     private func alignTextLrTb() {
+        // Check fixed width
+        guard !context.isFixedWidth else { return }
+        
         // Get runs
         var line = 0
         var lowerRunId = -1
@@ -609,32 +801,57 @@ class STLayout {
         // Decide max X and max Y
         var maxX: CGFloat = 0
         var maxY: CGFloat = 0
-        for i in 0 ..< context.runs.count {
-            maxX = max(maxX, context.runs[i].frame.maxX)
-            maxY = max(maxY, context.runs[i].frame.maxY)
+        context.runs.withUnsafeBufferPointer { runs in
+            for i in 0 ..< runs.count {
+                maxX = max(maxX, runs[i].frame.maxX)
+                maxY = max(maxY, runs[i].frame.maxY)
+            }
         }
-        
+
         // Set rendered size
         let height = max(context.lineHeight * CGFloat(context.lineCount), maxY)
         context.renderedSize = .init(width: maxX, height: height)
     }
     
     private func updateVisibility() {
-        // Set visibility
-        let renderFrame = CGRect(origin: .zero, size: context.renderSize)
-        for i in 0 ..< context.runs.count {
-            // Decide shown
-            let isShown = renderFrame.intersects(context.runs[i].frame)
-            let nextIsShown: Bool
-            if i < context.runs.count - 1 { nextIsShown = renderFrame.contains(context.runs[i + 1].frame) }
-            else { nextIsShown = true }
-            
-            // Decide visibility
-            if isShown && !nextIsShown {
-                context.runs[i].visibility = .ellipsis
+        // Set visibility. Multi-line text grows along the block axis to fit its
+        // content, so only the inline axis can ever clip it. Leaving the block
+        // axis bounded would hide runs whenever the render size lags the content.
+        var renderFrame = CGRect(origin: .zero, size: context.renderSize)
+        if !context.isSingleLine {
+            let unbounded = CGFloat.greatestFiniteMagnitude
+            switch context.direction {
+            case .lrTb:
+                renderFrame.origin.y = -unbounded * 0.25
+                renderFrame.size.height = unbounded * 0.5
+            case .tbRl:
+                renderFrame.origin.x = -unbounded * 0.25
+                renderFrame.size.width = unbounded * 0.5
             }
-            else {
-                context.runs[i].visibility = isShown ? .visible : .invisible
+        }
+        // Walk the runs in place
+        context.runs.withUnsafeMutableBufferPointer { runs in
+            let runCount = runs.count
+            for i in 0 ..< runCount {
+                // Decide shown
+                let isShown = renderFrame.intersects(runs[i].frame)
+                let nextIsShown: Bool
+                if i < runCount - 1 {
+                    nextIsShown = renderFrame.contains(runs[i + 1].frame)
+                }
+                else {
+                    nextIsShown = true
+                }
+
+                // Decide visibility
+                if isShown && !nextIsShown {
+// mkino
+//                    runs[i].visibility = .ellipsis
+                    runs[i].visibility = .visible
+                }
+                else {
+                    runs[i].visibility = isShown ? .visible : .invisible
+                }
             }
         }
     }
@@ -648,31 +865,40 @@ class STLayout {
     }
     
     private func shiftPositionTbRl() {
-        // Decide min x and max x
-        var minX: CGFloat = .greatestFiniteMagnitude
-        for i in (0 ..< context.runs.count).reversed() {
-            minX = min(minX, context.runs[i].frame.minX)
-            guard context.runs[i].line == context.lineCount - 1 else { break }
-        }
-        var maxX: CGFloat = 0
-        for i in 0 ..< context.runs.count {
-            maxX = max(maxX, context.runs[i].frame.maxX)
-            guard context.runs[i].line == 0 else { break }
-        }
-        guard minX < .greatestFiniteMagnitude && maxX > .greatestFiniteMagnitude * -1 else { return }
-        
-        // Decide dx
-        let dx: CGFloat
-        switch context.directionAlign {
-        case .start: dx = context.renderSize.width - maxX
-        case .middle: dx = context.renderSize.width - context.adjustFontSize - (context.renderSize.width - (maxX - minX)) * 0.5
-        case .end: dx = -minX
-        }
-        
-        // Shift x
-        for i in 0 ..< context.runs.count {
-            context.runs[i].position.x += dx
-            context.runs[i].frame = context.runs[i].frame.shift(dx: dx, dy: 0)
+        // Hoist everything read from the context
+        let lastLine = context.lineCount - 1
+        let renderWidth = context.renderSize.width
+        let adjustFontSize = context.adjustFontSize
+        let directionAlign = context.directionAlign
+
+        // Walk the runs in place
+        context.runs.withUnsafeMutableBufferPointer { runs in
+            // Decide min x and max x
+            var minX: CGFloat = .greatestFiniteMagnitude
+            for i in (0 ..< runs.count).reversed() {
+                minX = min(minX, runs[i].frame.minX)
+                guard runs[i].line == lastLine else { break }
+            }
+            var maxX: CGFloat = 0
+            for i in 0 ..< runs.count {
+                maxX = max(maxX, runs[i].frame.maxX)
+                guard runs[i].line == 0 else { break }
+            }
+            guard minX < .greatestFiniteMagnitude && maxX > .greatestFiniteMagnitude * -1 else { return }
+
+            // Decide dx
+            let dx: CGFloat
+            switch directionAlign {
+            case .start: dx = renderWidth - maxX
+            case .middle: dx = renderWidth - adjustFontSize - (renderWidth - (maxX - minX)) * 0.5
+            case .end: dx = -minX
+            }
+
+            // Shift x
+            for i in 0 ..< runs.count {
+                runs[i].position.x += dx
+                runs[i].frame = runs[i].frame.shift(dx: dx, dy: 0)
+            }
         }
     }
     
@@ -759,9 +985,8 @@ class STLayout {
         }
         
         // Calc gap and diff
-        let gap = (context.renderSize.height - total) / CGFloat(tokenCount)
         let diff = context.renderSize.height - total
-        
+        let gap = diff / CGFloat(max(tokenCount - 1, 1))
         
         // Switch by text align
         switch context.textAlign {
@@ -777,7 +1002,6 @@ class STLayout {
             }
         case .trailng:
             // Align to trailing
-            let diff = context.renderSize.height - total
             for i in runIdRange {
                 context.runs[i].position.y += diff
                 context.runs[i].frame = context.runs[i].frame.shift(dx: 0, dy: diff)
@@ -785,41 +1009,38 @@ class STLayout {
         case .justify:
             // Check last run
             guard runIdRange.upperBound < context.runs.count else { return }
-            guard !context.runs[runIdRange.upperBound - 1].char.isNewline else { break }
+            guard !context.runs[runIdRange.upperBound - 1].isNewline else { break }
             
             // Align to justify
-            var y = context.runs[runIdRange.lowerBound].position.y
+            var dy: CGFloat = 0
             var prevTokeId = context.runs[runIdRange.lowerBound].tokenId
-            for i in runIdRange {
+            for index in 0 ..< runIdRange.count {
+                // For first
+                if index == 0 { continue }
+                
+                // Get run ID
+                let i = runIdRange.lowerBound + index
+                
                 // Check token ID
                 if context.runs[i].tokenId != prevTokeId {
+                    // Increase dy
+                    dy += gap
+                    
+                    // Set token ID
                     prevTokeId = context.runs[i].tokenId
-                    y += gap
                 }
                 
                 // Shift y
-                let dy = y - context.runs[i].position.y
                 context.runs[i].position.y += dy
                 context.runs[i].frame = context.runs[i].frame.shift(dx: 0, dy: dy)
-                
-                // For tate chu yoko
-                if context.isTateChuYoko(run: context.runs[i]) {
-                    // For last one
-                    if context.runs[i].tokenRunIndex == 1 {
-                        // Move y
-                        y += context.runs[i].frame.height
-                    }
-                }
-                // For other
-                else {
-                    // Move y
-                    y += context.runs[i].frame.height
-                }
             }
         }
     }
     
     private func alignTextTbRl() {
+        // Check fixed width
+        guard !context.isFixedWidth else { return }
+        
         // Get runs
         var line = 0
         var lowerRunId = -1
@@ -855,19 +1076,21 @@ class STLayout {
         var maxX: CGFloat = 0
         var minY: CGFloat = .greatestFiniteMagnitude
         var maxY: CGFloat = 0
-        for i in 0 ..< context.runs.count {
-            minX = min(minX, context.runs[i].frame.minX)
-            maxX = max(maxX, context.runs[i].frame.maxX)
-            minY = min(minY, context.runs[i].frame.minY)
-            maxY = max(maxY, context.runs[i].frame.maxY)
+        context.runs.withUnsafeBufferPointer { runs in
+            for i in 0 ..< runs.count {
+                minX = min(minX, runs[i].frame.minX)
+                maxX = max(maxX, runs[i].frame.maxX)
+                minY = min(minY, runs[i].frame.minY)
+                maxY = max(maxY, runs[i].frame.maxY)
+            }
         }
-        
+
         // Set rendered size
         if minX < .greatestFiniteMagnitude && maxX > 0 {
-            context.renderedSize.width = maxX - minX
+            context.renderedSize.width = max(context.lineHeight * CGFloat(context.lineCount), maxX - minX)
         }
         else {
-            context.renderedSize.width = 0
+            context.renderedSize.width = context.lineHeight * CGFloat(context.lineCount)
         }
         if minY < .greatestFiniteMagnitude && maxY > 0 {
             context.renderedSize.height = maxY - minY
@@ -903,6 +1126,7 @@ class STLayout {
         NotificationCenter.default.post(name: Self.willLayout, object: self)
         
         // Initialize
+        emAscent = context.fontManager.primaryAscent(size: context.adjustFontSize)
         context.lineCount = 0
         x = minX
         y = minY
@@ -916,7 +1140,7 @@ class STLayout {
             layoutRun()
             
             // For new line
-            if context.runs[runId].char.isNewline {
+            if context.runs[runId].isNewline {
                 // Get next line
                 goNextLine()
             }

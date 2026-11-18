@@ -56,6 +56,9 @@ open class STTextRange: UITextRange {
 
     // String.Index
     public func range(text: String) -> Range<String.Index> {
+        if range.lowerBound >= text.count {
+            return text.endIndex ..< text.endIndex
+        }
         if range.upperBound >= text.count {
             return text.index(text.startIndex, offsetBy: range.lowerBound) ..< text.endIndex
         }

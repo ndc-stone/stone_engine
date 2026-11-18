@@ -38,14 +38,12 @@ open class STCursorView: UIView {
         // Common init
         _init()
     }
-}
-
-public extension STCursorView {
+    
     //--------------------------------------------------------------//
     // MARK: - View
     //--------------------------------------------------------------//
     
-    override func didMoveToWindow() {
+    open override func didMoveToWindow() {
         // Invoke super
         super.didMoveToWindow()
         
@@ -58,12 +56,12 @@ public extension STCursorView {
     // MARK: - Appearance
     //--------------------------------------------------------------//
     
-    private func updateLayerColor() {
+    func updateLayerColor() {
         // Set layer background color
         cursorLayer.backgroundColor = UIColor.label.cgColor
     }
     
-    private func updateHeartBeat() {
+    func updateHeartBeat() {
         // For window
         if window != nil {
             // Add opacity animation
@@ -87,7 +85,7 @@ public extension STCursorView {
     // MARK: - Layout
     //--------------------------------------------------------------//
     
-    override func layoutSublayers(of layer: CALayer) {
+    open override func layoutSublayers(of layer: CALayer) {
         // Invoke super
         super.layoutSublayers(of: layer)
         

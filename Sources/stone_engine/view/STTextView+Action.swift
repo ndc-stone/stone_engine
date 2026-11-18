@@ -82,10 +82,11 @@ extension STTextView {
             }
             
             // Needs to show lens
-            setNeedsToUpdateLens(true)
+            lensSupport.setNeedsToUpdateLens(true)
         case .changed:
             // Check lens visibility
-            guard isLensShown else { return }
+// mkino
+//            guard isLensShown else { return }
             
             // Set long press point
             longPressPoint = point
@@ -101,13 +102,13 @@ extension STTextView {
             }
             
             // Needs to show lens
-            setNeedsToUpdateLens(true)
+            lensSupport.setNeedsToUpdateLens(true)
         case .ended, .cancelled:
             // Clear long press point
             longPressPoint = nil
             
             // Needs to hide lens
-            setNeedsToUpdateLens(false)
+            lensSupport.setNeedsToUpdateLens(false)
             
             // Needs to show menu
             setNeedsToUpdateMenu(true)
@@ -116,6 +117,33 @@ extension STTextView {
     }
     
     @objc func trackpadPanAction(_ recognizer: UITapGestureRecognizer) {
+        // Get text position
+        let point = recognizer.location(in: self)
+        guard let textRange = selectedTextRange as? STTextRange else { return }
+        guard let textPosition = closestPosition(to: point) as? STTextPosition else { return }
+        
+        // Switch by state
+        switch recognizer.state {
+        case .began:
+            // Set pivot index
+            trackpadPivotIndex = textRange.range.upperBound
+        case .changed:
+            // Check with pivot
+            guard let pivotIndex = trackpadPivotIndex else { return }
+            if textPosition.index < pivotIndex {
+                // Set selected text range
+                selectedTextRange = STTextRange(range: textPosition.index ..< pivotIndex)
+            }
+            else {
+                // Set selected text range
+                selectedTextRange = STTextRange(range: pivotIndex ..< textPosition.index)
+            }
+        case .ended:
+            // Clear
+            trackpadPivotIndex = nil
+        default:
+            break
+        }
     }
     
     @objc func knobPanAction(_ recognizer: UIPanGestureRecognizer) {
@@ -138,7 +166,7 @@ extension STTextView {
             }
             
             // Needs to show lens
-            setNeedsToUpdateLens(true)
+            lensSupport.setNeedsToUpdateLens(true)
         case .changed:
             // Check with pivot
             guard let pivotIndex = dragPivotIndex else { return }
@@ -154,7 +182,7 @@ extension STTextView {
             }
             
             // Needs to show lens
-            setNeedsToUpdateLens(true)
+            lensSupport.setNeedsToUpdateLens(true)
         case .ended, .cancelled:
             // Clear knob dragging
             isBeginKnobDragging = nil
@@ -163,7 +191,7 @@ extension STTextView {
             setNeedsToUpdateMenu(true)
             
             // Needs to hide lens
-            setNeedsToUpdateLens(false)
+            lensSupport.setNeedsToUpdateLens(false)
         default: break
         }
     }
@@ -175,7 +203,6 @@ extension STTextView {
     //--------------------------------------------------------------//
     
     func setNeedsToUpdateMenu(_ needsToShowMenu: Bool) {
-        /*
         // Check flag
         guard self.needsToShowMenu != needsToShowMenu else { return }
         self.needsToShowMenu = needsToShowMenu
@@ -183,12 +210,11 @@ extension STTextView {
         // Wait a moment
         DispatchQueue.main.async {
             // Update appearance
-            //self.updateMenu()
+            self.updateMenu()
             
             // Clear flag
             self.needsToShowMenu = nil
         }
-        */
     }
 }
 

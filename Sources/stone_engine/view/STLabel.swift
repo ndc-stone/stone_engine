@@ -16,111 +16,235 @@ open class STLabel: UIView {
     // Text
     open var text: String? {
         didSet {
+            // Check with old value
+            guard oldValue != text else { return }
+            
             // Set needs layout
+            needsToLayout = true
             setNeedsLayout()
         }
     }
     
     // Layout
     open var fontSize: CGFloat {
-        get { context.fontSize }
+        get {
+            context.fontSize
+        }
         set {
+            // Check new value
+            guard newValue != fontSize else { return }
             context.fontSize = newValue
+            
+            // Set needs layout
+            needsToLayout = true
             setNeedsLayout()
         }
     }
     open var lineHeightScale: CGFloat {
-        get { context.lineHeightScale }
+        get {
+            context.lineHeightScale
+        }
         set {
+            // Check new value
+            guard newValue != lineHeightScale else { return }
             context.lineHeightScale = newValue
+            
+            // Set needs layout
+            needsToLayout = true
             setNeedsLayout()
         }
     }
     open var textAlign: STTextAlign {
-        get { context.textAlign }
+        get {
+            context.textAlign
+        }
         set {
+            // Check new value
+            guard newValue != textAlign else { return }
             context.textAlign = newValue
+            
+            // Set needs layout
+            needsToLayout = true
             setNeedsLayout()
         }
     }
     open var directionAlign: STDirectionAlign {
-        get { context.directionAlign }
+        get {
+            context.directionAlign
+        }
         set {
+            // Check new value
+            guard newValue != directionAlign else { return }
             context.directionAlign = newValue
+            
+            // Set needs layout
+            needsToLayout = true
             setNeedsLayout()
         }
     }
     open var direction: STDirection {
-        get { context.direction }
+        get {
+            context.direction
+        }
         set {
+            // Check new value
+            guard newValue != direction else { return }
             context.direction = newValue
+            
+            // Set needs layout
+            needsToLayout = true
             setNeedsLayout()
         }
     }
     open var isAllowedTateChuYoko: Bool {
-        get { context.isAllowedTateChuYoko }
+        get {
+            context.isAllowedTateChuYoko
+        }
         set {
+            // Check new value
+            guard newValue != isAllowedTateChuYoko else { return }
             context.isAllowedTateChuYoko = newValue
+            
+            // Set needs layout
+            needsToLayout = true
             setNeedsLayout()
         }
     }
     open var adjustsFontSizeToFitWidth: Bool {
-        get { context.adjustsFontSizeToFitWidth }
+        get {
+            context.adjustsFontSizeToFitWidth
+        }
         set {
+            // Check new value
+            guard newValue != adjustsFontSizeToFitWidth else { return }
             context.adjustsFontSizeToFitWidth = newValue
+            
+            // Set needs layout
+            needsToLayout = true
             setNeedsLayout()
         }
     }
     open var minimumScaleFactor: CGFloat {
-        get { context.minimumScaleFactor }
+        get {
+            context.minimumScaleFactor
+        }
         set {
+            // Check new value
+            guard newValue != minimumScaleFactor else { return }
             context.minimumScaleFactor = newValue
+            
+            // Set needs layout
+            needsToLayout = true
             setNeedsLayout()
         }
     }
+    open var isFixedWidth: Bool {
+        get {
+            context.isFixedWidth
+        }
+        set {
+            // Check new value
+            guard newValue != isFixedWidth else { return }
+            context.isFixedWidth = newValue
+            
+            // Set needs layout
+            needsToLayout = true
+            setNeedsLayout()
+        }
+    }
+    open var hasSelectedAreaLineGap: Bool = true
     
     // Color
     open var textColor: UIColor {
-        get { context.textColor }
+        get {
+            context.textColor
+        }
         set {
+            // Check new value
+            guard newValue != textColor else { return }
             context.textColor = newValue
+            
+            // Set needs layout
+            needsToLayout = true
+            setNeedsLayout()
+        }
+    }
+    open var selectedTextColor: UIColor {
+        get {
+            context.selectedTextColor
+        }
+        set {
+            // Check new value
+            guard newValue != selectedTextColor else { return }
+            context.selectedTextColor = newValue
+            
+            // Set needs layout
+            needsToLayout = true
             setNeedsLayout()
         }
     }
     open var selectedAreaColor: UIColor {
-        get { context.selectedAreaColor }
+        get {
+            context.selectedAreaColor
+        }
         set {
+            // Check new value
+            guard newValue != selectedAreaColor else { return }
             context.selectedAreaColor = newValue
+            
+            // Set needs layout
+            needsToLayout = true
             setNeedsLayout()
         }
     }
     
     // Features
     open var punctuationMode: STPunctuationMode {
-        get { context.punctuationMode }
+        get {
+            context.punctuationMode
+        }
         set {
+            // Check new value
+            guard newValue != punctuationMode else { return }
             context.punctuationMode = newValue
+            
+            // Set needs layout
+            needsToLayout = true
             setNeedsLayout()
         }
     }
     open var isKinsokuAvailable: Bool {
-        get { context.isKinsokuAvailable }
+        get {
+            context.isKinsokuAvailable
+        }
         set {
+            // Check new value
+            guard newValue != isKinsokuAvailable else { return }
             context.isKinsokuAvailable = newValue
+            
+            // Set needs layout
+            needsToLayout = true
             setNeedsLayout()
         }
     }
     open var isDividedByWords: Bool {
-        get { context.isDividedByWords }
+        get {
+            context.isDividedByWords
+        }
         set {
+            // Check new value
+            guard newValue != isDividedByWords else { return }
             context.isDividedByWords = newValue
+            
+            // Set needs layout
+            needsToLayout = true
             setNeedsLayout()
         }
     }
     
     // Context
     public let context = STContext()
-
+    
     private var needsToLayout: Bool = false
     
     //--------------------------------------------------------------//
@@ -192,7 +316,24 @@ open class STLabel: UIView {
     // MARK: - Layout
     //--------------------------------------------------------------//
     
-    private func adjustWithScale(_ scale: CGFloat) -> Bool {
+    open func needsToLayout(size: CGSize) -> Bool {
+        // Check flag
+        guard !needsToLayout else { return true }
+        
+        // Check size
+        switch direction {
+        case .lrTb:
+            if context.renderSize == size { return false }
+            if size.height == 0 && context.renderSize.width == size.width { return false }
+        case .tbRl:
+            if context.renderSize == size { return false }
+            if size.width == 0 && context.renderSize.height == size.height { return false }
+        }
+        
+        return true
+    }
+    
+    open func adjustWithScale(_ scale: CGFloat) -> Bool {
         // Set adjust font scale
         context.adjustFontScale = scale
         
@@ -204,7 +345,7 @@ open class STLabel: UIView {
         return !context.isTruncated
     }
     
-    private func adjust() {
+    open func adjust() {
         // Check max and min scale
         guard minimumScaleFactor > 0 else { return }
         var maxScale: CGFloat = 1
@@ -235,7 +376,10 @@ open class STLabel: UIView {
         }
     }
     
-    private func parseAndLayout() {
+    open func parseAndLayout() {
+        // Check needs to layout
+        guard needsToLayout(size: bounds.size) else { return }
+        
         // Set render size
         context.renderSize = bounds.size
         context.adjustFontScale = 1.0
@@ -331,10 +475,11 @@ open class STLabel: UIView {
     
     open func layoutThatFits(_ size: CGSize) -> CGSize {
         // Check needs to layout
-        guard needsToLayout || context.renderSize != size else { return context.renderedSize }
+        guard needsToLayout(size: size) else { return context.renderedSize }
         
-        // Layout
+        // Pares and layout
         context.renderSize = size
+        STParser(context: context).parse(text: text)
         STLayout(context: context).layout()
         
         // Clear flag
@@ -348,6 +493,44 @@ open class STLabel: UIView {
     // MARK: - Draw
     //--------------------------------------------------------------//
     
+    struct DrawBucket {
+        let fontId: Int
+        let isClockwise: Bool
+        let needsToFlip: Bool
+        let isSelected: Bool
+        let ctFont: CTFont
+        var glyphs: [CGGlyph]
+        var positions: [CGPoint]
+        var frames: [CGRect]
+    }
+    
+    var drawBuckets = [DrawBucket]()
+    var drawRuns = [STRun]()
+    
+    private func runFrameWithLineGap(at index: Int) -> CGRect {
+        // For line 0
+        if drawRuns[index].line == 0 { return drawRuns[index].frame }
+        
+        // Swtich by direction
+        let lineGapHeight = context.lineGapHeight
+        
+        var runFrame: CGRect = .zero
+        switch direction {
+        case .lrTb:
+            runFrame.origin.x = drawRuns[index].frame.minX
+            runFrame.origin.y = drawRuns[index].frame.minY - lineGapHeight
+            runFrame.size.width = drawRuns[index].frame.width
+            runFrame.size.height = drawRuns[index].frame.height + lineGapHeight
+        case .tbRl:
+            runFrame.origin.x = drawRuns[index].frame.minX
+            runFrame.origin.y = drawRuns[index].frame.minY
+            runFrame.size.width = drawRuns[index].frame.width + lineGapHeight
+            runFrame.size.height = drawRuns[index].frame.height
+        }
+        
+        return runFrame
+    }
+    
     private func uniteRunRects(range: STTextRange, hasLineGap: Bool) -> [CGRect] {
         // Unite run rects
         var unitedRect = CGRect.zero
@@ -355,9 +538,9 @@ open class STLabel: UIView {
         var prevLine = -1
         for i in range.range {
             // Get run and rect
-            guard i < context.runs.count else { break }
-            let run = context.runs[i]
-            let rect = hasLineGap ? context.runFrameWithLineGap(at: i) : run.frame
+            guard i < drawRuns.count else { break }
+            let run = drawRuns[i]
+            let rect = hasLineGap ? runFrameWithLineGap(at: i) : run.frame
             
             // For in same line
             if prevLine == run.line {
@@ -413,7 +596,7 @@ open class STLabel: UIView {
         cgContext.setFillColor(selectedAreaColor.cgColor)
         
         // Unite selected run rects
-        let rects = uniteRunRects(range: range, hasLineGap: true)
+        let rects = uniteRunRects(range: range, hasLineGap: hasSelectedAreaLineGap)
         
         // Fill rects
         for rect in rects {
@@ -421,38 +604,49 @@ open class STLabel: UIView {
         }
     }
     
-    struct DrawBucket {
-        let fontId: Int
-        let isClockwise: Bool
-        let needsToFlip: Bool
-        let ctFont: CTFont
-        var glyphs: [CGGlyph]
-        var positions: [CGPoint]
-        var frames: [CGRect]
-    }
-    
-    var drawBuckets = [DrawBucket]()
-    
     private func createDrawBcukets() {
+        // Get selected text range
+        let range = (textInput?.selectedTextRange as? STTextRange) ?? STTextRange(range: 0 ..< 0)
+        
         // Create draw buckets
         var drawBuckets = [DrawBucket]()
-        for run in context.runs {
+        for (index, run) in context.runs.enumerated() {
             // Check visibility
             guard !run.isHidden else { continue }
             let isClockwise = context.isClockwise(run: run)
             let needsToFlip = context.fontManager.needsToFlip(fontId: run.fontId)
+            let isSelected = range.range.contains(index)
             
             // Find bucket
             let bucketIndex: Int
-            if let index = drawBuckets.firstIndex(where: { $0.fontId == run.fontId && $0.isClockwise == isClockwise && $0.needsToFlip == needsToFlip }) {
+            if let index = drawBuckets.firstIndex(where: {
+                $0.fontId == run.fontId && 
+                $0.isClockwise == isClockwise && 
+                $0.needsToFlip == needsToFlip &&
+                $0.isSelected == isSelected
+            }) {
                 bucketIndex = index
             }
             else {
                 // Get CT font
-                let ctFont = context.fontManager.ctFont(fontId: run.fontId, size: context.adjustFontSize, isClockwise: isClockwise)
+                let ctFont = context.fontManager.ctFont(
+                    fontId: run.fontId, 
+                    size: context.adjustFontSize, 
+                    isClockwise: isClockwise
+                )
                 
                 // Add bucket
-                drawBuckets.append(DrawBucket(fontId: run.fontId, isClockwise: isClockwise, needsToFlip: needsToFlip, ctFont: ctFont, glyphs: [], positions: [], frames: []))
+                let drawBucket = DrawBucket(
+                    fontId: run.fontId, 
+                    isClockwise: isClockwise, 
+                    needsToFlip: needsToFlip, 
+                    isSelected: isSelected, 
+                    ctFont: ctFont, 
+                    glyphs: [], 
+                    positions: [], 
+                    frames: []
+                )
+                drawBuckets.append(drawBucket)
                 bucketIndex = drawBuckets.count - 1
             }
             
@@ -474,6 +668,9 @@ open class STLabel: UIView {
         
         // Set draw buckets
         self.drawBuckets = drawBuckets
+        
+        // Set current runs for drawing
+        drawRuns = context.runs
     }
     
     private func drawMarkedArea(_ dirtyRect: CGRect) {
@@ -506,11 +703,11 @@ open class STLabel: UIView {
         // Get CG context
         guard let cgContext = UIGraphicsGetCurrentContext() else { return }
         
-        // Set text color
-        cgContext.setFillColor(context.textColor.cgColor)
-        
         // Draw buckets
         for bucket in drawBuckets {
+            // Set text color
+            cgContext.setFillColor(bucket.isSelected ? context.selectedTextColor.cgColor : context.textColor.cgColor)
+            
             // Draw glyphs
             if bucket.needsToFlip {
                 for i in 0 ..< bucket.glyphs.count {

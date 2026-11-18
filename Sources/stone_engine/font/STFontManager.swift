@@ -7,7 +7,11 @@ Copyright 2024 Nihon Design Center. All rights reserved.
 This software is licensed under the MIT License. See LICENSE for details.
 */
 
+#if os(iOS)
 import UIKit
+#elseif os(macOS)
+import Cocoa
+#endif
 
 open class STFontManager {
     public static let fontNamesNeedToFlip = [
@@ -24,15 +28,88 @@ open class STFontManager {
     private var possibleFontNames = [String]()
     private var possibleScripts = [STScript]()
     
-    // Font scale
+    // Font scale. An emoji glyph fills its whole em box, where a Japanese glyph
+    // only inks about 83% of it, so emoji set at the text size touch each other
+    // while the text around them breathes. 0.85 gives emoji the same gap between
+    // neighbours as the Japanese text they sit in.
     private var scriptFontScales: [STScript: CGFloat] = [
-        .latin: 0.95, 
-        .japanese: 1.0, 
-        .emoji: 1.0, 
+        .latin: 0.95,
+        .japanese: 1.0,
+        .emoji: 0.85,
     ]
     
-    // CT fonts cache
-    static private var fontIdCtFonts = [Int: CTFont]()
+    // MARK: - Optimized Font Cache with Struct Keys
+    struct FontCacheKey: Hashable {
+        let fontId: Int
+        let sizeInt: Int  // size * 100 for precision
+        let isClockwise: Bool
+        
+        init(fontId: Int, size: CGFloat, isClockwise: Bool) {
+            self.fontId = fontId
+            self.sizeInt = Int(size * 100)
+            self.isClockwise = isClockwise
+        }
+        
+        // Optimized hash function for better performance
+        func hash(into hasher: inout Hasher) {
+            hasher.combine(fontId)
+            hasher.combine(sizeInt)
+            hasher.combine(isClockwise)
+        }
+        
+        // Optimized equality check
+        static func == (lhs: FontCacheKey, rhs: FontCacheKey) -> Bool {
+            return lhs.fontId == rhs.fontId && 
+                   lhs.sizeInt == rhs.sizeInt && 
+                   lhs.isClockwise == rhs.isClockwise
+        }
+    }
+    
+    // MARK: - Glyph metrics cache
+    public struct GlyphMetrics {
+        public let glyph: CGGlyph
+        public let advance: CGSize
+        public let boundingRect: CGRect
+    }
+    // Keyed by Unicode scalar rather than Character: hashing a Character normalizes
+    // the grapheme, which is far more expensive, and only single-scalar characters
+    // are ever cached (composed ones are shaped by CoreText and never stored).
+    struct GlyphMetricsKey: Hashable {
+        let fontId: Int
+        let sizeInt: Int  // size * 100 for precision
+        let isVertical: Bool
+        let scalar: UInt32
+
+        init(fontId: Int, size: CGFloat, isVertical: Bool, scalar: UInt32) {
+            self.fontId = fontId
+            self.sizeInt = Int(size * 100)
+            self.isVertical = isVertical
+            self.scalar = scalar
+        }
+    }
+
+    // Whether a single glyph of a flipping font is drawn from a colour bitmap
+    struct GlyphFlipKey: Hashable {
+        let fontId: Int
+        let glyph: CGGlyph
+    }
+
+    // Caches (per-instance: fontId is an index into this instance's possibleFontNames)
+    private var charToFontId = [Character: Int]()
+    private var fontCache = [FontCacheKey: CTFont]()
+    private var glyphMetricsCache = [GlyphMetricsKey: GlyphMetrics]()
+    private var glyphFlipCache = [GlyphFlipKey: Bool]()
+
+    // Signature of the font configuration the caches were built for
+    private var cacheConfigSignature: String = ""
+
+    // Bumped every time refresh() sees a different font configuration.
+    //
+    // Glyphs and advances belong to the fonts they were resolved with, so a
+    // parse is only valid for one configuration. Callers that cache a parse
+    // compare this against the version they parsed at, and parse again when it
+    // moved (see STLabel.performParseAndLayout).
+    public private(set) var configurationVersion: Int = 0
 }
 
 extension STFontManager {
@@ -40,39 +117,84 @@ extension STFontManager {
     // MARK: - Font
     //--------------------------------------------------------------//
     
+    // A variation selector 16 asks for colour emoji presentation whatever block
+    // the character it follows belongs to
+    private static let variationSelector16: UInt32 = 0xfe0f
+
     func fontId(char: Character) -> Int {
-        // Get script
-        guard let script = char.unicodeScalars.first?.script else {
-            // Use default font ID
-            return 0
+        // Check cache
+        if let fontId = charToFontId[char] {
+            return fontId
         }
-        
-        // Decide font ID
-        let fontNames = scriptFontNames[script] ?? []
-        for fontName in fontNames {
-            let ctFont = CTFontCreateWithName(fontName as CFString, 17, nil)
-            let chars = uniChars(char: char)
-            var glyph: CGGlyph = 0
-            if CTFontGetGlyphsForCharacters(ctFont, chars, &glyph, chars.count), 
-                glyph > 0, 
-                let index = possibleFontNames.firstIndex(of: fontName)
-            {
-                return index
+
+        // Look the base scalar up on its own. The modifiers of a composed
+        // character (variation selector, skin tone, ZWJ) are not covered by any
+        // single font, and STParser shapes the composed glyph through CoreText
+        // afterwards anyway.
+        guard let baseScalar = char.unicodeScalars.first else { return 0 }
+
+        // Get script
+        var script = baseScalar.script
+        if char.unicodeScalars.contains(where: { $0.value == Self.variationSelector16 }) {
+            script = .emoji
+        }
+
+        // Decide font ID. The script's own fonts come first, then every other
+        // font: a character can belong to a script and still be missing from
+        // its fonts (an emoji sitting in the Dingbats or Miscellaneous
+        // Technical block, say), and drawing it with the default font would
+        // only produce .notdef, so any font that has the glyph is preferable.
+        let chars = uniChars(string: String(baseScalar))
+        var glyphs = [CGGlyph](repeating: 0, count: chars.count)
+        for fontId in fontIdSearchOrder(script: script) {
+            let ctFont = CTFontCreateWithName(possibleFontNames[fontId] as CFString, 17, nil)
+            if CTFontGetGlyphsForCharacters(ctFont, chars, &glyphs, chars.count), glyphs[0] > 0 {
+                // Cache it
+                charToFontId[char] = fontId
+
+                return fontId
             }
         }
-        
+
         // Use default font ID
+        charToFontId[char] = 0
+
         return 0
     }
-    
+
+    private func fontIdSearchOrder(script: STScript?) -> [Int] {
+        // List the script's own font IDs first, the remaining ones after
+        var fontIds = [Int]()
+        fontIds.reserveCapacity(possibleScripts.count)
+        for fontId in 0 ..< possibleScripts.count where possibleScripts[fontId] == script {
+            fontIds.append(fontId)
+        }
+        for fontId in 0 ..< possibleScripts.count where possibleScripts[fontId] != script {
+            fontIds.append(fontId)
+        }
+
+        return fontIds
+    }
+
+    func fontId(fontName: String) -> Int? {
+        // Map a font name to its font ID (index into possibleFontNames)
+        return possibleFontNames.firstIndex(of: fontName)
+    }
+
     func ctFont(fontId: Int, size: CGFloat, isClockwise: Bool = false) -> CTFont {
-        // Get font name and script
-        let fontName = possibleFontNames[fontId]
-        let script = possibleScripts[fontId]
-        
         // Decide font size
+        let script = possibleScripts[fontId]
         let fontScale = scriptFontScales[script]!
         let size = size * fontScale
+        
+        // Get from cache
+        let cacheKey = FontCacheKey(fontId: fontId, size: size, isClockwise: isClockwise)
+        if let cachedFont = fontCache[cacheKey] {
+            return cachedFont
+        }
+        
+        // Get font name
+        let fontName = possibleFontNames[fontId]
         
         // Decide transform
         var transform: CGAffineTransform = .identity
@@ -81,10 +203,38 @@ extension STFontManager {
             transform = transform.rotated(by: .pi * -0.5)
         }
         
-        // Create font
+        // Create font and cache it with struct key
         let font = CTFontCreateWithName(fontName as CFString, size, &transform)
+        fontCache[cacheKey] = font
         
         return font
+    }
+    
+    //--------------------------------------------------------------//
+    // MARK: - Glyph metrics cache
+    //--------------------------------------------------------------//
+
+    func cachedGlyphMetrics(fontId: Int, size: CGFloat, isVertical: Bool, scalar: UInt32) -> GlyphMetrics? {
+        return glyphMetricsCache[GlyphMetricsKey(fontId: fontId, size: size, isVertical: isVertical, scalar: scalar)]
+    }
+
+    func setGlyphMetrics(_ metrics: GlyphMetrics, fontId: Int, size: CGFloat, isVertical: Bool, scalar: UInt32) {
+        glyphMetricsCache[GlyphMetricsKey(fontId: fontId, size: size, isVertical: isVertical, scalar: scalar)] = metrics
+    }
+
+    // The ascent a line's em box is measured from.
+    //
+    // Runs on a line share a baseline, but each one's frame is its own font's
+    // ascent above it, and fonts do not agree. A run that has to be fitted to the
+    // line rather than to its own font - a colour emoji, whose ascent reaches far
+    // above the baseline - is placed against this instead, so it lands on the same
+    // box as the text it sits in.
+    func primaryAscent(size: CGFloat) -> CGFloat {
+        guard let fontName = scriptFontNames[.japanese]?.first,
+              let fontId = fontId(fontName: fontName) else {
+            return ascent(fontId: 0, size: size)
+        }
+        return ascent(fontId: fontId, size: size)
     }
     
     func ascent(fontId: Int, size: CGFloat) -> CGFloat {
@@ -109,6 +259,12 @@ extension STFontManager {
     func setFontNames(_ fontNames: [String], script: STScript) {
         // Set font name
         scriptFontNames[script] = fontNames
+        
+        // Rebuild right away, so configurationVersion moves at the moment the
+        // configuration changes. Callers that cache a parse watch that version
+        // to know their glyphs went stale, and they must not have to call
+        // refresh() themselves to find out.
+        refresh()
     }
     
     func fontName(fontId: Int) -> String {
@@ -128,6 +284,9 @@ extension STFontManager {
     func setFontScale(_ fontScale: CGFloat, script: STScript) {
         // Set font scale
         scriptFontScales[script] = fontScale
+        
+        // Rebuild right away (see setFontNames)
+        refresh()
     }
     
     func fontScale(fontId: Int) -> CGFloat {
@@ -151,9 +310,32 @@ extension STFontManager {
     func needsToFlip(fontId: Int) -> Bool {
         // Get font name
         let fontName = fontName(fontId: fontId)
-        
+
         // Check needs to flip
         return Self.fontNamesNeedToFlip.contains(fontName)
+    }
+
+    func needsToFlip(fontId: Int, glyph: CGGlyph) -> Bool {
+        // Check the font
+        guard needsToFlip(fontId: fontId) else { return false }
+
+        // Check cache
+        let key = GlyphFlipKey(fontId: fontId, glyph: glyph)
+        if let needsToFlip = glyphFlipCache[key] {
+            return needsToFlip
+        }
+
+        // An emoji font also carries ordinary outline glyphs, for the characters
+        // that are text unless a variation selector asks otherwise: '♀' and '♂'
+        // are drawn from outlines by AppleColorEmoji, not from its colour bitmaps.
+        // Only the bitmaps go through the flipped draw path, so an outline sent the
+        // same way comes out upside down. A colour bitmap glyph has no outline to
+        // hand back, which is what tells the two apart.
+        let ctFont = ctFont(fontId: fontId, size: 17)
+        let needsToFlip = CTFontCreatePathForGlyph(ctFont, glyph, nil) == nil
+        glyphFlipCache[key] = needsToFlip
+
+        return needsToFlip
     }
     
     //--------------------------------------------------------------//
@@ -206,6 +388,25 @@ extension STFontManager {
         }
         self.possibleFontNames = possibleFontNames
         self.possibleScripts = possibleScripts
+
+        // Build a signature of the current font configuration
+        var signature = ""
+        for script in STScript.allCases {
+            let names = (scriptFontNames[script] ?? []).joined(separator: ",")
+            let scale = scriptFontScales[script] ?? 1.0
+            signature += "\(script):\(names):\(scale);"
+        }
+
+        // Clear caches only when the configuration actually changed.
+        // fontId is an index into possibleFontNames, so caches stay valid
+        // as long as the configuration is unchanged (e.g. across keystrokes).
+        guard signature != cacheConfigSignature else { return }
+        cacheConfigSignature = signature
+        configurationVersion += 1
+        charToFontId = [:]
+        fontCache = [:]
+        glyphMetricsCache = [:]
+        glyphFlipCache = [:]
     }
 }
 
@@ -213,14 +414,6 @@ private func uniChars(string: String) -> [UniChar] {
     // Get unichars
     var buf = Array<UniChar>(repeating: 0, count: string.utf16.count)
     for (i, c) in string.utf16.enumerated() { buf[i] = c }
-    
-    return buf
-}
-
-private func uniChars(char: Character) -> [UniChar] {
-    // Get unichars
-    var buf = Array<UniChar>(repeating: 0, count: char.utf16.count)
-    for (i, c) in char.utf16.enumerated() { buf[i] = c }
     
     return buf
 }
