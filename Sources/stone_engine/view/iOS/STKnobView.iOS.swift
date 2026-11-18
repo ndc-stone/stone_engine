@@ -68,7 +68,7 @@ open class STKnobView: UIView {
     // MARK: - View
     //--------------------------------------------------------------//
     
-    public override func didMoveToWindow() {
+    open override func didMoveToWindow() {
         // Invoke super
         super.didMoveToWindow()
         
@@ -80,7 +80,7 @@ open class STKnobView: UIView {
     // MARK: - Appearance
     //--------------------------------------------------------------//
     
-    func updateLayerColor() {
+    open func updateLayerColor() {
         // Set layer background color
         headLayer.backgroundColor = UIColor.label.cgColor
         barLayer.backgroundColor = UIColor.label.cgColor

@@ -292,7 +292,7 @@ open class STTextView: UIScrollView {
     // MARK: - Apperance
     //--------------------------------------------------------------//
     
-    func adjustedContentOffset(targetContentOffset: CGPoint) -> CGPoint {
+    public func adjustedContentOffset(targetContentOffset: CGPoint) -> CGPoint {
         // Adjust content offset
         switch direction {
         case .lrTb:
@@ -311,7 +311,7 @@ open class STTextView: UIScrollView {
         }
     }
     
-    func showSelectedRange() {
+    public func showSelectedRange() {
         // Get run rect for selected range
         let index = selectedSTTextRange.range.lowerBound
         guard index < label.context.runs.count else { return }

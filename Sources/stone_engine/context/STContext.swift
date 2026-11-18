@@ -14,6 +14,9 @@ import Cocoa
 #endif
 
 open class STContext {
+    public init() {
+    }
+
     public static let cursorWide: CGFloat = 2
 
     // Runs

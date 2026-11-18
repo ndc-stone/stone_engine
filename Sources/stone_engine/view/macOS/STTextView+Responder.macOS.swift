@@ -135,7 +135,7 @@ extension STTextView {
         needsToScrollToShowCurosr = true
     }
     
-    func deselect(begin: Bool) {
+    public func deselect(begin: Bool) {
         // Move cursor
         let index = begin ? selectedSTTextRange.range.lowerBound : selectedSTTextRange.range.upperBound
         moveCursor(lower: index, upper: index)

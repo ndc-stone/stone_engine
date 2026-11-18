@@ -13,7 +13,7 @@ import UIKit
 import Cocoa
 #endif
 
-class STParser {
+public class STParser {
     static let willParse = Notification.Name("STParserWillParse")
     static let didParse = Notification.Name("STParserDidParse")
 
@@ -43,7 +43,7 @@ class STParser {
     // MARK: - Initialize
     //--------------------------------------------------------------//
 
-    init(context: STContext) {
+    public init(context: STContext) {
         self.context = context
     }
 
@@ -276,7 +276,7 @@ class STParser {
     // MARK: - Parse
     //--------------------------------------------------------------//
 
-    func parse(text: String?) {
+    public func parse(text: String?) {
         // Notify it
         NotificationCenter.default.post(name: Self.willParse, object: self)
 
@@ -404,7 +404,7 @@ class STParser {
     }
 }
 
-func STIsAlnum(char: Character) -> Bool {
+public func STIsAlnum(char: Character) -> Bool {
     // Check char
     /*
     guard char.unicodeScalars.count == 1, let unicodeScalar = char.unicodeScalars.first else { return false }

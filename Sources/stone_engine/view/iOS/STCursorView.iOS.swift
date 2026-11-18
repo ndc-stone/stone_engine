@@ -57,7 +57,7 @@ open class STCursorView: UIView {
     // MARK: - Appearance
     //--------------------------------------------------------------//
     
-    func updateLayerColor() {
+    open func updateLayerColor() {
         // Set layer background color
         cursorLayer.backgroundColor = UIColor.label.cgColor
     }

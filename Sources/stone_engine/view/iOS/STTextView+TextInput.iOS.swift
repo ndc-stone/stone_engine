@@ -115,7 +115,7 @@ extension STTextView: UITextInput {
         return String(text[range.range(text: text)])
     }
     
-    public func insertText(_ text: String) {
+    @objc open func insertText(_ text: String) {
         // Replace text
         let replaceTextRange: STTextRange
         if let markedTextRange = markedSTTextRange, !markedTextRange.isEmpty {
@@ -151,7 +151,7 @@ extension STTextView: UITextInput {
         selectedSTTextRange = STTextRange(range: lastIndex ..< lastIndex)
     }
     
-    func replaceAll(_ ranges: [UITextRange], withText replaceText: String) {
+    public func replaceAll(_ ranges: [UITextRange], withText replaceText: String) {
         // Check text
         guard var text = text else { return }
         
@@ -285,7 +285,7 @@ extension STTextView: UITextInput {
         // Do not use this method
     }
     
-    public func setAttributedMarkedText(_ markedAttrStr: NSAttributedString?, selectedRange: NSRange) {
+    @objc open func setAttributedMarkedText(_ markedAttrStr: NSAttributedString?, selectedRange: NSRange) {
         // Get marked text
         let markedText = markedAttrStr?.string ?? ""
         

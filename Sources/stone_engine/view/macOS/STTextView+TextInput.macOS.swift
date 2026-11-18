@@ -72,7 +72,7 @@ extension STTextView {
     // MARK: - Replace
     //--------------------------------------------------------------//
     
-    func replaceText(_ replaceText: String, textRange: STTextRange) {
+    public func replaceText(_ replaceText: String, textRange: STTextRange) {
         // Get current text
         var text = self.text ?? ""
         
