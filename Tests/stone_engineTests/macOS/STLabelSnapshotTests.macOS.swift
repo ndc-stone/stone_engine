@@ -13,13 +13,11 @@ STLabel の描画結果を PNG で突き合わせる。
   - 環境変数で丸ごと飛ばせるようにする（フォントが変わった環境や CI 向け）
 
 期待値の更新（記録モード）:
-    TEST_RUNNER_SNAPSHOT_RECORD=1 xcodebuild test -scheme stone \
-        -destination 'platform=macOS' -only-testing:stoneEngineTests/STLabelSnapshotTests
-  テストはサンドボックス内で動くのでソースへは直接書けない。実行すると
-  新しい PNG を一時ディレクトリに書き出し、コピーするコマンドをログに出す。
+    SNAPSHOT_RECORD=1 swift test --filter STLabelSnapshotTests
+  新しい PNG を一時ディレクトリに書き出し、期待値へコピーするコマンドをログに出す。
 
 まるごと飛ばす:
-    TEST_RUNNER_SKIP_IMAGE_SNAPSHOTS=1 ...
+    SKIP_IMAGE_SNAPSHOTS=1 swift test
 */
 
 #if os(macOS)

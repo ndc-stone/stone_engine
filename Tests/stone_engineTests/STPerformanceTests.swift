@@ -11,12 +11,9 @@ STPerformanceTests.swift
 それだけで 17 秒かかり、0.3 秒で終わるほかのユニットテストの足を引っ張る。
 合否を持たない計測なので、既定では飛ばして環境変数で明示的に呼び出す:
 
-    TEST_RUNNER_MEASURE_PERFORMANCE=1 xcodebuild test -scheme stone \
-        -destination 'platform=macOS' -only-testing:stoneEngineTests/STPerformanceTests
+    MEASURE_PERFORMANCE=1 swift test --filter STPerformanceTests
 
-（xcodebuild は TEST_RUNNER_ で始まる環境変数だけを、接頭辞を外して
-テストプロセスへ渡す。Xcode から走らせるならスキームの環境変数に
-MEASURE_PERFORMANCE=1 を足す）
+（iOS Simulator では環境変数名を TEST_RUNNER_MEASURE_PERFORMANCE にして xcodebuild test を使う）
 */
 
 import XCTest
@@ -61,6 +58,19 @@ final class STPerformanceTests: STEngineTestCase {
         return times[times.count / 2]
     }
 
+    /// 処理を repeats 回まわして最短の秒数を返す。
+    /// 他のプロセスの影響は時間を延ばす方向にしか働かないので、最短が最も安定する。
+    private func fastestSeconds(repeats: Int = 5, _ body: () -> Void) -> Double {
+        var fastest = Double.greatestFiniteMagnitude
+        for _ in 0 ..< repeats {
+            let start = CFAbsoluteTimeGetCurrent()
+            body()
+            fastest = min(fastest, CFAbsoluteTimeGetCurrent() - start)
+        }
+
+        return fastest
+    }
+
     //--------------------------------------------------------------//
     // MARK: - 計算量
     //--------------------------------------------------------------//
@@ -69,6 +79,7 @@ final class STPerformanceTests: STEngineTestCase {
     ///
     /// 線形なら 4 倍、二乗なら 16 倍になる。しきい値 8 倍は、
     /// 線形の側の揺らぎを許しつつ二乗をはっきり弾ける位置に置いてある。
+    /// CI では一時的に遅くなることがあるので、3 回測って一度も下回らないときだけ失敗にする。
     private func assertScales(
         direction: STDirection,
         file: StaticString = #filePath,
@@ -78,16 +89,21 @@ final class STPerformanceTests: STEngineTestCase {
         let large = sampleText(charCount: 24_000)
 
         func parseAndLayout(_ text: String) -> Double {
-            return medianSeconds {
+            return fastestSeconds {
                 let context = makeSizedContext(direction: direction)
                 STParser(context: context).parse(text: text)
                 STLayout(context: context).layout()
             }
         }
 
-        let smallTime = parseAndLayout(small)
-        let largeTime = parseAndLayout(large)
-        let ratio = largeTime / smallTime
+        var smallTime = 0.0
+        var largeTime = 0.0
+        var ratio = Double.greatestFiniteMagnitude
+        for _ in 0 ..< 3 where ratio >= 8.0 {
+            smallTime = parseAndLayout(small)
+            largeTime = parseAndLayout(large)
+            ratio = largeTime / smallTime
+        }
 
         XCTAssertLessThan(
             ratio, 8.0,

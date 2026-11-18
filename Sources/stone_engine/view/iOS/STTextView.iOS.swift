@@ -272,7 +272,7 @@ open class STTextView: UIScrollView {
         _undoManager.textView = self
     }
     
-    override init(frame: CGRect) {
+    public override init(frame: CGRect) {
         // Invoke super
         super.init(frame: frame)
         
