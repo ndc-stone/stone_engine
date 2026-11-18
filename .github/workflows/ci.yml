@@ -21,6 +21,9 @@ jobs:
       - uses: actions/checkout@v7
       - name: Run tests
         run: swift test
+        env:
+          # The pixels depend on the macOS and font versions of the runner
+          SKIP_IMAGE_SNAPSHOTS: 1
 
   ios:
     name: iOS tests
