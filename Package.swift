@@ -16,5 +16,10 @@ let package = Package(
         .target(
             name: "stone_engine"
         ),
+        .testTarget(
+            name: "stone_engineTests",
+            dependencies: ["stone_engine"],
+            exclude: ["__Snapshots__"]
+        ),
     ]
 )
