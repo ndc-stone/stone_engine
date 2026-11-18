@@ -18,7 +18,7 @@ swift test
 iOS Simulator:
 
 ```bash
-xcodebuild test -scheme stone_engine -destination 'platform=iOS Simulator,name=iPad Pro 11-inch (M5)'
+xcodebuild test -scheme stone_engine-Package -destination 'platform=iOS Simulator,name=iPad Pro 11-inch (M5)'
 ```
 
 シミュレーター名は、手元にあるものに読み替える。

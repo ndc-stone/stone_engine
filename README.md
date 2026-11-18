@@ -38,6 +38,38 @@ view.addSubview(textView)
 
 iOS版のサンプルアプリは`sample/stone.xcodeproj`にある。
 
+### SwiftUI
+
+SwiftUIでは、`StoneEngineSwiftUI`を使う。ターゲットの依存関係に追加する。
+
+```swift
+.target(
+    name: "YourApp",
+    dependencies: [
+        .product(name: "StoneEngineSwiftUI", package: "stone_engine"),
+    ]
+)
+```
+
+```swift
+import SwiftUI
+import StoneEngineSwiftUI
+import stone_engine
+
+struct ContentView: View {
+    @State private var text = "吾輩は猫である。名前はまだ無い。"
+
+    var body: some View {
+        VStack {
+            STLabelView(text, direction: .lrTb, fontSize: 17)
+            STTextEditor(text: $text, direction: .tbRl, fontSize: 17, lineHeightScale: 1.625)
+        }
+    }
+}
+```
+
+`STTextEditor`は、両端の行が欠けないよう、行を重ねる方向の大きさを行送りの整数倍にする。日本語の変換中は、バインディング側の変更で本文を上書きしない。
+
 ## 目的
 
 stone_engineは、iOSおよびmacOS上で動作するテキストレンダリングエンジンである。
