@@ -50,3 +50,23 @@ jobs:
           -scheme stone
           -destination 'generic/platform=iOS Simulator'
           CODE_SIGNING_ALLOWED=NO
+
+  swiftui-sample:
+    name: SwiftUI sample build
+    runs-on: macos-26
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        destination:
+          - 'generic/platform=iOS Simulator'
+          - 'generic/platform=macOS'
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build sample
+        run: >-
+          xcodebuild build
+          -project sample/SwiftUI/StoneEngineSwiftUISample.xcodeproj
+          -scheme StoneEngineSwiftUISample
+          -destination '${{ matrix.destination }}'
+          CODE_SIGNING_ALLOWED=NO

@@ -36,7 +36,7 @@ view.addSubview(textView)
 
 縦書きで表示範囲の両端の行を欠けずに表示するには、`STTextView`の幅を行送り（`fontSize * lineHeightScale`）の整数倍にする。
 
-iOS版のサンプルアプリは`sample/stone.xcodeproj`にある。
+UIKitのサンプルアプリは`sample/stone.xcodeproj`に、iOS / macOS共通のSwiftUIサンプルは`sample/SwiftUI/StoneEngineSwiftUISample.xcodeproj`にある。
 
 ### SwiftUI
 
