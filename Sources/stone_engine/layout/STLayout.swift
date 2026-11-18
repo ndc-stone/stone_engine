@@ -845,8 +845,6 @@ class STLayout {
 
                 // Decide visibility
                 if isShown && !nextIsShown {
-// mkino
-//                    runs[i].visibility = .ellipsis
                     runs[i].visibility = .visible
                 }
                 else {

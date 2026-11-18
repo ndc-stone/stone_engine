@@ -11,7 +11,7 @@ import Foundation
 import CoreText
 #if os(iOS)
 import UIKit
-#else
+#elseif os(macOS)
 import Cocoa
 #endif
 

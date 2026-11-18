@@ -7,7 +7,12 @@ Copyright 2024 Nihon Design Center. All rights reserved.
 This software is licensed under the MIT License. See LICENSE for details.
 */
 
+#if os(macOS)
+#if os(iOS)
 import UIKit
+#elseif os(macOS)
+import Cocoa
+#endif
 
 open class STTiledLayer: CATiledLayer {
     // Context
@@ -49,3 +54,4 @@ open class STTiledLayer: CATiledLayer {
         return extractContentSize(string: contentDescription)
     }
 }
+#endif

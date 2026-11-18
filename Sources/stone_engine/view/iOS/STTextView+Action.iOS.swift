@@ -7,6 +7,7 @@ Copyright 2024 Nihon Design Center. All rights reserved.
 This software is licensed under the MIT License. See LICENSE for details.
 */
 
+#if os(iOS)
 import UIKit
 
 extension STTextView {
@@ -84,10 +85,6 @@ extension STTextView {
             // Needs to show lens
             lensSupport.setNeedsToUpdateLens(true)
         case .changed:
-            // Check lens visibility
-// mkino
-//            guard isLensShown else { return }
-            
             // Set long press point
             longPressPoint = point
             
@@ -224,3 +221,4 @@ extension STTextView: UIGestureRecognizerDelegate {
     //--------------------------------------------------------------//
 }
 
+#endif
