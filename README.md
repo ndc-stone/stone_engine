@@ -12,7 +12,7 @@ Swift Package Managerで導入する。`Package.swift`に次を追加する。
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/ndc-stone/stone_engine.git", from: "0.3.0"),
+    .package(url: "https://github.com/ndc-stone/stone_engine.git", from: "0.4.0"),
 ],
 targets: [
     .target(name: "YourApp", dependencies: ["stone_engine"]),
