@@ -33,6 +33,12 @@ public class STParser {
     private var charAdvances = [CGSize]()
     private var charBoundingRects = [CGRect]()
     private var charScalars = [UInt32]()
+
+    // How large each character is set, against the size the text as a whole is
+    // set at. One for ordinary text. Measurements belong to the size they were
+    // taken at, so this is what the metrics pass groups and keys by, beside
+    // the font
+    private var charFontScales = [CGFloat]()
     private var tokenRanges = [Range<Int>]()
 
     // Sentinel stored in charScalars for characters made of more than one scalar.
@@ -51,8 +57,8 @@ public class STParser {
     // MARK: - Glyph metrics
     //--------------------------------------------------------------//
 
-    private func composedGlyphMetrics(char: Character, baseFontId: Int) -> (glyph: CGGlyph, advance: CGSize, boundingRect: CGRect, fontId: Int) {
-        let size = context.adjustFontSize
+    private func composedGlyphMetrics(char: Character, baseFontId: Int, fontScale: CGFloat) -> (glyph: CGGlyph, advance: CGSize, boundingRect: CGRect, fontId: Int) {
+        let size = context.adjustFontSize * fontScale
         let baseCTFont = context.fontManager.ctFont(fontId: baseFontId, size: size)
 
         // Shape the whole grapheme cluster through CoreText so OpenType ligatures apply
@@ -107,19 +113,39 @@ public class STParser {
     // Resolves glyph, advance and bounding rect for every character. Cached
     // characters are served directly; the rest are grouped by font and measured
     // with one set of CoreText calls per font, for the whole document.
+    /// What a batch of characters is measured as: one font at one size.
+    ///
+    /// The size is in the key because a measurement belongs to the size it was
+    /// taken at. Scaled text is rare and takes few sizes when it appears at
+    /// all, so a document without any is still measured in one batch per font,
+    /// as it was
+    private struct MetricsBatchKey: Hashable {
+        let fontId: Int
+        let fontScaleInt: Int
+
+        init(fontId: Int, fontScale: CGFloat) {
+            self.fontId = fontId
+            self.fontScaleInt = Int(fontScale * 1000)
+        }
+    }
+
     private func resolveGlyphMetrics() {
         let isVertical = context.direction == .tbRl
-        let size = context.adjustFontSize
+        let adjustFontSize = context.adjustFontSize
         let fontManager = context.fontManager
 
-        // Collect the characters the cache cannot serve, grouped by font
-        var uncachedByFont = [Int: [Int]]()
+        // Collect the characters the cache cannot serve, grouped by font and
+        // the size it is to be measured at
+        var uncachedByFont = [MetricsBatchKey: [Int]]()
         for index in 0 ..< chars.count {
             let scalar = charScalars[index]
+            let fontScale = charFontScales[index]
 
             // Multi-scalar characters need CoreText shaping and are not cached
             guard scalar != Self.multiScalar else {
-                let metrics = composedGlyphMetrics(char: chars[index], baseFontId: charFontIds[index])
+                let metrics = composedGlyphMetrics(
+                    char: chars[index], baseFontId: charFontIds[index], fontScale: fontScale
+                )
                 charGlyphs[index] = metrics.glyph
                 charAdvances[index] = metrics.advance
                 charBoundingRects[index] = metrics.boundingRect
@@ -129,19 +155,23 @@ public class STParser {
 
             let fontId = charFontIds[index]
             if let metrics = fontManager.cachedGlyphMetrics(
-                fontId: fontId, size: size, isVertical: isVertical, scalar: scalar
+                fontId: fontId, size: adjustFontSize * fontScale, isVertical: isVertical, scalar: scalar
             ) {
                 charGlyphs[index] = metrics.glyph
                 charAdvances[index] = metrics.advance
                 charBoundingRects[index] = metrics.boundingRect
             }
             else {
-                uncachedByFont[fontId, default: []].append(index)
+                uncachedByFont[
+                    MetricsBatchKey(fontId: fontId, fontScale: fontScale), default: []
+                ].append(index)
             }
         }
 
-        // Measure the remaining characters, one batch per font
-        for (fontId, indices) in uncachedByFont {
+        // Measure the remaining characters, one batch per font and size
+        for (batchKey, indices) in uncachedByFont {
+            let fontId = batchKey.fontId
+            let size = adjustFontSize * charFontScales[indices[0]]
             let ctFont = fontManager.ctFont(fontId: fontId, size: size)
             let count = indices.count
 
@@ -295,6 +325,7 @@ public class STParser {
         charAdvances = .init(repeating: .zero, count: charCount)
         charBoundingRects = .init(repeating: .zero, count: charCount)
         charScalars = .init(repeating: 0, count: charCount)
+        charFontScales = .init(repeating: 1, count: charCount)
 
         tokenRanges.removeAll(keepingCapacity: true)
         runs.removeAll(keepingCapacity: true)
@@ -362,6 +393,7 @@ public class STParser {
                     tokenId: tokenId,
                     tokenRunIndex: tokenRunIndex,
                     fontId: charFontIds[index],
+                    fontScale: charFontScales[index],
                     scalar: char.unicodeScalars.first?.value ?? 0,
                     flags: flags,
                     punctuation: STPunctuation.valueOf(charatcter: char),
@@ -397,6 +429,7 @@ public class STParser {
         charAdvances.removeAll(keepingCapacity: false)
         charBoundingRects.removeAll(keepingCapacity: false)
         charScalars.removeAll(keepingCapacity: false)
+        charFontScales.removeAll(keepingCapacity: false)
         tokenRanges.removeAll(keepingCapacity: false)
 
         // Notify it

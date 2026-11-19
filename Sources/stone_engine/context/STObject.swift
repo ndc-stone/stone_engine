@@ -560,6 +560,22 @@ public struct STRun {
     public var tokenId: Int
     public var tokenRunIndex: Int
     public var fontId: Int
+
+    /// How large this run is set, against the size the text as a whole is set
+    /// at.
+    ///
+    /// One for ordinary text, which is every run until something asks for
+    /// otherwise. A run set smaller than the text around it carries the factor
+    /// here rather than a size of its own, so that the one size the text is
+    /// laid out at still governs: a run set at half the size is half the size
+    /// of whatever the text turns out to be once it has been fitted to the
+    /// room it was given.
+    ///
+    /// The glyph and the measurements in this run were resolved at
+    /// `context.adjustFontSize * fontScale`, and the run has to be drawn at
+    /// that size for them to mean anything
+    public var fontScale: CGFloat
+
     public var scalar: UInt32
     public var flags: STRunFlags
     public var punctuation: STPunctuation

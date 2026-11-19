@@ -535,6 +535,16 @@ open class STLabel: UIView {
     
     struct DrawBucket {
         let fontId: Int
+
+        /// How large the runs in this bucket are set, against the size the
+        /// text as a whole is set at.
+        ///
+        /// Part of what tells one bucket from another. A bucket draws its
+        /// glyphs with the one font it holds, and a font is made at a size, so
+        /// runs set smaller than the text around them are drawn from a font of
+        /// their own
+        let fontScaleInt: Int
+
         let isClockwise: Bool
         let needsToFlip: Bool
         let isSelected: Bool
@@ -659,8 +669,10 @@ open class STLabel: UIView {
             
             // Find bucket
             let bucketIndex: Int
+            let fontScaleInt = Int(run.fontScale * 1000)
             if let index = drawBuckets.firstIndex(where: {
                 $0.fontId == run.fontId && 
+                $0.fontScaleInt == fontScaleInt &&
                 $0.isClockwise == isClockwise && 
                 $0.needsToFlip == needsToFlip &&
                 $0.isSelected == isSelected
@@ -671,13 +683,14 @@ open class STLabel: UIView {
                 // Get CT font
                 let ctFont = context.fontManager.ctFont(
                     fontId: run.fontId, 
-                    size: context.adjustFontSize, 
+                    size: context.adjustFontSize * run.fontScale, 
                     isClockwise: isClockwise
                 )
                 
                 // Add bucket
                 let drawBucket = DrawBucket(
                     fontId: run.fontId, 
+                    fontScaleInt: fontScaleInt,
                     isClockwise: isClockwise, 
                     needsToFlip: needsToFlip, 
                     isSelected: isSelected, 
