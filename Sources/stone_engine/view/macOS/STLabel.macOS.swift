@@ -245,8 +245,82 @@ open class STLabel: NSView {
 
     open var hasSelectedAreaLineGap: Bool = true
 
+    open var punctuationMode: STPunctuationMode {
+        get {
+            context.punctuationMode
+        }
+        set {
+            // Check new value
+            guard newValue != punctuationMode else { return }
+            context.punctuationMode = newValue
+
+            // Set needs layout
+            setNeedsParseAndLayout()
+        }
+    }
+
+    // Color
+    open var textColor: NSColor {
+        get {
+            context.textColor
+        }
+        set {
+            // Check new value
+            guard newValue != textColor else { return }
+            context.textColor = newValue
+
+            // Set needs display. A color is what the glyphs are filled with,
+            // not where they fall, so nothing has to be laid out again
+            needsDisplay = true
+        }
+    }
+
+    open var selectedTextColor: NSColor {
+        get {
+            context.selectedTextColor
+        }
+        set {
+            // Check new value
+            guard newValue != selectedTextColor else { return }
+            context.selectedTextColor = newValue
+
+            // Set needs display
+            needsDisplay = true
+        }
+    }
+
     // Context
     public let context = STContext()
+
+    //--------------------------------------------------------------//
+    // MARK: - Font
+    //--------------------------------------------------------------//
+
+    open func fontNames(script: STScript) -> [String] {
+        // Pass to font manager
+        return context.fontManager.fontNames(script: script)
+    }
+
+    open func setFontNames(_ fontNames: [String], script: STScript) {
+        // Pass to font manager
+        context.fontManager.setFontNames(fontNames, script: script)
+
+        // Set needs layout
+        setNeedsParseAndLayout()
+    }
+
+    open func fontScale(script: STScript) -> CGFloat {
+        // Pass to font manager
+        return context.fontManager.fontScale(script: script)
+    }
+
+    open func setFontScale(_ fontScale: CGFloat, script: STScript) {
+        // Pass to font manager
+        context.fontManager.setFontScale(fontScale, script: script)
+
+        // Set needs layout
+        setNeedsParseAndLayout()
+    }
 
     //--------------------------------------------------------------//
     // MARK: - Layout
