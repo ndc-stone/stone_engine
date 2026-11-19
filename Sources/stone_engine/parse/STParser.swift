@@ -447,6 +447,15 @@ public class STParser {
             STRuby(rbcRunIdRange: $0.baseRange, rtcRunIdRange: $0.readingRange)
         }
 
+        // Say which characters are a reading's. A character becomes one run,
+        // so this stands for the runs as well
+        var isRubyTextChar = [Bool](repeating: false, count: charCount)
+        for ruby in rubies {
+            for index in ruby.rtcRunIdRange where index < charCount {
+                isRubyTextChar[index] = true
+            }
+        }
+
         // Build runs, tokens and the characters in run order
         var runChars = [Character]()
         runChars.reserveCapacity(charCount)
@@ -467,6 +476,7 @@ public class STParser {
                     if STKinsoku.notStartingCharSet.contains(scalar) { flags.insert(.notStarting) }
                     if STKinsoku.hangingCharSet.contains(scalar) { flags.insert(.hanging) }
                 }
+                if isRubyTextChar[index] { flags.insert(.rubyText) }
 
                 runs.append(STRun(
                     tokenId: tokenId,
