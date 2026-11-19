@@ -242,6 +242,43 @@ open class STLabel: UIView {
             setNeedsLayout()
         }
     }
+
+    // Ruby
+
+    /// How a reading is written into the text, where one is written at all.
+    ///
+    /// Nothing by default — see `STRubyNotation`. The marks a reading is
+    /// written with are then ordinary characters, and the text is set exactly
+    /// as it is given
+    open var rubyNotation: STRubyNotation {
+        get {
+            context.rubyNotation
+        }
+        set {
+            // Check new value
+            guard newValue != rubyNotation else { return }
+            context.rubyNotation = newValue
+            
+            // Set needs layout
+            needsToLayout = true
+            setNeedsLayout()
+        }
+    }
+    /// How large a reading is set, against the text it is read from
+    open var rubyFontScale: CGFloat {
+        get {
+            context.rubyFontScale
+        }
+        set {
+            // Check new value
+            guard newValue != rubyFontScale else { return }
+            context.rubyFontScale = newValue
+            
+            // Set needs layout
+            needsToLayout = true
+            setNeedsLayout()
+        }
+    }
     
     // Context
     public let context = STContext()
@@ -431,6 +468,8 @@ open class STLabel: UIView {
         context.minimumScaleFactor = minimumScaleFactor
         context.isKinsokuAvailable = isKinsokuAvailable
         context.isDividedByWords = isDividedByWords
+        context.rubyNotation = rubyNotation
+        context.rubyFontScale = rubyFontScale
         
         // Set render size
         context.renderSize = size
@@ -535,6 +574,16 @@ open class STLabel: UIView {
     
     struct DrawBucket {
         let fontId: Int
+
+        /// How large the runs in this bucket are set, against the size the
+        /// text as a whole is set at.
+        ///
+        /// Part of what tells one bucket from another. A bucket draws its
+        /// glyphs with the one font it holds, and a font is made at a size, so
+        /// runs set smaller than the text around them — a reading over a word
+        /// — are drawn from a font of their own
+        let fontScaleInt: Int
+
         let isClockwise: Bool
         let needsToFlip: Bool
         let isSelected: Bool
@@ -659,8 +708,10 @@ open class STLabel: UIView {
             
             // Find bucket
             let bucketIndex: Int
+            let fontScaleInt = Int(run.fontScale * 1000)
             if let index = drawBuckets.firstIndex(where: {
                 $0.fontId == run.fontId && 
+                $0.fontScaleInt == fontScaleInt &&
                 $0.isClockwise == isClockwise && 
                 $0.needsToFlip == needsToFlip &&
                 $0.isSelected == isSelected
@@ -671,13 +722,14 @@ open class STLabel: UIView {
                 // Get CT font
                 let ctFont = context.fontManager.ctFont(
                     fontId: run.fontId, 
-                    size: context.adjustFontSize, 
+                    size: context.adjustFontSize * run.fontScale, 
                     isClockwise: isClockwise
                 )
                 
                 // Add bucket
                 let drawBucket = DrawBucket(
                     fontId: run.fontId, 
+                    fontScaleInt: fontScaleInt,
                     isClockwise: isClockwise, 
                     needsToFlip: needsToFlip, 
                     isSelected: isSelected, 
