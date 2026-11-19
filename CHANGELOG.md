@@ -1,5 +1,23 @@
 # 変更履歴
 
+## 0.5.0
+
+### 追加
+
+- 文字の縁取りに対応。`STContext.borderColor`と`STContext.borderWidth`で指定する
+  - 縁はグリフの輪郭の外側だけに描かれ、文字そのものの太さは変わらない
+  - 縁は本文を塗るより先に、すべての文字について描かれる。隣の文字の上に縁が乗らないようにするため
+  - 色付きのビットマップで描かれるグリフ（絵文字など）には輪郭がないため、縁取りは行われない
+  - `STLabel`から`borderColor` / `borderWidth`で指定できる
+- macOSの`STLabel`に、iOSにはあって抜けていたプロパティを追加
+  - `textColor` / `selectedTextColor` / `punctuationMode`
+  - `fontNames(script:)` / `setFontNames(_:script:)` / `fontScale(script:)` / `setFontScale(_:script:)`
+
+### 修正
+
+- `STFontManager`に`public init()`を追加。`open`でありながらモジュールの外から生成できなかった
+- `STFontManager.fontNames(script:)`を`public`にした。`setFontNames(_:script:)`はpublicなのに、読み出す側がinternalで非対称だった
+
 ## 0.4.0
 
 ### 追加
