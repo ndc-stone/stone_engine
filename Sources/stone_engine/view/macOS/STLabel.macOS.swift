@@ -289,6 +289,35 @@ open class STLabel: NSView {
         }
     }
 
+    open var borderColor: NSColor {
+        get {
+            context.borderColor
+        }
+        set {
+            // Check new value
+            guard newValue != borderColor else { return }
+            context.borderColor = newValue
+
+            // Set needs display. A border is stroked around what is laid out
+            // already, so nothing has to be laid out again.
+            needsDisplay = true
+        }
+    }
+
+    open var borderWidth: CGFloat {
+        get {
+            context.borderWidth
+        }
+        set {
+            // Check new value
+            guard newValue != borderWidth else { return }
+            context.borderWidth = newValue
+
+            // Set needs display
+            needsDisplay = true
+        }
+    }
+
     // Context
     public let context = STContext()
 
@@ -757,6 +786,51 @@ open class STLabel: NSView {
         }
     }
     
+    private func drawGlyphs(bucket: DrawBucket, cgContext: CGContext) {
+        // For a font drawn from color bitmaps, each glyph is turned back over
+        // on its own
+        if bucket.needsToFlip {
+            for i in 0 ..< bucket.glyphs.count {
+                var transform: CGAffineTransform = .identity
+                transform = transform.translatedBy(x: 0, y: bucket.positions[i].y * 2)
+                transform = transform.scaledBy(x: 1, y: -1)
+                cgContext.saveGState()
+                cgContext.concatenate(transform)
+                CTFontDrawGlyphs(bucket.ctFont, [bucket.glyphs[i]], [bucket.positions[i]], 1, cgContext)
+                cgContext.restoreGState()
+            }
+        }
+        else {
+            CTFontDrawGlyphs(bucket.ctFont, bucket.glyphs, bucket.positions, bucket.glyphs.count, cgContext)
+        }
+    }
+
+    private func drawGlyphBorders(drawBuckets: [DrawBucket], cgContext: CGContext) {
+        // Check border
+        guard context.borderWidth > 0, context.borderColor.cgColor.alpha > 0 else { return }
+
+        // Set border. A stroke sits on the outline, half of it either side, so
+        // it is drawn at twice the width and the fill covers the inner half.
+        cgContext.saveGState()
+        cgContext.setTextDrawingMode(.stroke)
+        cgContext.setLineWidth(context.borderWidth * 2)
+        cgContext.setLineJoin(.round)
+        cgContext.setLineCap(.round)
+        cgContext.setStrokeColor(context.borderColor.cgColor)
+
+        // Draw every border before any of the fills, so a border never lands
+        // over the glyph beside its own
+        for bucket in drawBuckets {
+            // A glyph drawn from a color bitmap has no outline to stroke
+            guard !bucket.needsToFlip else { continue }
+
+            // Draw glyphs
+            drawGlyphs(bucket: bucket, cgContext: cgContext)
+        }
+
+        cgContext.restoreGState()
+    }
+
     private func drawGlyphs(_ dirtyRect: CGRect, runRange: Range<Int>) {
         // Get CG context
         guard let cgContext = NSGraphicsContext.current?.cgContext else { return }
@@ -764,26 +838,16 @@ open class STLabel: NSView {
         // Create draw buckets for the visible runs
         let drawBuckets = createDrawBuckets(runRange: runRange)
 
+        // Draw borders, all of them before any fill
+        drawGlyphBorders(drawBuckets: drawBuckets, cgContext: cgContext)
+
         // Draw buckets
         for bucket in drawBuckets {
             // Set text color
             cgContext.setFillColor(bucket.isSelected ? context.selectedTextColor.cgColor : context.textColor.cgColor)
             
             // Draw glyphs
-            if bucket.needsToFlip {
-                for i in 0 ..< bucket.glyphs.count {
-                    var transform: CGAffineTransform = .identity
-                    transform = transform.translatedBy(x: 0, y: bucket.positions[i].y * 2)
-                    transform = transform.scaledBy(x: 1, y: -1)
-                    cgContext.saveGState()
-                    cgContext.concatenate(transform)
-                    CTFontDrawGlyphs(bucket.ctFont, [bucket.glyphs[i]], [bucket.positions[i]], 1, cgContext)
-                    cgContext.restoreGState()
-                }
-            }
-            else {
-                CTFontDrawGlyphs(bucket.ctFont, bucket.glyphs, bucket.positions, bucket.glyphs.count, cgContext)
-            }
+            drawGlyphs(bucket: bucket, cgContext: cgContext)
         }
     }
     

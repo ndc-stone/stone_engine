@@ -113,6 +113,15 @@ open class STContext {
     public var markedTextColor: NSColor = .black // .label
     #endif
 
+    // Border. Stroked around the glyphs, outside the shape they already have,
+    // so the text keeps its own weight and the border widens it from there.
+    #if os(iOS)
+    public var borderColor: UIColor = .clear
+    #elseif os(macOS)
+    public var borderColor: NSColor = .clear
+    #endif
+    public var borderWidth: CGFloat = 0
+
     // Features
     public var punctuationMode: STPunctuationMode = .stone
     public var isKinsokuAvailable = true
