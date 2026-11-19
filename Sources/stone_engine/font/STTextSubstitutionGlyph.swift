@@ -434,8 +434,11 @@ class STTextSubstitutionGlyph {
     }
 
     public static func verticalSubstitutionGlyphWithGlyph(fontName: String, glyph: CGGlyph) -> CGGlyph {
-        // Find buffer index
-        var i = 0
+        // Find buffer index. Not finding the font has to answer past the end
+        // of what is registered: left at zero, a font with no table of its own
+        // is handed the first font's, and a glyph ID stands for a different
+        // glyph in another font — the text set in it comes out blank.
+        var i = vertNumber
         for idx in 0..<vertNumber {
             if fontName == vertFontNames[idx] {
                 i = idx
