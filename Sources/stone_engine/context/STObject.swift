@@ -551,6 +551,14 @@ public struct STRunFlags: OptionSet {
     public static let notEnding = STRunFlags(rawValue: 1 << 2)
     public static let notStarting = STRunFlags(rawValue: 1 << 3)
     public static let hanging = STRunFlags(rawValue: 1 << 4)
+
+    /// One of a reading's runs, rather than one of the text's own.
+    ///
+    /// A reading is set over the word, not beside it, so it adds nothing to
+    /// the length of the line. Whatever measures or spaces a line passes it
+    /// over, or the line is taken for longer than it is drawn and the text
+    /// comes out off centre.
+    public static let rubyText = STRunFlags(rawValue: 1 << 5)
 }
 
 // Deliberately holds no Character. Keeping every field trivial lets the runs

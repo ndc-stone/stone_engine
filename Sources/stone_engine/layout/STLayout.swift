@@ -696,11 +696,16 @@ public class STLayout {
     }
     
     private func alignTextLrTb(runIdRange: Range<Int>) {
-        // Calc total width
+        // Calc total width. A reading is set over the word rather than beside
+        // it, so it adds nothing to the length of the line and counts as none
+        // of its tokens
         var total: CGFloat = 0
         var tokenCount = 0
         var prevTokeId: Int = .max
         for i in runIdRange {
+            // Check the reading
+            guard !context.runs[i].flags.contains(.rubyText) else { continue }
+            
             // Add width
             total += context.runs[i].frame.width
             
@@ -710,6 +715,9 @@ public class STLayout {
                 prevTokeId = context.runs[i].tokenId
             }
         }
+        
+        // Add what the readings reach past the words they are set over
+        total += rubyOverhang(runIdRange: runIdRange)
         
         // Calc gap and diff
         let diff = context.renderSize.width - total
@@ -755,6 +763,15 @@ public class STLayout {
                 
                 // Get run ID
                 let i = runIdRange.lowerBound + index
+                
+                // A reading opens no gap of its own. It goes where the word it
+                // is read from went, which is wherever the gaps before it left
+                // that word
+                if context.runs[i].flags.contains(.rubyText) {
+                    context.runs[i].position.x += dx
+                    context.runs[i].frame = context.runs[i].frame.shift(dx: dx, dy: 0)
+                    continue
+                }
                 
                 // Check token ID
                 if context.runs[i].tokenId != prevTokeId {
@@ -988,11 +1005,16 @@ public class STLayout {
     }
     
     private func alignTextTbRl(runIdRange: Range<Int>) {
-        // Calc total height
+        // Calc total height. A reading is set beside the word rather than
+        // after it, so it adds nothing to the length of the line and counts
+        // as none of its tokens
         var total: CGFloat = 0
         var tokenCount = 0
         var prevTokeId: Int = .max
         for i in runIdRange {
+            // Check the reading
+            guard !context.runs[i].flags.contains(.rubyText) else { continue }
+            
             // For tate chu yoko
             if context.isTateChuYoko(run: context.runs[i]) {
                 // For first one
@@ -1013,6 +1035,9 @@ public class STLayout {
                 prevTokeId = context.runs[i].tokenId
             }
         }
+        
+        // Add what the readings reach past the words they are set over
+        total += rubyOverhang(runIdRange: runIdRange)
         
         // Calc gap and diff
         let diff = context.renderSize.height - total
@@ -1050,6 +1075,15 @@ public class STLayout {
                 
                 // Get run ID
                 let i = runIdRange.lowerBound + index
+                
+                // A reading opens no gap of its own. It goes where the word it
+                // is read from went, which is wherever the gaps before it left
+                // that word
+                if context.runs[i].flags.contains(.rubyText) {
+                    context.runs[i].position.y += dy
+                    context.runs[i].frame = context.runs[i].frame.shift(dx: 0, dy: dy)
+                    continue
+                }
                 
                 // Check token ID
                 if context.runs[i].tokenId != prevTokeId {
@@ -1160,6 +1194,48 @@ public class STLayout {
         return context.rubies.first {
             $0.rbcRunIdRange.contains(runId) || $0.rtcRunIdRange.contains(runId)
         }
+    }
+
+    /// How far the readings on a line reach past the words they are set over.
+    ///
+    /// A reading is set over the word rather than beside it, so it lengthens
+    /// the line only by what it cannot fit above. A line is as long as its
+    /// words, unless a reading is wider than the word it belongs to: the
+    /// layout then sets the word in from the edge to make room, and the line
+    /// is as long as the reading.
+    ///
+    /// Counted for the readings that begin on this line. A reading is never
+    /// split from its word, so the pair is always on the one line.
+    private func rubyOverhang(runIdRange: Range<Int>) -> CGFloat {
+        // Measure along the way the line runs
+        func length(of run: STRun) -> CGFloat {
+            switch context.direction {
+            case .lrTb: return run.frame.width
+            case .tbRl: return run.frame.height
+            }
+        }
+
+        // Add up what each reading reaches past its word
+        var overhang: CGFloat = 0
+        for ruby in context.rubies {
+            // Check the line
+            guard runIdRange.contains(ruby.rtcRunIdRange.lowerBound) else { continue }
+
+            // Measure the word and the reading
+            var baseLength: CGFloat = 0
+            for i in ruby.rbcRunIdRange where runIdRange.contains(i) {
+                baseLength += length(of: context.runs[i])
+            }
+            var readingLength: CGFloat = 0
+            for i in ruby.rtcRunIdRange where runIdRange.contains(i) {
+                readingLength += length(of: context.runs[i])
+            }
+
+            // A reading that fits above the word adds nothing
+            overhang += max(0, readingLength - baseLength)
+        }
+
+        return overhang
     }
 
     /// Takes the layout back to the start of a ruby where it is about to begin
