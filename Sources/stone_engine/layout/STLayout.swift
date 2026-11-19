@@ -1116,6 +1116,239 @@ public class STLayout {
     }
     
     //--------------------------------------------------------------//
+    // MARK: - Ruby
+    //--------------------------------------------------------------//
+
+    /// The ruby a run belongs to, whether it is one of the word's own runs or
+    /// one of the reading's
+    private func ruby(containing runId: Int) -> STRuby? {
+        // Find the ruby this run is part of
+        return context.rubies.first {
+            $0.rbcRunIdRange.contains(runId) || $0.rtcRunIdRange.contains(runId)
+        }
+    }
+
+    /// Takes the layout back to the start of a ruby where it is about to begin
+    /// in the middle of one.
+    ///
+    /// A reading and the word it is set over are laid out together, by the
+    /// word: the reading is never laid out on its own. Laying out can begin
+    /// part way through a ruby all the same — a line broken and then laid
+    /// again begins wherever the break left it — and the reading would then
+    /// be set as ordinary text, in the line beside the word instead of over it
+    private func rewindToRuby() {
+        // Check the run
+        guard let ruby = ruby(containing: runId) else { return }
+        guard runId != ruby.rbcRunIdRange.lowerBound else { return }
+
+        // Take it back to the word
+        runId = ruby.rbcRunIdRange.lowerBound
+    }
+
+    /// Moves to the next line because a reading will not fit on this one.
+    ///
+    /// Not `goNextLine()`, which is the end of a line reached by setting text
+    /// into it: that one works the kinsoku over the run it stopped at and
+    /// takes the next line to begin after it. Nothing has been set here. The
+    /// line is left as it stands and the ruby begins the next one
+    private func goNextLineForRuby() {
+        // Switch by direction
+        switch context.direction {
+        case .lrTb:
+            x = minX
+            y += context.adjustLineHeight
+        case .tbRl:
+            x -= context.adjustLineHeight
+            y = minY
+        }
+        tmpX = nil
+
+        // Begin a line at the ruby itself
+        context.lineCount += 1
+        lineStartRunId = runId
+    }
+
+    /// Sets a reading over the word it belongs to, going across the page.
+    ///
+    /// The word and the reading are each set as a run of their own glyphs and
+    /// the wider of the two decides how much room the pair takes; the narrower
+    /// is centred in it. A reading is never broken away from its word, so the
+    /// pair is carried to the next line whole.
+    ///
+    /// - Returns: whether a ruby began here and was laid out
+    @discardableResult
+    private func applyRubyLrTb() -> Bool {
+        // Find a ruby starting at current runId
+        guard let ruby = context.rubies.first(where: { $0.rbcRunIdRange.lowerBound == runId }) else {
+            return false
+        }
+
+        // Calculate rbc width
+        var rbcWidth: CGFloat = 0
+        for i in ruby.rbcRunIdRange {
+            rbcWidth += context.runs[i].advance.width
+        }
+
+        // Calculate rtc width
+        var rtcWidth: CGFloat = 0
+        for i in ruby.rtcRunIdRange {
+            rtcWidth += context.runs[i].advance.width
+        }
+
+        // Ruby width is the larger of the two (don't break inside ruby)
+        let rubyWidth = max(rbcWidth, rtcWidth)
+
+        // Wrap to next line first if ruby would exceed line end
+        if x + rubyWidth > maxX, runId > lineStartRunId {
+            goNextLineForRuby()
+        }
+
+        // Layout rbc runs as normal text, centered within rubyWidth
+        var rbcX = x + (rubyWidth - rbcWidth) * 0.5
+        var rbcTotalHeight: CGFloat = 0
+        for i in ruby.rbcRunIdRange {
+            var run = context.runs[i]
+            run.line = context.lineCount
+            let runFontSize = context.adjustFontSize * run.fontScale
+            let ascent = context.fontManager.ascent(fontId: run.fontId, size: runFontSize)
+            run.position = .init(x: rbcX, y: y)
+            run.frame = .init(
+                x: rbcX,
+                y: y - ascent,
+                width: run.advance.width,
+                height: runFontSize * context.fontManager.fontScale(fontId: run.fontId)
+            )
+            context.runs[i] = run
+            rbcX += run.advance.width
+            rbcTotalHeight += run.frame.height
+        }
+        let rbcHeight = rbcTotalHeight / CGFloat(ruby.rbcRunIdRange.count)
+
+        // Layout rtc runs above rbc, centered within rubyWidth
+        var rtcX = x + (rubyWidth - rtcWidth) * 0.5
+        for i in ruby.rtcRunIdRange {
+            var run = context.runs[i]
+            run.line = context.lineCount
+            let runFontSize = context.adjustFontSize * run.fontScale
+            let ascent = context.fontManager.ascent(fontId: run.fontId, size: runFontSize)
+            let rtcBaselineY = y - rbcHeight + context.fontManager.descent(fontId: run.fontId, size: runFontSize)
+            run.position = .init(x: rtcX, y: rtcBaselineY)
+            run.frame = .init(
+                x: rtcX,
+                y: rtcBaselineY - ascent,
+                width: run.advance.width,
+                height: runFontSize * context.fontManager.fontScale(fontId: run.fontId)
+            )
+            context.runs[i] = run
+            rtcX += run.advance.width
+        }
+
+        // Advance x past ruby
+        x += rubyWidth
+
+        // Move runId
+        runId = ruby.rtcRunIdRange.upperBound
+
+        return true
+    }
+
+    /// Sets a reading beside the word it belongs to, going down the page.
+    ///
+    /// - Returns: whether a ruby began here and was laid out
+    @discardableResult
+    private func applyRubyTbRl() -> Bool {
+        // Find a ruby starting at current runId
+        guard let ruby = context.rubies.first(where: { $0.rbcRunIdRange.lowerBound == runId }) else {
+            return false
+        }
+
+        // Calculate rbc height. Down a column a character is sent on by its em
+        // box rather than by the width of its glyph, and a reading is sent on
+        // by an em box of its own size.
+        var rbcHeight: CGFloat = 0
+        for i in ruby.rbcRunIdRange {
+            rbcHeight += context.adjustFontSize * context.runs[i].fontScale
+        }
+
+        // Calculate rtc height
+        var rtcHeight: CGFloat = 0
+        for i in ruby.rtcRunIdRange {
+            rtcHeight += context.adjustFontSize * context.runs[i].fontScale
+        }
+
+        // Ruby height is the larger of the two (don't break inside ruby)
+        let rubyHeight = max(rbcHeight, rtcHeight)
+
+        // Wrap to next line first if ruby would exceed line end
+        if y + rubyHeight > maxY, runId > lineStartRunId {
+            goNextLineForRuby()
+        }
+
+        // Layout rbc runs as normal text, centered within rubyHeight
+        var rbcY = y + (rubyHeight - rbcHeight) * 0.5
+        var rbcTotalWidth: CGFloat = 0
+        for i in ruby.rbcRunIdRange {
+            var run = context.runs[i]
+            run.line = context.lineCount
+            let runFontSize = context.adjustFontSize * run.fontScale
+            let descent = context.fontManager.descent(fontId: run.fontId, size: runFontSize)
+            run.position = .init(x: x, y: rbcY + runFontSize - descent)
+            run.frame = .init(
+                x: x,
+                y: rbcY,
+                width: run.advance.width,
+                height: runFontSize
+            )
+            context.runs[i] = run
+            rbcY += runFontSize
+            rbcTotalWidth += run.frame.width
+        }
+        let rbcWidth = rbcTotalWidth / CGFloat(ruby.rbcRunIdRange.count)
+
+        // Layout rtc runs to the right of rbc, centered within rubyHeight. A
+        // column is read down the page and the lines run right to left, so the
+        // room beside a column on its right is the gap the line before it left.
+        var rtcY = y + (rubyHeight - rtcHeight) * 0.5
+        for i in ruby.rtcRunIdRange {
+            var run = context.runs[i]
+            run.line = context.lineCount
+            let runFontSize = context.adjustFontSize * run.fontScale
+            let descent = context.fontManager.descent(fontId: run.fontId, size: runFontSize)
+            run.position = .init(x: x + rbcWidth, y: rtcY + runFontSize - descent)
+            run.frame = .init(
+                x: x + rbcWidth,
+                y: rtcY,
+                width: run.advance.width,
+                height: runFontSize
+            )
+            context.runs[i] = run
+            rtcY += runFontSize
+        }
+
+        // Advance y past ruby
+        y += rubyHeight
+
+        // Move runId
+        runId = ruby.rtcRunIdRange.upperBound
+
+        return true
+    }
+
+    /// - Returns: whether a ruby began here and was laid out
+    @discardableResult
+    private func applyRuby() -> Bool {
+        // Nothing to look for in a text that carries no reading, which is most
+        // of them
+        guard !context.rubies.isEmpty else { return false }
+
+        // Switch by direction
+        switch context.direction {
+        case .lrTb: return applyRubyLrTb()
+        case .tbRl: return applyRubyTbRl()
+        }
+    }
+
+    //--------------------------------------------------------------//
     // MARK: - Layout
     //--------------------------------------------------------------//
     
@@ -1137,6 +1370,20 @@ public class STLayout {
         
         // Layout
         while runId < context.runs.count {
+            // Begin at the word a reading belongs to, never inside the pair
+            rewindToRuby()
+
+            // Set the reading over its word.
+            //
+            // One reading may be followed straight away by another, in a word
+            // where every character carries its own, so where the last one
+            // left off is offered to the next rather than being laid out as
+            // ordinary text
+            if applyRuby() {
+                continue
+            }
+            guard runId < context.runs.count else { break }
+
             // Layout run
             layoutRun()
             

@@ -94,6 +94,40 @@ final class STLayoutSnapshotTests: STEngineTestCase {
         add(.make("tbRl-emoji", "あ😀漢🇯🇵", direction: .tbRl, charsPerLine: 10),
             { $0.note = fontDependent + "（絵文字は反転描画のため position が枡の中央基準になる）" })
 
+        // --- ルビ ---
+        //
+        // 読みは行の上の余白に組まれるので、行間を詰めたままだと上の行に
+        // 食い込む。1.5 はちょうど半分の読みが収まる高さ
+        let rubyLineHeight: CGFloat = 1.5
+
+        add(.make("lrTb-ruby-braces", "今日は{晴天|せいてん}なり", charsPerLine: 10),
+            { $0.rubyNotation = .braces; $0.lineHeightScale = rubyLineHeight })
+        add(.make("lrTb-ruby-aozora", "今日は晴天《せいてん》なり", charsPerLine: 10),
+            { $0.rubyNotation = .aozora; $0.lineHeightScale = rubyLineHeight })
+        add(.make("lrTb-ruby-mono", "{消|しょう}{防|ぼう}{士|し}", charsPerLine: 10),
+            { $0.rubyNotation = .braces; $0.lineHeightScale = rubyLineHeight;
+              $0.note = "1 文字ずつ読みが付く語。組が続けて並ぶ" })
+        add(.make("lrTb-ruby-wider-reading", "{空|からっぽ}", charsPerLine: 10),
+            { $0.rubyNotation = .braces; $0.lineHeightScale = rubyLineHeight;
+              $0.note = "読みのほうが長い場合。広いほうが幅を決め、狭いほうが中に寄る" })
+        add(.make("lrTb-ruby-wrap", "{晴天|せいてん}{曇天|どんてん}", charsPerLine: 4),
+            { $0.rubyNotation = .braces; $0.lineHeightScale = rubyLineHeight;
+              $0.note = "語と読みは割らずに次の行へ送る" })
+        add(.make("lrTb-ruby-font-scale", "{晴天|せいてん}", charsPerLine: 10),
+            { $0.rubyNotation = .braces; $0.lineHeightScale = rubyLineHeight;
+              $0.rubyFontScale = 0.25 })
+        add(.make("lrTb-ruby-malformed", "設定{を開く", charsPerLine: 10),
+            { $0.rubyNotation = .braces; $0.lineHeightScale = rubyLineHeight;
+              $0.note = "組になっていない括弧。書かれたとおりに組まれる" })
+
+        add(.make("tbRl-ruby-braces", "今日は{晴天|せいてん}なり", direction: .tbRl, charsPerLine: 10),
+            { $0.rubyNotation = .braces; $0.lineHeightScale = rubyLineHeight })
+        add(.make("tbRl-ruby-aozora", "今日は晴天《せいてん》なり", direction: .tbRl, charsPerLine: 10),
+            { $0.rubyNotation = .aozora; $0.lineHeightScale = rubyLineHeight })
+        add(.make("tbRl-ruby-wrap", "{晴天|せいてん}{曇天|どんてん}", direction: .tbRl, charsPerLine: 4),
+            { $0.rubyNotation = .braces; $0.lineHeightScale = rubyLineHeight;
+              $0.note = "語と読みは割らずに次の行へ送る" })
+
         return cases
     }
 

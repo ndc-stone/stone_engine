@@ -556,6 +556,33 @@ public struct STRunFlags: OptionSet {
 // Deliberately holds no Character. Keeping every field trivial lets the runs
 // array be copied with memcpy and keeps ARC out of the layout loop; the
 // characters themselves live alongside it in STContext.runChars.
+/// A reading, and the text it is set over.
+///
+/// Said as two ranges of runs rather than as the text itself. The reading is
+/// set as ordinary runs — glyphs of their own, measured with their own font
+/// at their own size — and what makes them a reading is standing in this
+/// pair: the first range is what is read, the second is how it is read.
+///
+/// `rbc` and `rtc` are what HTML calls them: the ruby base container and the
+/// ruby text container.
+///
+/// The two ranges are neighbours, the reading following the text it belongs
+/// to, and neither is empty. Nothing is written here about where they are set
+/// — that is the layout's, which puts the reading over the text going across
+/// and beside it going down
+public struct STRuby {
+    /// The runs being read
+    public var rbcRunIdRange: Range<Int>
+
+    /// The runs that say how
+    public var rtcRunIdRange: Range<Int>
+
+    public init(rbcRunIdRange: Range<Int>, rtcRunIdRange: Range<Int>) {
+        self.rbcRunIdRange = rbcRunIdRange
+        self.rtcRunIdRange = rtcRunIdRange
+    }
+}
+
 public struct STRun {
     public var tokenId: Int
     public var tokenRunIndex: Int
@@ -567,9 +594,9 @@ public struct STRun {
     /// One for ordinary text, which is every run until something asks for
     /// otherwise. A run set smaller than the text around it carries the factor
     /// here rather than a size of its own, so that the one size the text is
-    /// laid out at still governs: a run set at half the size is half the size
-    /// of whatever the text turns out to be once it has been fitted to the
-    /// room it was given.
+    /// laid out at still governs: a reading set over a word is half the size
+    /// of the word, whatever size the word turns out to be once the text has
+    /// been fitted to the room it was given.
     ///
     /// The glyph and the measurements in this run were resolved at
     /// `context.adjustFontSize * fontScale`, and the run has to be drawn at

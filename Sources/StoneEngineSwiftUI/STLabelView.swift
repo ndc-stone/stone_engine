@@ -15,16 +15,34 @@ public struct STLabelView {
     public var fontSize: CGFloat
     public var lineHeightScale: CGFloat
 
+    /// How a reading is written into the text, where one is written at all.
+    ///
+    /// Nothing by default — see `STRubyNotation`. The marks a reading is
+    /// written with are then ordinary characters, and the text is set exactly
+    /// as it is given.
+    ///
+    /// A reading needs room above the line it is set over, which a line set to
+    /// its own height does not leave: `lineHeightScale` is what gives it, and
+    /// one and a half is enough for a reading set at half size
+    public var rubyNotation: STRubyNotation
+
+    /// How large a reading is set, against the text it is read from
+    public var rubyFontScale: CGFloat
+
     public init(
         _ text: String,
         direction: STDirection = .lrTb,
         fontSize: CGFloat = 17,
-        lineHeightScale: CGFloat = 1.5
+        lineHeightScale: CGFloat = 1.5,
+        rubyNotation: STRubyNotation = .none,
+        rubyFontScale: CGFloat = 0.5
     ) {
         self.text = text
         self.direction = direction
         self.fontSize = fontSize
         self.lineHeightScale = lineHeightScale
+        self.rubyNotation = rubyNotation
+        self.rubyFontScale = rubyFontScale
     }
 
     @MainActor
@@ -42,10 +60,13 @@ public struct STLabelView {
 
     @MainActor
     private func update(_ label: STLabel) {
-        // Set properties
+        // Set properties. The text last, so that everything it is set by is
+        // already on the label when it is parsed and laid out
         label.direction = direction
         label.fontSize = fontSize
         label.lineHeightScale = lineHeightScale
+        label.rubyNotation = rubyNotation
+        label.rubyFontScale = rubyFontScale
         label.text = text
     }
 

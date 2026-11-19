@@ -25,6 +25,14 @@ open class STContext {
     // trivially copyable and the layout loop is free of ARC traffic.
     public var runChars = [Character]()
     public var tokens = [STToken]()
+
+    /// The readings in the text, and what each is set over.
+    ///
+    /// Filled by the parser and read by the layout. Empty unless a reading was
+    /// asked for — see `rubyNotation`, which says how one is written — and
+    /// empty for every text that carries none, which is most of them
+    public var rubies = [STRuby]()
+
     public var lineCount = 0
 
     // Font
@@ -43,6 +51,21 @@ open class STContext {
     public var minimumScaleFactor: CGFloat = 0
     public var isFixedWidth: Bool = false
     public var isSingleLine: Bool = false
+
+    // Ruby
+
+    /// How a reading is written into the text, where one is written at all.
+    ///
+    /// Nothing by default — see `STRubyNotation`. A text is then set exactly
+    /// as it is given, and braces and 《》 are ordinary characters
+    public var rubyNotation: STRubyNotation = .none
+
+    /// How large a reading is set, against the text it is read from.
+    ///
+    /// Half, which is what a reading is set at nearly everywhere it is set at
+    /// all: it has to be told apart from the word at a glance and still be
+    /// read
+    public var rubyFontScale: CGFloat = 0.5
 
     // Layout for adjusting
     public var adjustFontScale: CGFloat = 1.0

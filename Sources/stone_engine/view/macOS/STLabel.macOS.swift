@@ -165,6 +165,42 @@ open class STLabel: NSView {
         }
     }
 
+    // Ruby
+
+    /// How a reading is written into the text, where one is written at all.
+    ///
+    /// Nothing by default — see `STRubyNotation`. The marks a reading is
+    /// written with are then ordinary characters, and the text is set exactly
+    /// as it is given
+    open var rubyNotation: STRubyNotation {
+        get {
+            context.rubyNotation
+        }
+        set {
+            // Check new value
+            guard newValue != rubyNotation else { return }
+            context.rubyNotation = newValue
+
+            // Set needs layout
+            setNeedsParseAndLayout()
+        }
+    }
+
+    /// How large a reading is set, against the text it is read from
+    open var rubyFontScale: CGFloat {
+        get {
+            context.rubyFontScale
+        }
+        set {
+            // Check new value
+            guard newValue != rubyFontScale else { return }
+            context.rubyFontScale = newValue
+
+            // Set needs layout
+            setNeedsParseAndLayout()
+        }
+    }
+
     open var hasSelectedAreaLineGap: Bool = true
 
     // Context
@@ -291,6 +327,8 @@ open class STLabel: NSView {
         context.adjustsFontSizeToFitWidth = adjustsFontSizeToFitWidth
         context.minimumScaleFactor = minimumScaleFactor
         context.isSingleLine = isSingleLine
+        context.rubyNotation = rubyNotation
+        context.rubyFontScale = rubyFontScale
         
         // Set render size
         context.renderSize = size
@@ -334,8 +372,8 @@ open class STLabel: NSView {
         ///
         /// Part of what tells one bucket from another. A bucket draws its
         /// glyphs with the one font it holds, and a font is made at a size, so
-        /// runs set smaller than the text around them are drawn from a font of
-        /// their own
+        /// runs set smaller than the text around them — a reading over a word
+        /// — are drawn from a font of their own
         let fontScaleInt: Int
 
         let isClockwise: Bool

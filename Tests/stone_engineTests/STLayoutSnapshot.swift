@@ -37,6 +37,8 @@ struct STLayoutSnapshotCase {
     var isFixedWidth = false
     var isSingleLine = false
     var isAllowedTateChuYoko = true
+    var rubyNotation: STRubyNotation = .none
+    var rubyFontScale: CGFloat = 0.5
 
     /// 全角 charsPerLine 文字ぶんの幅（横組み）/ 高さ（縦組み）を持つケース。
     static func make(
@@ -86,6 +88,8 @@ enum STLayoutSnapshot {
         context.isFixedWidth = snapshotCase.isFixedWidth
         context.isSingleLine = snapshotCase.isSingleLine
         context.isAllowedTateChuYoko = snapshotCase.isAllowedTateChuYoko
+        context.rubyNotation = snapshotCase.rubyNotation
+        context.rubyFontScale = snapshotCase.rubyFontScale
         context.fontManager.refresh()
 
         STParser(context: context).parse(text: snapshotCase.text)
@@ -102,6 +106,10 @@ enum STLayoutSnapshot {
             + "   fixedWidth: \(onOff(snapshotCase.isFixedWidth))   singleLine: \(onOff(snapshotCase.isSingleLine))\n"
         out += "  align       : text=\(snapshotCase.textAlign)   direction=\(snapshotCase.directionAlign)"
             + "   tateChuYoko: \(onOff(snapshotCase.isAllowedTateChuYoko))\n"
+        if snapshotCase.rubyNotation != .none {
+            out += "  ruby        : \(snapshotCase.rubyNotation)"
+                + "   fontScale: \(number(snapshotCase.rubyFontScale))\n"
+        }
         out += rule + "\n"
         out += "  lineCount   : \(context.lineCount)\n"
         out += "  renderedSize: \(number(context.renderedSize.width)) x \(number(context.renderedSize.height))\n"
