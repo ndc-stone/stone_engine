@@ -14,6 +14,9 @@ import Cocoa
 #endif
 
 open class STFontManager {
+    public init() {
+    }
+
     public static let fontNamesNeedToFlip = [
         "AppleColorEmoji", 
     ]
@@ -251,7 +254,7 @@ extension STFontManager {
     // MARK: - Font name
     //--------------------------------------------------------------//
     
-    func fontNames(script: STScript) -> [String] {
+    public func fontNames(script: STScript) -> [String] {
         // Get font names
         return scriptFontNames[script]!
     }
