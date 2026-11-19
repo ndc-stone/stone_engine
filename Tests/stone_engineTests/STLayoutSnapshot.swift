@@ -39,6 +39,8 @@ struct STLayoutSnapshotCase {
     var isAllowedTateChuYoko = true
     var rubyNotation: STRubyNotation = .none
     var rubyFontScale: CGFloat = 0.5
+    var maxLineCount = 0
+    var isShownEllipsis = false
 
     /// 全角 charsPerLine 文字ぶんの幅（横組み）/ 高さ（縦組み）を持つケース。
     static func make(
@@ -90,6 +92,8 @@ enum STLayoutSnapshot {
         context.isAllowedTateChuYoko = snapshotCase.isAllowedTateChuYoko
         context.rubyNotation = snapshotCase.rubyNotation
         context.rubyFontScale = snapshotCase.rubyFontScale
+        context.maxLineCount = snapshotCase.maxLineCount
+        context.isShownEllipsis = snapshotCase.isShownEllipsis
         context.fontManager.refresh()
 
         STParser(context: context).parse(text: snapshotCase.text)
@@ -106,6 +110,10 @@ enum STLayoutSnapshot {
             + "   fixedWidth: \(onOff(snapshotCase.isFixedWidth))   singleLine: \(onOff(snapshotCase.isSingleLine))\n"
         out += "  align       : text=\(snapshotCase.textAlign)   direction=\(snapshotCase.directionAlign)"
             + "   tateChuYoko: \(onOff(snapshotCase.isAllowedTateChuYoko))\n"
+        if snapshotCase.maxLineCount > 0 || snapshotCase.isShownEllipsis {
+            out += "  lineLimit   : maxLineCount=\(snapshotCase.maxLineCount)"
+                + "   ellipsis: \(onOff(snapshotCase.isShownEllipsis))\n"
+        }
         if snapshotCase.rubyNotation != .none {
             out += "  ruby        : \(snapshotCase.rubyNotation)"
                 + "   fontScale: \(number(snapshotCase.rubyFontScale))\n"

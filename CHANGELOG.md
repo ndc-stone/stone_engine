@@ -12,6 +12,11 @@
   - `STLabel`と`StoneEngineSwiftUI.STLabelView`から指定できる
   - `STContext.rubies`に`STRuby`を直接積めば、自前の記法でも組める
 - `STRun.fontScale`を追加。本文の大きさに対する倍率をランごとに持てるようにした
+- 行数制限に対応。`STContext.maxLineCount`で組む行数を制限し、`STContext.isShownEllipsis`で切り詰めた箇所に省略記号を出す
+  - 制限を超えた行は組まれたうえで描かれず、テキストが返す大きさにも入らない
+  - 切り詰められたテキストは`isTruncated`が真になるので、`adjustsFontSizeToFitWidth`は指定した行数に収まるまで文字を小さくする
+  - 省略記号はルビの読みの上には置かず、記号が語を切ったときは残った語に読みを寄せ直す
+  - `STLabel`と`StoneEngineSwiftUI.STLabelView`から指定できる
 
 ## 0.3.0
 
