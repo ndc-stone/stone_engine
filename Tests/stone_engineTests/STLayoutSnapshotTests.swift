@@ -128,6 +128,26 @@ final class STLayoutSnapshotTests: STEngineTestCase {
             { $0.rubyNotation = .braces; $0.lineHeightScale = rubyLineHeight;
               $0.note = "語と読みは割らずに次の行へ送る" })
 
+        // --- 行数制限と省略記号 ---
+        add(.make("lrTb-max-line-count", "あいうえおかきくけこさしすせそ", charsPerLine: 3),
+            { $0.maxLineCount = 2; $0.note = "3 行目から先は組まれるが描かれない" })
+        add(.make("lrTb-max-line-count-ellipsis", "あいうえおかきくけこさしすせそ", charsPerLine: 3),
+            { $0.maxLineCount = 2; $0.isShownEllipsis = true })
+        add(.make("lrTb-ellipsis-single-line", "あいうえおかきくけこ", charsPerLine: 3),
+            { $0.maxLineCount = 1; $0.isShownEllipsis = true })
+        add(.make("lrTb-max-line-count-fits", "あいうえ", charsPerLine: 10),
+            { $0.maxLineCount = 3; $0.isShownEllipsis = true;
+              $0.note = "収まっているので何も落とさず、記号も出ない" })
+        add(.make("lrTb-ellipsis-over-ruby", "{晴天|せいてん}{曇天|どんてん}", charsPerLine: 3),
+            { $0.rubyNotation = .braces; $0.lineHeightScale = 1.5;
+              $0.maxLineCount = 1; $0.isShownEllipsis = true;
+              $0.note = "記号は読みの上には置かず、残った語に読みを寄せ直す" })
+
+        add(.make("tbRl-max-line-count", "あいうえおかきくけこさしすせそ", direction: .tbRl, charsPerLine: 3),
+            { $0.maxLineCount = 2 })
+        add(.make("tbRl-max-line-count-ellipsis", "あいうえおかきくけこさしすせそ", direction: .tbRl, charsPerLine: 3),
+            { $0.maxLineCount = 2; $0.isShownEllipsis = true })
+
         return cases
     }
 

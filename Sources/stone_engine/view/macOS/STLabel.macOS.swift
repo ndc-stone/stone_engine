@@ -165,6 +165,48 @@ open class STLabel: NSView {
         }
     }
 
+    // Line count
+
+    /// How many lines the text may be set on. Zero leaves it as many as it
+    /// takes.
+    ///
+    /// The lines past the count are left undrawn and out of the size the text
+    /// comes back as. A text held this way counts as truncated, so
+    /// `adjustsFontSizeToFitWidth` sets it down until it fits the lines it is
+    /// allowed, and only what still does not fit is lost
+    open var maxLineCount: Int {
+        get {
+            context.maxLineCount
+        }
+        set {
+            // Check new value
+            guard newValue != maxLineCount else { return }
+            context.maxLineCount = newValue
+
+            // Set needs layout
+            setNeedsParseAndLayout()
+        }
+    }
+
+    /// Whether what is cut off is marked with an ellipsis.
+    ///
+    /// Off, the text simply stops where the room or the line count stops it.
+    /// On, the last glyph still shown is set as the mark, so a reader can tell
+    /// a text that goes on from one that ends there
+    open var isShownEllipsis: Bool {
+        get {
+            context.isShownEllipsis
+        }
+        set {
+            // Check new value
+            guard newValue != isShownEllipsis else { return }
+            context.isShownEllipsis = newValue
+
+            // Set needs layout
+            setNeedsParseAndLayout()
+        }
+    }
+
     // Ruby
 
     /// How a reading is written into the text, where one is written at all.
@@ -329,6 +371,8 @@ open class STLabel: NSView {
         context.isSingleLine = isSingleLine
         context.rubyNotation = rubyNotation
         context.rubyFontScale = rubyFontScale
+        context.maxLineCount = maxLineCount
+        context.isShownEllipsis = isShownEllipsis
         
         // Set render size
         context.renderSize = size

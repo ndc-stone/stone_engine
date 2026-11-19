@@ -52,6 +52,34 @@ open class STContext {
     public var isFixedWidth: Bool = false
     public var isSingleLine: Bool = false
 
+    // Line count
+
+    /// How many lines the text may be set on. Zero leaves it as many as it
+    /// takes.
+    ///
+    /// The lines past the count are laid out as any others — the layout has
+    /// to know where the text goes to know it has gone too far — and are
+    /// then left undrawn and out of the size the text comes back as. A text
+    /// held this way counts as truncated, so `adjustsFontSizeToFitWidth` sets
+    /// it down until it fits the lines it is allowed, and only what still does
+    /// not fit is lost
+    public var maxLineCount: Int = 0
+
+    /// Whether what is cut off is marked with an ellipsis.
+    ///
+    /// Off, the text simply stops where the room or the line count stops it.
+    /// On, the last glyph still shown is set as the mark, so a reader can tell
+    /// a text that goes on from one that ends there. It costs a glyph of what
+    /// is shown, which is why it is asked for rather than always done
+    public var isShownEllipsis: Bool = false
+
+    /// Whether the line is one of those the text is allowed
+    public func isShownLine(_ line: Int) -> Bool {
+        // Check max line count
+        guard maxLineCount > 0 else { return true }
+        return line < maxLineCount
+    }
+
     // Ruby
 
     /// How a reading is written into the text, where one is written at all.

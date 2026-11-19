@@ -347,6 +347,26 @@ extension STFontManager {
     static let verticalEllipsis = "⋮" // VERTICAL ELLIPSIS, U+22ee
     static let presentationVerticalEllipsis = "︙" // PRESENTATION FORM FOR VERTICAL HORIZONTAL ELLIPSIS, U+fe19
     
+    /// How far the mark that says the text goes on sends the line along.
+    ///
+    /// Asked of the font the glyph it stands in place of was set in, at the
+    /// size that glyph was set at: the mark is set among the words, not beside
+    /// them, and a mark measured at some other size would be put where it does
+    /// not fit
+    func ellipsisAdvance(fontId: Int, size: CGFloat, direction: STDirection) -> CGFloat {
+        // Get ellipsis glyph
+        let glyph = ellipsisGlyph(fontId: fontId, direction: direction)
+        guard glyph > 0 else { return 0 }
+        
+        // Get advance
+        let ctFont = ctFont(fontId: fontId, size: size)
+        var glyphs: [CGGlyph] = [glyph]
+        var advances: [CGSize] = [.zero]
+        CTFontGetAdvancesForGlyphs(ctFont, .horizontal, &glyphs, &advances, 1)
+        
+        return advances[0].width
+    }
+
     func ellipsisGlyph(fontId: Int, direction: STDirection) -> CGGlyph {
         // Get ct font
         let ctFont = ctFont(fontId: fontId, size: 17)

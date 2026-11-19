@@ -36,6 +36,14 @@ public class STLayout {
 
     // The ascent the line's em box is measured from, for this layout pass
     private var emAscent: CGFloat = 0
+
+    /// How many of the lines laid out are drawn — all of them, unless the
+    /// text is held to a count
+    private var shownLineCount: Int {
+        // Decide shown line count
+        guard context.maxLineCount > 0 else { return context.lineCount }
+        return min(context.lineCount, context.maxLineCount)
+    }
     
     //--------------------------------------------------------------//
     // MARK: - Initialize
@@ -798,18 +806,22 @@ public class STLayout {
     }
     
     private func updateRenderedSizeLrTb() {
-        // Decide max X and max Y
+        // Decide max X and max Y. Lines the text is not allowed are left out
+        // of it: they are not drawn, and a size measured with them in would be
+        // the size of a text that is not there
         var maxX: CGFloat = 0
         var maxY: CGFloat = 0
+        let context = self.context
         context.runs.withUnsafeBufferPointer { runs in
             for i in 0 ..< runs.count {
+                guard context.isShownLine(runs[i].line) else { continue }
                 maxX = max(maxX, runs[i].frame.maxX)
                 maxY = max(maxY, runs[i].frame.maxY)
             }
         }
 
         // Set rendered size
-        let height = max(context.lineHeight * CGFloat(context.lineCount), maxY)
+        let height = max(context.lineHeight * CGFloat(shownLineCount), maxY)
         context.renderedSize = .init(width: maxX, height: height)
     }
     
@@ -829,15 +841,31 @@ public class STLayout {
                 renderFrame.size.width = unbounded * 0.5
             }
         }
+        /// The last run drawn where what came after it was left out
+        var lastShownRunId: Int = -1
+
         // Walk the runs in place
+        let context = self.context
         context.runs.withUnsafeMutableBufferPointer { runs in
             let runCount = runs.count
             for i in 0 ..< runCount {
-                // Decide shown
+                // Check the lines the text is allowed. A run on a line past
+                // them is not drawn, whether it fell inside the room or not:
+                // it is the count that says it is not to be there
+                guard context.isShownLine(runs[i].line) else {
+                    runs[i].visibility = .invisible
+                    continue
+                }
+
+                // Decide shown. What comes next counts as shown only if it is
+                // on a line the text is allowed as well as inside the room:
+                // the run before a line that is not to be there is the last
+                // one shown
                 let isShown = renderFrame.intersects(runs[i].frame)
                 let nextIsShown: Bool
                 if i < runCount - 1 {
-                    nextIsShown = renderFrame.contains(runs[i + 1].frame)
+                    nextIsShown = context.isShownLine(runs[i + 1].line)
+                        && renderFrame.contains(runs[i + 1].frame)
                 }
                 else {
                     nextIsShown = true
@@ -846,12 +874,16 @@ public class STLayout {
                 // Decide visibility
                 if isShown && !nextIsShown {
                     runs[i].visibility = .visible
+                    lastShownRunId = i
                 }
                 else {
                     runs[i].visibility = isShown ? .visible : .invisible
                 }
             }
         }
+
+        // Mark what is left out
+        applyEllipsis(lastShownRunId: lastShownRunId)
     }
     
     private func postLayoutLrTb() {
@@ -1074,8 +1106,10 @@ public class STLayout {
         var maxX: CGFloat = 0
         var minY: CGFloat = .greatestFiniteMagnitude
         var maxY: CGFloat = 0
+        let context = self.context
         context.runs.withUnsafeBufferPointer { runs in
             for i in 0 ..< runs.count {
+                guard context.isShownLine(runs[i].line) else { continue }
                 minX = min(minX, runs[i].frame.minX)
                 maxX = max(maxX, runs[i].frame.maxX)
                 minY = min(minY, runs[i].frame.minY)
@@ -1085,10 +1119,10 @@ public class STLayout {
 
         // Set rendered size
         if minX < .greatestFiniteMagnitude && maxX > 0 {
-            context.renderedSize.width = max(context.lineHeight * CGFloat(context.lineCount), maxX - minX)
+            context.renderedSize.width = max(context.lineHeight * CGFloat(shownLineCount), maxX - minX)
         }
         else {
-            context.renderedSize.width = context.lineHeight * CGFloat(context.lineCount)
+            context.renderedSize.width = context.lineHeight * CGFloat(shownLineCount)
         }
         if minY < .greatestFiniteMagnitude && maxY > 0 {
             context.renderedSize.height = maxY - minY
@@ -1345,6 +1379,191 @@ public class STLayout {
         switch context.direction {
         case .lrTb: return applyRubyLrTb()
         case .tbRl: return applyRubyTbRl()
+        }
+    }
+
+    //--------------------------------------------------------------//
+    // MARK: - Ellipsis
+    //--------------------------------------------------------------//
+
+    /// Where a glyph begins, along the way the lines run
+    private func runStart(_ run: STRun) -> CGFloat {
+        // Switch by direction
+        switch context.direction {
+        case .lrTb: return run.frame.minX
+        case .tbRl: return run.frame.minY
+        }
+    }
+
+    /// Where a glyph ends, along the way the lines run
+    private func runEnd(_ run: STRun) -> CGFloat {
+        // Switch by direction
+        switch context.direction {
+        case .lrTb: return run.frame.maxX
+        case .tbRl: return run.frame.maxY
+        }
+    }
+
+    /// How far the mark may reach: the end of the room the text is drawn in,
+    /// along the way the lines run
+    private var ellipsisLimit: CGFloat {
+        // Switch by direction
+        switch context.direction {
+        case .lrTb: return context.renderSize.width
+        case .tbRl: return context.renderSize.height
+        }
+    }
+
+    /// Where the mark set in place of a glyph would end
+    private func ellipsisEnd(of run: STRun, advance: CGFloat) -> CGFloat {
+        // Switch by direction
+        switch context.direction {
+        case .lrTb: return run.frame.minX + advance
+        case .tbRl: return run.frame.minY + advance
+        }
+    }
+
+    /// Whether a glyph is drawn wholly inside the room, along the way the
+    /// lines run. A glyph that is only partly in it is cut through by the edge
+    private func isInsideRoom(_ run: STRun) -> Bool {
+        // Switch by direction
+        switch context.direction {
+        case .lrTb: return run.frame.maxX <= ellipsisLimit
+        case .tbRl: return run.frame.maxY <= ellipsisLimit
+        }
+    }
+
+    /// Sets the mark that says the text goes on, in place of the last glyphs
+    /// shown.
+    ///
+    /// The mark is a glyph of its own, and a wider one than most of those it
+    /// stands in for: set in place of a single narrow glyph it would be drawn
+    /// past the end of the line and cut off there. The glyphs at the end of
+    /// the line are given up one by one until the room they leave takes it
+    private func applyEllipsis(lastShownRunId: Int) {
+        // Check whether anything is to be marked
+        guard context.isShownEllipsis else { return }
+        guard lastShownRunId >= 0, lastShownRunId < context.runs.count else { return }
+
+        // The line the text stops on. The mark says that line goes on, and
+        // moving it to the line before would say it of the wrong one
+        let line = context.runs[lastShownRunId].line
+
+        // Find the glyph the mark is set in place of, before anything is given
+        // up: a line with nowhere to put the mark keeps the words it has,
+        // which is better than a line left with nothing on it at all
+        var runId = lastShownRunId
+        var markRunId: Int?
+        while runId >= 0, context.runs[runId].line == line {
+            // A reading is passed over for the text it is set above. The mark
+            // stands in for a glyph of the line, in the size the line is set
+            // in: set on a reading it would be drawn small and above the line,
+            // where it reads as a reading of the word below rather than as the
+            // text going on
+            if let ruby = ruby(containing: runId), ruby.rtcRunIdRange.contains(runId) {
+                runId = ruby.rbcRunIdRange.upperBound - 1
+                continue
+            }
+
+            // Check the mark fits where that glyph is set. The room, rather
+            // than the width of what is given up: a line can be set past the
+            // end of the room it was given — a word with nowhere to break, a
+            // mark hung past the edge — and a mark put where that glyph was
+            // would be drawn outside the room and cut off by it
+            let candidate = context.runs[runId]
+            let ellipsisAdvance = context.fontManager.ellipsisAdvance(
+                fontId: candidate.fontId,
+                size: context.adjustFontSize * candidate.fontScale,
+                direction: context.direction
+            )
+            if ellipsisEnd(of: candidate, advance: ellipsisAdvance) <= ellipsisLimit {
+                markRunId = runId
+                break
+            }
+
+            // Look further back
+            runId -= 1
+        }
+
+        // For nowhere to put the mark, the line stands as it is
+        guard let markRunId = markRunId else { return }
+
+        // The reading of a word the mark cuts into is not given up with the
+        // rest: it is set over the word as a whole, above the line, and what
+        // of it falls in the room reads as much as the text under it does. It
+        // is held to the room on its own, below
+        let markRuby = ruby(containing: markRunId)
+
+        // Give up the glyphs the mark stands in for. There may be none: the
+        // mark can stand in for the last glyph of the line and no more
+        if markRunId < lastShownRunId {
+            for i in (markRunId + 1) ... lastShownRunId
+                where context.runs[i].line == line
+                    && !(markRuby?.rtcRunIdRange.contains(i) ?? false)
+            {
+                context.runs[i].visibility = .invisible
+            }
+        }
+
+        // Set what is left of the word's reading over what is left of the word
+        if let ruby = markRuby {
+            for i in ruby.rbcRunIdRange where i > markRunId {
+                context.runs[i].visibility = .invisible
+            }
+            shiftEllipsisRuby(ruby, markRunId: markRunId)
+        }
+
+        // Set the mark
+        context.runs[markRunId].visibility = .ellipsis
+    }
+
+    /// Sets a reading over what is left of the word it belongs to.
+    ///
+    /// A reading is set over the whole of a word, and a word the mark has cut
+    /// into is no longer the word it was set over: left where it was, the
+    /// reading stands over the glyphs that went — past the mark, and as often
+    /// as not outside the room altogether, where none of it is read at all.
+    /// Moved over the text still shown, it goes on reading for it, as far as
+    /// the room takes it
+    private func shiftEllipsisRuby(_ ruby: STRuby, markRunId: Int) {
+        // Get what is left of the word. The mark is not part of it: it stands
+        // for what went, and a reading set over it would read for nothing
+        let shownRbcIds = ruby.rbcRunIdRange.filter { $0 < markRunId }
+        guard let firstRbcId = shownRbcIds.first, let lastRbcId = shownRbcIds.last else {
+            // Nothing of the word is left, so neither is its reading
+            for i in ruby.rtcRunIdRange { context.runs[i].visibility = .invisible }
+            return
+        }
+
+        // Measure the word and its reading along the way the line runs
+        let wordStart = runStart(context.runs[firstRbcId])
+        let wordEnd = runEnd(context.runs[lastRbcId])
+        var rtcStart: CGFloat = .greatestFiniteMagnitude
+        var rtcEnd: CGFloat = -.greatestFiniteMagnitude
+        for i in ruby.rtcRunIdRange {
+            rtcStart = min(rtcStart, runStart(context.runs[i]))
+            rtcEnd = max(rtcEnd, runEnd(context.runs[i]))
+        }
+        guard rtcStart < .greatestFiniteMagnitude else { return }
+
+        // Set it over the middle of what is left where it fits, and from the
+        // beginning of it where it does not: a reading with less room than it
+        // needs is read from its start, as the text is
+        let word = wordEnd - wordStart
+        let reading = rtcEnd - rtcStart
+        let shift = (reading <= word ? wordStart + (word - reading) * 0.5 : wordStart) - rtcStart
+
+        // Move the reading, and give up what the room does not take
+        for i in ruby.rtcRunIdRange {
+            switch context.direction {
+            case .lrTb:
+                context.runs[i].position.x += shift
+                context.runs[i].frame = context.runs[i].frame.shift(dx: shift, dy: 0)
+            case .tbRl:
+                context.runs[i].position.y += shift
+                context.runs[i].frame = context.runs[i].frame.shift(dx: 0, dy: shift)
+            }
+            context.runs[i].visibility = isInsideRoom(context.runs[i]) ? .visible : .invisible
         }
     }
 

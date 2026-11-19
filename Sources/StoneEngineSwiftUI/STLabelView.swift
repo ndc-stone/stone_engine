@@ -29,13 +29,22 @@ public struct STLabelView {
     /// How large a reading is set, against the text it is read from
     public var rubyFontScale: CGFloat
 
+    /// How many lines the text may be set on. Zero leaves it as many as it
+    /// takes
+    public var maxLineCount: Int
+
+    /// Whether what is cut off is marked with an ellipsis
+    public var isShownEllipsis: Bool
+
     public init(
         _ text: String,
         direction: STDirection = .lrTb,
         fontSize: CGFloat = 17,
         lineHeightScale: CGFloat = 1.5,
         rubyNotation: STRubyNotation = .none,
-        rubyFontScale: CGFloat = 0.5
+        rubyFontScale: CGFloat = 0.5,
+        maxLineCount: Int = 0,
+        isShownEllipsis: Bool = false
     ) {
         self.text = text
         self.direction = direction
@@ -43,6 +52,8 @@ public struct STLabelView {
         self.lineHeightScale = lineHeightScale
         self.rubyNotation = rubyNotation
         self.rubyFontScale = rubyFontScale
+        self.maxLineCount = maxLineCount
+        self.isShownEllipsis = isShownEllipsis
     }
 
     @MainActor
@@ -67,6 +78,8 @@ public struct STLabelView {
         label.lineHeightScale = lineHeightScale
         label.rubyNotation = rubyNotation
         label.rubyFontScale = rubyFontScale
+        label.maxLineCount = maxLineCount
+        label.isShownEllipsis = isShownEllipsis
         label.text = text
     }
 
