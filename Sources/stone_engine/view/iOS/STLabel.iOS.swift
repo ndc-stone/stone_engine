@@ -409,7 +409,13 @@ open class STLabel: UIView {
         // Pass to font manager
         context.fontManager.setFontNames(fontNames, script: script)
         
-        // Set needs layout
+        // Set needs layout. Said as well as asking for the pass, which on its
+        // own is not enough: the pass looks at whether anything has changed
+        // before it does the work, and what it looks at is this flag and the
+        // size. A face changed while the label stays the size it was would be
+        // turned away there, and the text would go on being drawn in the
+        // glyphs of the face it was parsed with
+        needsToLayout = true
         setNeedsLayout()
     }
     
@@ -422,7 +428,8 @@ open class STLabel: UIView {
         // Pass to font manager
         context.fontManager.setFontScale(fontScale, script: script)
         
-        // Set needs layout
+        // Set needs layout, for the reason setting the faces does
+        needsToLayout = true
         setNeedsLayout()
     }
     
