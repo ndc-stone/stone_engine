@@ -23,16 +23,14 @@ xcodebuild test -scheme stone_engine-Package -destination 'platform=iOS Simulato
 
 シミュレーター名は、手元にあるものに読み替える。
 
-サンプルアプリのビルド:
-
-```bash
-xcodebuild build -project sample/stone.xcodeproj -scheme stone -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO
-```
-
-SwiftUIサンプルのビルド:
+サンプルのビルド:
 
 ```bash
 xcodebuild build -project sample/SwiftUI/StoneEngineSwiftUISample.xcodeproj -scheme StoneEngineSwiftUISample -destination 'generic/platform=macOS' CODE_SIGNING_ALLOWED=NO
+```
+
+```bash
+xcodebuild build -project sample/SwiftUI/StoneEngineSwiftUISample.xcodeproj -scheme StoneEngineRevealSample -destination 'generic/platform=macOS' CODE_SIGNING_ALLOWED=NO
 ```
 
 ### スナップショット

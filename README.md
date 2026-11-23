@@ -36,7 +36,7 @@ view.addSubview(textView)
 
 縦書きで表示範囲の両端の行を欠けずに表示するには、`STTextView`の幅を行送り（`fontSize * lineHeightScale`）の整数倍にする。
 
-UIKitのサンプルアプリは`sample/stone.xcodeproj`に、iOS / macOS共通のSwiftUIサンプルは`sample/SwiftUI/StoneEngineSwiftUISample.xcodeproj`にある。
+動かして確かめられるサンプルがある。[サンプル](#サンプル)を参照。
 
 ### SwiftUI
 
@@ -69,6 +69,29 @@ struct ContentView: View {
 ```
 
 `STTextEditor`は、両端の行が欠けないよう、行を重ねる方向の大きさを行送りの整数倍にする。日本語の変換中は、バインディング側の変更で本文を上書きしない。
+
+## サンプル
+
+`sample/SwiftUI/StoneEngineSwiftUISample.xcodeproj`に、iOS / macOS共通のサンプルアプリがある。ターゲットは二つで、見たいものによって使い分ける。
+
+パッケージはローカル参照で繋いである。リポジトリを clone して開けば、そのまま手元のソースでビルドされる。
+
+### StoneEngineSwiftUISample
+
+組版そのものを見るためのもの。組み方向、文字サイズ、行送りをその場で変えながら、`STLabelView`と`STTextEditor`の組まれ方を確かめられる。
+
+### StoneEngineRevealSample
+
+[文字を一つずつ出す](#文字を一つずつ出す)振る舞いを見るためのもの。
+
+| <img width="320" src="docs/images/reveal-sample.png"> |
+|:--:|
+| 縦書き、ルビあり、フェードで出しているところ |
+
+ルビのあり／なし、組み方向、出現のしかたを切り替えられる。送りは「再生」で自動で進むが、スライダで一文字ずつ動かすこともできる。**出現の途中で止めて、その一文字を見るためである。**
+
+「文字数 72 / 72」の分母は`STContext.revealCharacterCount(of:rubyNotation:)`が返す数である。ルビありの本文に切り替えても、読みの分は増えない。
+
 
 ## 目的
 
@@ -296,6 +319,66 @@ x = {1, 2} | y         → そのまま
 #### 自前の記法
 
 `STContext.rubies`に`STRuby`を直接積めば、どんな記法でも組める。`STRuby`は読まれる語のランの範囲と、読みのランの範囲を持つ。
+
+
+### 文字を一つずつ出す
+
+本文を先頭から一文字ずつ出すことができる。会話や字幕のように、読み手の速さに合わせて文字を送る表示のためのものである。
+
+```swift
+label.revealAnimation = .fade
+label.revealedCharacterCount = 0
+label.text = "吾輩は猫である。"
+```
+
+あとは`revealedCharacterCount`を増やしていくと、そこまでの文字が出る。**送る速さを決めるのは呼び出し側である。** エンジンが受け持つのは、いま届いた一文字をどう出すかだけである。
+
+**組み直しは起きない。** 本文は最初から最後まで組んであり、`revealedCharacterCount`が動いても変わるのは描くところだけである。文字列を途中で切って渡す方法と違い、**文字が増えても改行位置が動かない。** 足すたびに組み直せば、行末の語が次の行へ飛んだり、行が増えて下の要素が動いたりする。
+
+#### 出現のしかた
+
+| 指定 | |
+|:--|:--|
+| `.none`（既定） | そのまま出る |
+| `.fade` | 無色から文字色まで立ち上がる |
+
+`revealDuration`は、一文字が出きるまでの秒数である。既定は0.2秒。`.none`のときは使われない。
+
+縁取りも文字と一緒に出る。
+
+#### 何文字あるか
+
+`revealedCharacterCount`の既定は`Int.max`で、全部出ている状態である。何も指定しなければ、これまでどおり本文がそのまま出る。
+
+上限は`STContext.revealCharacterCount(of:rubyNotation:)`で求める。
+
+```swift
+let count = STContext.revealCharacterCount(
+    of: "今日は{晴天|せいてん}なり", rubyNotation: .braces
+)   // 7
+```
+
+**読みは文字に数えない。** 記法の記号も数えない。`{晴天|せいてん}`は2文字である。読む側の文字数と一致させるためで、組む前に答えが要るので、ラベルではなくここで求める。
+
+#### ルビ
+
+**読みは語と同時に出る。** 語の先頭の文字が出るとき、その語の読みも一緒に出る。語が出終わるのを待つと、読みが語より後から来てしまうためである。
+
+#### SwiftUI
+
+`STLabelView`の引数で指定する。
+
+```swift
+STLabelView(
+    "今日は{晴天|せいてん}なり",
+    rubyNotation: .braces,
+    revealAnimation: .fade,
+    revealedCharacterCount: count,
+    revealDuration: 0.25
+)
+```
+
+`sample/SwiftUI`の`StoneEngineRevealSample`ターゲットで、実際の動きを見ることができる。
 
 
 ## STTextView

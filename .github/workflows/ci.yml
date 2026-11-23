@@ -37,20 +37,6 @@ jobs:
           -scheme stone_engine-Package
           -destination 'platform=iOS Simulator,name=iPad Pro 11-inch (M5),OS=26.5'
 
-  sample:
-    name: Sample app build
-    runs-on: macos-26
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v7
-      - name: Build sample
-        run: >-
-          xcodebuild build
-          -project sample/stone.xcodeproj
-          -scheme stone
-          -destination 'generic/platform=iOS Simulator'
-          CODE_SIGNING_ALLOWED=NO
-
   swiftui-sample:
     name: SwiftUI sample build
     runs-on: macos-26

@@ -36,6 +36,26 @@ public struct STLabelView {
     /// Whether what is cut off is marked with an ellipsis
     public var isShownEllipsis: Bool
 
+    /// What is made of a character as it comes out — see `STRevealAnimation`.
+    ///
+    /// Nothing by default, which is a text that is simply there
+    public var revealAnimation: STRevealAnimation
+
+    /// How many characters of the text have come out.
+    ///
+    /// All of them by default. Counted as somebody reads them: a reading is no
+    /// character of its own, so a word of three carrying a reading of five is
+    /// three.
+    ///
+    /// Nothing is laid out again as this moves. The text is set once and
+    /// whole, so the line breaks are settled before the first character shows
+    /// and nothing shifts as the rest arrive — which is why this is a count
+    /// rather than a shorter string
+    public var revealedCharacterCount: Int
+
+    /// How long one character takes to come out
+    public var revealDuration: TimeInterval
+
     public init(
         _ text: String,
         direction: STDirection = .lrTb,
@@ -44,7 +64,10 @@ public struct STLabelView {
         rubyNotation: STRubyNotation = .none,
         rubyFontScale: CGFloat = 0.5,
         maxLineCount: Int = 0,
-        isShownEllipsis: Bool = false
+        isShownEllipsis: Bool = false,
+        revealAnimation: STRevealAnimation = .none,
+        revealedCharacterCount: Int = .max,
+        revealDuration: TimeInterval = 0.2
     ) {
         self.text = text
         self.direction = direction
@@ -54,6 +77,9 @@ public struct STLabelView {
         self.rubyFontScale = rubyFontScale
         self.maxLineCount = maxLineCount
         self.isShownEllipsis = isShownEllipsis
+        self.revealAnimation = revealAnimation
+        self.revealedCharacterCount = revealedCharacterCount
+        self.revealDuration = revealDuration
     }
 
     @MainActor
@@ -80,6 +106,9 @@ public struct STLabelView {
         label.rubyFontScale = rubyFontScale
         label.maxLineCount = maxLineCount
         label.isShownEllipsis = isShownEllipsis
+        label.revealAnimation = revealAnimation
+        label.revealDuration = revealDuration
+        label.revealedCharacterCount = revealedCharacterCount
         label.text = text
     }
 

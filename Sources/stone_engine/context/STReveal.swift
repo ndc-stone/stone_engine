@@ -33,6 +33,35 @@ extension STContext {
     // MARK: - Reveal
     //--------------------------------------------------------------//
 
+    /// How many characters a text comes out in.
+    ///
+    /// What `revealedCharacterCount` counts up to. Asked of the text and of
+    /// the notation its readings are written in, rather than of a label that
+    /// has been laid out: whoever counts a text out has to know where to stop
+    /// before the first character has shown.
+    ///
+    /// The readings are no part of it. A word of two carrying a reading of
+    /// four is two, and the marks the reading is written with are none
+    public static func revealCharacterCount(
+        of text: String,
+        rubyNotation: STRubyNotation = .none
+    ) -> Int {
+        // Read the markup. What comes back is the text as it will be set,
+        // which is the words and the readings together: a reading is set as
+        // characters of its own, and the marks it was written with are what
+        // has been taken out. The size it is set at has nothing to do with how
+        // many there are, so it is given whatever
+        let scan = STRubyScanner.scan(
+            text: text, notation: rubyNotation, readingFontScale: 1
+        )
+
+        // And take the readings back off. They are set over the words rather
+        // than after them, so they are no part of what somebody reads — and
+        // counting them would leave the end of the count with nothing to show
+        let readingCount = scan.rubies.reduce(0) { $0 + $1.readingRange.count }
+        return scan.text.count - readingCount
+    }
+
     /// Works out which character each run is drawn with, where it has not been
     /// worked out for this layout already.
     ///

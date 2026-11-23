@@ -9,16 +9,24 @@
 /* Begin PBXBuildFile section */
 		5A1000012F90000000C0A001 /* stone_engine in Frameworks */ = {isa = PBXBuildFile; productRef = 5A1000022F90000000C0A001 /* stone_engine */; };
 		5A1000032F90000000C0A001 /* StoneEngineSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 5A1000042F90000000C0A001 /* StoneEngineSwiftUI */; };
+		5A1001012F90000000C0A001 /* stone_engine in Frameworks */ = {isa = PBXBuildFile; productRef = 5A1001022F90000000C0A001 /* stone_engine */; };
+		5A1001032F90000000C0A001 /* StoneEngineSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 5A1001042F90000000C0A001 /* StoneEngineSwiftUI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		5A1000052F90000000C0A001 /* StoneEngineSwiftUISample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StoneEngineSwiftUISample.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5A1001052F90000000C0A001 /* StoneEngineRevealSample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StoneEngineRevealSample.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		5A1000062F90000000C0A001 /* StoneEngineSwiftUISample */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = StoneEngineSwiftUISample;
+			sourceTree = "<group>";
+		};
+		5A1001062F90000000C0A001 /* StoneEngineRevealSample */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = StoneEngineRevealSample;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -33,6 +41,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5A1001072F90000000C0A001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5A1001012F90000000C0A001 /* stone_engine in Frameworks */,
+				5A1001032F90000000C0A001 /* StoneEngineSwiftUI in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -40,6 +57,7 @@
 			isa = PBXGroup;
 			children = (
 				5A1000062F90000000C0A001 /* StoneEngineSwiftUISample */,
+				5A1001062F90000000C0A001 /* StoneEngineRevealSample */,
 				5A1000092F90000000C0A001 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -48,6 +66,7 @@
 			isa = PBXGroup;
 			children = (
 				5A1000052F90000000C0A001 /* StoneEngineSwiftUISample.app */,
+				5A1001052F90000000C0A001 /* StoneEngineRevealSample.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -79,6 +98,30 @@
 			productReference = 5A1000052F90000000C0A001 /* StoneEngineSwiftUISample.app */;
 			productType = "com.apple.product-type.application";
 		};
+		5A10010A2F90000000C0A001 /* StoneEngineRevealSample */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5A10010B2F90000000C0A001 /* Build configuration list for PBXNativeTarget "StoneEngineRevealSample" */;
+			buildPhases = (
+				5A10010C2F90000000C0A001 /* Sources */,
+				5A1001072F90000000C0A001 /* Frameworks */,
+				5A10010D2F90000000C0A001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				5A1001062F90000000C0A001 /* StoneEngineRevealSample */,
+			);
+			name = StoneEngineRevealSample;
+			packageProductDependencies = (
+				5A1001022F90000000C0A001 /* stone_engine */,
+				5A1001042F90000000C0A001 /* StoneEngineSwiftUI */,
+			);
+			productName = StoneEngineRevealSample;
+			productReference = 5A1001052F90000000C0A001 /* StoneEngineRevealSample.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -107,6 +150,7 @@
 			projectRoot = "";
 			targets = (
 				5A10000A2F90000000C0A001 /* StoneEngineSwiftUISample */,
+				5A10010A2F90000000C0A001 /* StoneEngineRevealSample */,
 			);
 		};
 /* End PBXProject section */
@@ -119,10 +163,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5A10010D2F90000000C0A001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		5A10000C2F90000000C0A001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5A10010C2F90000000C0A001 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -227,6 +285,64 @@
 			};
 			name = Release;
 		};
+		5A10010E2F90000000C0A001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Stone Reveal";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = jp.co.ndc.stone.swiftui.reveal;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		5A10010F2F90000000C0A001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Stone Reveal";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = jp.co.ndc.stone.swiftui.reveal;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -248,6 +364,15 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		5A10010B2F90000000C0A001 /* Build configuration list for PBXNativeTarget "StoneEngineRevealSample" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5A10010E2F90000000C0A001 /* Debug */,
+				5A10010F2F90000000C0A001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
@@ -263,6 +388,14 @@
 			productName = stone_engine;
 		};
 		5A1000042F90000000C0A001 /* StoneEngineSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = StoneEngineSwiftUI;
+		};
+		5A1001022F90000000C0A001 /* stone_engine */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = stone_engine;
+		};
+		5A1001042F90000000C0A001 /* StoneEngineSwiftUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = StoneEngineSwiftUI;
 		};

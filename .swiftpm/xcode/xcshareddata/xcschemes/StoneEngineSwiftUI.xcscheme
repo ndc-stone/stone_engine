@@ -15,9 +15,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "0BBF0FF72B9EC7AA00031CAC"
-               BuildableName = "stone oss.app"
-               ReferencedContainer = "container:stone.xcodeproj">
+               BlueprintIdentifier = "StoneEngineSwiftUI"
+               BuildableName = "StoneEngineSwiftUI"
+               ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -40,15 +40,6 @@
       debugServiceExtension = "internal"
       allowLocationSimulation = "YES"
       queueDebuggingEnabled = "No">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
-         <BuildableReference
-            BuildableIdentifier = "primary"
-            BlueprintIdentifier = "0BBF0FF72B9EC7AA00031CAC"
-            BuildableName = "stone oss.app"
-            ReferencedContainer = "container:stone.xcodeproj">
-         </BuildableReference>
-      </BuildableProductRunnable>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -56,15 +47,14 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "0BBF0FF72B9EC7AA00031CAC"
-            BuildableName = "stone oss.app"
-            ReferencedContainer = "container:stone.xcodeproj">
+            BlueprintIdentifier = "StoneEngineSwiftUI"
+            BuildableName = "StoneEngineSwiftUI"
+            ReferencedContainer = "container:">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
