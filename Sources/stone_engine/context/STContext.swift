@@ -133,6 +133,46 @@ open class STContext {
     
     // Incremented every layout, to know whether runs have changed
     public var layoutVersion: Int = 0
+
+    // Reveal. What a text that comes out a character at a time is drawn by —
+    // see STReveal, which is where all of it but the keeping is written
+
+    /// What is made of a character as it comes out. Nothing, unless something
+    /// asks for otherwise, which is every text that simply stands there
+    public var revealAnimation: STRevealAnimation = .none
+
+    /// How many characters of the text have come out.
+    ///
+    /// All of them until something says fewer. A text is a thing to be read
+    /// rather than a thing to be waited for, so one that is never told to
+    /// come out a character at a time is drawn whole
+    public var revealedCharacterCount: Int = .max {
+        didSet {
+            // Note when they arrived
+            guard revealedCharacterCount != oldValue else { return }
+            noteRevealed(from: oldValue)
+        }
+    }
+
+    /// How long one character takes to come out
+    public var revealDuration: TimeInterval = 0.2
+
+    /// Which character each run is drawn with — see `prepareReveal`, which
+    /// fills this, and leaves it alone until the text is laid out again
+    public internal(set) var revealIndexes = [Int]()
+
+    /// How many characters there are to come out, the readings aside
+    public internal(set) var revealCharacterCount = 0
+
+    /// Which characters are on their way: those from here up to
+    /// `revealedCharacterCount`
+    public internal(set) var revealingFromCharacterIndex: Int = .max
+
+    /// When they set out
+    public internal(set) var revealingStartTime: TimeInterval = 0
+
+    /// The layout `revealIndexes` was built from
+    var revealIndexesVersion: Int = -1
     
     //--------------------------------------------------------------//
     // MARK: - Advance

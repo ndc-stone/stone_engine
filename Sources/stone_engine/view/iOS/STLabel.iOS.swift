@@ -9,6 +9,7 @@ This software is licensed under the MIT License. See LICENSE for details.
 
 #if os(iOS)
 import UIKit
+import QuartzCore
 
 open class STLabel: UIView {
     // Text input
@@ -225,6 +226,70 @@ open class STLabel: UIView {
             setNeedsLayout()
         }
     }
+    
+    // Reveal. Nothing here is laid out again: the text is set once and whole,
+    // and what comes out a character at a time is the drawing of it — which is
+    // the whole point of counting characters rather than cutting the string,
+    // the line breaks being settled before the first character shows
+    open var revealAnimation: STRevealAnimation {
+        get {
+            context.revealAnimation
+        }
+        set {
+            // Check new value
+            guard newValue != revealAnimation else { return }
+            context.revealAnimation = newValue
+            
+            // Set needs display
+            setNeedsDisplay()
+        }
+    }
+    open var revealedCharacterCount: Int {
+        get {
+            context.revealedCharacterCount
+        }
+        set {
+            // Check new value
+            guard newValue != revealedCharacterCount else { return }
+            context.revealedCharacterCount = newValue
+            
+            // Follow the ones on their way, and draw what there is now
+            updateRevealDisplayLink()
+            setNeedsDisplay()
+        }
+    }
+    open var revealDuration: TimeInterval {
+        get {
+            context.revealDuration
+        }
+        set {
+            // Check new value
+            guard newValue != revealDuration else { return }
+            context.revealDuration = newValue
+            
+            // Set needs display
+            setNeedsDisplay()
+        }
+    }
+    
+    /// How many characters there are to come out.
+    ///
+    /// Said once the text has been laid out, the readings being no characters
+    /// of their own: it is the length of what somebody reads rather than of
+    /// the string, which carries the readings in it
+    open var revealCharacterCount: Int {
+        // Lay the text out first, there being no runs to count before it
+        layoutIfNeeded()
+        context.prepareReveal()
+        return context.revealCharacterCount
+    }
+    
+    /// What draws the label again while a character is on its way.
+    ///
+    /// Held only while there is one. A text that is simply there is drawn when
+    /// something asks for it, as any other view is, and a clock left running
+    /// over it would wake the screen for nothing
+    private var revealDisplayLink: CADisplayLink?
     
     // Features
     open var punctuationMode: STPunctuationMode {
@@ -649,6 +714,66 @@ open class STLabel: UIView {
     }
     
     //--------------------------------------------------------------//
+    // MARK: - Reveal
+    //--------------------------------------------------------------//
+    
+    /// Starts or stops the clock, by whether anything is on its way.
+    ///
+    /// Asked after every change that could set one going or let the last one
+    /// land. What it draws is the whole label: the characters on their way are
+    /// a handful among those already there, but which handful moves every
+    /// frame, and finding them costs what drawing them does
+    private func updateRevealDisplayLink() {
+        // For something on its way
+        guard context.isRevealing(at: CACurrentMediaTime()) else {
+            // Stop the clock
+            revealDisplayLink?.invalidate()
+            revealDisplayLink = nil
+            return
+        }
+        
+        // Already running
+        guard revealDisplayLink == nil else { return }
+        
+        // Start the clock
+        let displayLink = CADisplayLink(
+            target: self, selector: #selector(revealDisplayLinkFired)
+        )
+        displayLink.add(to: .main, forMode: .common)
+        revealDisplayLink = displayLink
+    }
+    
+    @objc private func revealDisplayLinkFired() {
+        // Draw what there is now
+        setNeedsDisplay()
+        
+        // And stop once the last one has landed
+        updateRevealDisplayLink()
+    }
+    
+    /// Keeps the clock to the time the label is on screen.
+    ///
+    /// A display link holds what it calls, so one left running holds the label
+    /// after everything else has let go of it — and a label off the screen has
+    /// nothing to show for the frames it is woken for. Started again where the
+    /// label comes back with characters still on their way
+    open override func didMoveToWindow() {
+        // Invoke super
+        super.didMoveToWindow()
+        
+        // For a label taken off the screen
+        guard window != nil else {
+            // Stop the clock
+            revealDisplayLink?.invalidate()
+            revealDisplayLink = nil
+            return
+        }
+        
+        // Follow whatever is still on its way
+        updateRevealDisplayLink()
+    }
+    
+    //--------------------------------------------------------------//
     // MARK: - Draw
     //--------------------------------------------------------------//
     
@@ -671,6 +796,14 @@ open class STLabel: UIView {
         var glyphs: [CGGlyph]
         var positions: [CGPoint]
         var frames: [CGRect]
+
+        /// Which character of the text each glyph is drawn with.
+        ///
+        /// Kept beside the glyphs rather than looked up while drawing. A
+        /// bucket holds whichever runs share a font, so what is next to a
+        /// glyph here is not what is next to it in the text, and the run it
+        /// came from is no longer in hand
+        var characterIndexes: [Int]
     }
     
     var drawBuckets = [DrawBucket]()
@@ -774,6 +907,10 @@ open class STLabel: UIView {
     }
     
     private func createDrawBcukets() {
+        // Work out which character each run is drawn with, where the text has
+        // been laid out again since it was last worked out
+        context.prepareReveal()
+        
         // Get selected text range
         let range = (textInput?.selectedTextRange as? STTextRange) ?? STTextRange(range: 0 ..< 0)
         
@@ -816,11 +953,16 @@ open class STLabel: UIView {
                     ctFont: ctFont, 
                     glyphs: [], 
                     positions: [], 
-                    frames: []
+                    frames: [],
+                    characterIndexes: []
                 )
                 drawBuckets.append(drawBucket)
                 bucketIndex = drawBuckets.count - 1
             }
+            
+            // Which character this run is drawn with
+            let characterIndex = index < context.revealIndexes.count
+                ? context.revealIndexes[index] : 0
             
             // For ellipsis
             if run.visibility == .ellipsis {
@@ -828,6 +970,7 @@ open class STLabel: UIView {
                 drawBuckets[bucketIndex].glyphs.append(context.fontManager.ellipsisGlyph(fontId: run.fontId, direction: context.direction))
                 drawBuckets[bucketIndex].positions.append(run.position)
                 drawBuckets[bucketIndex].frames.append(run.frame)
+                drawBuckets[bucketIndex].characterIndexes.append(characterIndex)
             }
             // For visible
             else if run.visibility == .visible {
@@ -835,6 +978,7 @@ open class STLabel: UIView {
                 drawBuckets[bucketIndex].glyphs.append(run.glyph)
                 drawBuckets[bucketIndex].positions.append(run.position)
                 drawBuckets[bucketIndex].frames.append(run.frame)
+                drawBuckets[bucketIndex].characterIndexes.append(characterIndex)
             }
         }
         
@@ -871,16 +1015,37 @@ open class STLabel: UIView {
         }
     }
     
-    private func drawGlyphs(bucket: DrawBucket, drawRect: CGRect, cgContext: CGContext) {
+    /// Draws one bucket's glyphs, those of them that have come out.
+    ///
+    /// Each is asked how far into coming out it has got. Nothing where it has
+    /// not been reached, the whole of it where it is simply there — which is
+    /// every glyph of a text that was never told to come out a character at a
+    /// time — and part of the way where it is on its way.
+    ///
+    /// The ones that are simply there are drawn in the one go, as they always
+    /// were. Only those still on their way are drawn on their own, there being
+    /// a handful of them at a time and no other way to give each its own
+    /// colour
+    private func drawGlyphs(bucket: DrawBucket, drawRect: CGRect, cgContext: CGContext, time: TimeInterval) {
         // For a font drawn from color bitmaps, each glyph is turned back over
         // on its own
         if bucket.needsToFlip {
             for i in 0 ..< bucket.glyphs.count {
                 guard bucket.frames[i].intersects(drawRect) else { continue }
+                
+                // How far into coming out this one has got
+                let progress = context.revealProgress(
+                    ofCharacter: bucket.characterIndexes[i], at: time
+                )
+                guard progress > 0 else { continue }
+                
                 var transform: CGAffineTransform = .identity
                 transform = transform.translatedBy(x: 0, y: bucket.positions[i].y * 2)
                 transform = transform.scaledBy(x: 1, y: -1)
                 cgContext.saveGState()
+                if progress < 1 {
+                    cgContext.setAlpha(progress)
+                }
                 cgContext.concatenate(transform)
                 CTFontDrawGlyphs(bucket.ctFont, [bucket.glyphs[i]], [bucket.positions[i]], 1, cgContext)
                 cgContext.restoreGState()
@@ -891,6 +1056,23 @@ open class STLabel: UIView {
             var glyphs = [CGGlyph]()
             var positions = [CGPoint]()
             for i in 0 ..< bucket.glyphs.count where bucket.frames[i].intersects(drawRect) {
+                // How far into coming out this one has got
+                let progress = context.revealProgress(
+                    ofCharacter: bucket.characterIndexes[i], at: time
+                )
+                
+                // Not reached yet
+                guard progress > 0 else { continue }
+                
+                // On its way, and so drawn on its own at what it has come to
+                guard progress >= 1 else {
+                    cgContext.saveGState()
+                    cgContext.setAlpha(progress)
+                    CTFontDrawGlyphs(bucket.ctFont, [bucket.glyphs[i]], [bucket.positions[i]], 1, cgContext)
+                    cgContext.restoreGState()
+                    continue
+                }
+                
                 glyphs.append(bucket.glyphs[i])
                 positions.append(bucket.positions[i])
             }
@@ -898,7 +1080,7 @@ open class STLabel: UIView {
         }
     }
     
-    private func drawGlyphBorders(drawRect: CGRect, cgContext: CGContext) {
+    private func drawGlyphBorders(drawRect: CGRect, cgContext: CGContext, time: TimeInterval) {
         // Check border
         guard context.borderWidth > 0, context.borderColor.cgColor.alpha > 0 else { return }
         
@@ -918,7 +1100,7 @@ open class STLabel: UIView {
             guard !bucket.needsToFlip else { continue }
             
             // Draw glyphs
-            drawGlyphs(bucket: bucket, drawRect: drawRect, cgContext: cgContext)
+            drawGlyphs(bucket: bucket, drawRect: drawRect, cgContext: cgContext, time: time)
         }
         
         cgContext.restoreGState()
@@ -934,8 +1116,13 @@ open class STLabel: UIView {
         let margin = context.fontSize + context.borderWidth
         let drawRect = dirtyRect.insetBy(dx: -margin, dy: -margin)
         
+        // The moment this is being drawn at, read once. Asked of each glyph in
+        // turn it would move down the text, and the characters on their way
+        // would be at different points of the same step
+        let time = CACurrentMediaTime()
+        
         // Draw borders, all of them before any fill
-        drawGlyphBorders(drawRect: drawRect, cgContext: cgContext)
+        drawGlyphBorders(drawRect: drawRect, cgContext: cgContext, time: time)
         
         // Draw buckets
         for bucket in drawBuckets {
@@ -943,7 +1130,7 @@ open class STLabel: UIView {
             cgContext.setFillColor(bucket.isSelected ? context.selectedTextColor.cgColor : context.textColor.cgColor)
             
             // Draw glyphs
-            drawGlyphs(bucket: bucket, drawRect: drawRect, cgContext: cgContext)
+            drawGlyphs(bucket: bucket, drawRect: drawRect, cgContext: cgContext, time: time)
         }
     }
     
