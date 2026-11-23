@@ -38,12 +38,15 @@ jobs:
           -destination 'platform=iOS Simulator,name=iPad Pro 11-inch (M5),OS=26.5'
 
   swiftui-sample:
-    name: SwiftUI sample build
+    name: SwiftUI sample build (${{ matrix.scheme }})
     runs-on: macos-26
     timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
+        scheme:
+          - StoneEngineSwiftUISample
+          - StoneEngineRevealSample
         destination:
           - 'generic/platform=iOS Simulator'
           - 'generic/platform=macOS'
@@ -53,6 +56,6 @@ jobs:
         run: >-
           xcodebuild build
           -project sample/SwiftUI/StoneEngineSwiftUISample.xcodeproj
-          -scheme StoneEngineSwiftUISample
+          -scheme '${{ matrix.scheme }}'
           -destination '${{ matrix.destination }}'
           CODE_SIGNING_ALLOWED=NO
