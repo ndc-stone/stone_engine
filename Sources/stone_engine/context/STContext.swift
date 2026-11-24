@@ -157,12 +157,25 @@ open class STContext {
     /// How long one character takes to come out
     public var revealDuration: TimeInterval = 0.2
 
+    /// Which side a character comes in from, where it comes in from one —
+    /// see `STRevealAnimation.flyIn`, which is the only one that asks
+    public var revealOrigin: STRevealOrigin = .bottom
+
     /// Which character each run is drawn with — see `prepareReveal`, which
     /// fills this, and leaves it alone until the text is laid out again
     public internal(set) var revealIndexes = [Int]()
 
     /// How many characters there are to come out, the readings aside
     public internal(set) var revealCharacterCount = 0
+
+    /// The place each run is coming to, which is what a character on its way
+    /// is moved and sized against.
+    ///
+    /// Its own place, except for a reading: a reading is given the place of
+    /// the word it is set over, so that the two move as one thing. Sized
+    /// about its own, a reading would open out from its own middle and come
+    /// away from the word underneath it
+    public internal(set) var revealAnchors = [CGRect]()
 
     /// Which characters are on their way: those from here up to
     /// `revealedCharacterCount`

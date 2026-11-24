@@ -12,7 +12,7 @@ Swift Package Managerで導入する。`Package.swift`に次を追加する。
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/ndc-stone/stone_engine.git", from: "0.5.3"),
+    .package(url: "https://github.com/ndc-stone/stone_engine.git", from: "0.6.0"),
 ],
 targets: [
     .target(name: "YourApp", dependencies: ["stone_engine"]),
@@ -341,10 +341,27 @@ label.text = "吾輩は猫である。"
 |:--|:--|
 | `.none`（既定） | そのまま出る |
 | `.fade` | 無色から文字色まで立ち上がる |
+| `.pop` | 小さく出て、原寸を少し行き過ぎてから収まる |
+| `.rise` | 潰れた字が、置かれる場所の足もとから立ち上がる |
+| `.drop` | 上から落ちてくる。落下なので加速する |
+| `.spin` | 中心で半回転しながら、小さく出て原寸に戻る |
+| `.flip` | 真横を向いた状態から、正面へ開く |
+| `.flyIn` | 一方から滑り込んで止まる |
 
 `revealDuration`は、一文字が出きるまでの秒数である。既定は0.2秒。`.none`のときは使われない。
 
 縁取りも文字と一緒に出る。
+
+`.flyIn`だけは、どこから来るかを`revealOrigin`で決める。既定は`.bottom`。
+
+| | |
+|:--|:--|
+| `.top` / `.bottom` / `.left` / `.right` | 辺から |
+| `.topLeft` / `.topRight` / `.bottomLeft` / `.bottomRight` | 角から |
+
+**画面の上下左右であって、行の進む向きではない。** 読み始める側から出すと、そこは次の文字が現れる側でもあるので、ほとんど動かない効果になる。画面基準なら、縦組みでも横組みでも同じ設定が同じ見え方をする。
+
+同じ理由で、`.rise`は常に下から立ち上がり、`.drop`は常に上から落ちる。
 
 #### 何文字あるか
 
@@ -364,6 +381,10 @@ let count = STContext.revealCharacterCount(
 
 **読みは語と同時に出る。** 語の先頭の文字が出るとき、その語の読みも一緒に出る。語が出終わるのを待つと、読みが語より後から来てしまうためである。
 
+**そして読みは、語といっしょに動く。** 位置も大きさも、読み自身の枠ではなく語の枠を基準に変えている。読み自身の（小さい）枠を中心に拡大すると、読みが語から離れて飛ぶためである。
+
+これは`.fade`では起きない。字を動かす効果を入れた時点で出てくる問題である。自前の効果を足すときも、`drawing(progress:anchor:origin:)`が受け取る`anchor`は既に語の枠になっている。
+
 #### SwiftUI
 
 `STLabelView`の引数で指定する。
@@ -372,9 +393,10 @@ let count = STContext.revealCharacterCount(
 STLabelView(
     "今日は{晴天|せいてん}なり",
     rubyNotation: .braces,
-    revealAnimation: .fade,
+    revealAnimation: .flyIn,
     revealedCharacterCount: count,
-    revealDuration: 0.25
+    revealDuration: 0.25,
+    revealOrigin: .bottomLeft
 )
 ```
 

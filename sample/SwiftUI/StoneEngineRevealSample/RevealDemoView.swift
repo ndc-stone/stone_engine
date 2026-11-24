@@ -20,6 +20,7 @@ struct RevealDemoView: View {
     @State private var direction = STDirection.lrTb
     @State private var revealAnimation = STRevealAnimation.fade
     @State private var revealDuration: TimeInterval = 0.25
+    @State private var revealOrigin = STRevealOrigin.bottom
 
     /// How many characters have come out, which the slider moves.
     ///
@@ -109,7 +110,8 @@ struct RevealDemoView: View {
             rubyNotation: rubyNotation,
             revealAnimation: revealAnimation,
             revealedCharacterCount: Int(revealedCharacterCount),
-            revealDuration: revealDuration
+            revealDuration: revealDuration,
+            revealOrigin: revealOrigin
         )
     }
 }
@@ -138,9 +140,35 @@ extension RevealDemoView {
             Picker("出現", selection: $revealAnimation) {
                 Text("なし").tag(STRevealAnimation.none)
                 Text("フェード").tag(STRevealAnimation.fade)
+                Text("ポップ").tag(STRevealAnimation.pop)
+                Text("せり上がり").tag(STRevealAnimation.rise)
+                Text("落下").tag(STRevealAnimation.drop)
+                Text("回転").tag(STRevealAnimation.spin)
+                Text("裏返し").tag(STRevealAnimation.flip)
+                Text("フライイン").tag(STRevealAnimation.flyIn)
             }
-            .pickerStyle(.segmented)
+            // Not segmented as the two above are. Four of them in a row
+            // leaves each too narrow for the words in it
+            .pickerStyle(.menu)
             .accessibilityIdentifier("revealAnimationPicker")
+
+            // Only the one that comes in from a side has a side to come
+            // from. Shown with it rather than always, a setting that does
+            // nothing being a setting somebody will try
+            if revealAnimation == .flyIn {
+                Picker("向き", selection: $revealOrigin) {
+                    Text("下から").tag(STRevealOrigin.bottom)
+                    Text("上から").tag(STRevealOrigin.top)
+                    Text("左から").tag(STRevealOrigin.left)
+                    Text("右から").tag(STRevealOrigin.right)
+                    Text("左上から").tag(STRevealOrigin.topLeft)
+                    Text("右上から").tag(STRevealOrigin.topRight)
+                    Text("左下から").tag(STRevealOrigin.bottomLeft)
+                    Text("右下から").tag(STRevealOrigin.bottomRight)
+                }
+                .pickerStyle(.menu)
+                .accessibilityIdentifier("revealOriginPicker")
+            }
 
             HStack {
                 Text("出現の秒数 \(revealDuration, specifier: "%.2f")")
