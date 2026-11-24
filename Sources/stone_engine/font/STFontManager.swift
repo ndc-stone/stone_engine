@@ -249,6 +249,60 @@ extension STFontManager {
         // Get descent
         return CTFontGetDescent(ctFont(fontId: fontId, size: size))
     }
+
+    /// How tall a line has to be for the faces a text is set in, against the
+    /// size it is set at.
+    ///
+    /// What `STContext.lineHeightScale` has to be at the least. A line is
+    /// given the height it is told and no more, and a face reaching from well
+    /// above the em square to well below it is a face cut off at the foot of a
+    /// line only an em tall — Chalkboard SE ascends 1.13 em and descends 0.28,
+    /// which is 1.41 em of letter asked to stand in 1.00 em of line.
+    ///
+    /// One at or above this leaves every letter whole. Below it, the feet of
+    /// the letters are cut off, and nothing says so: the text is laid out and
+    /// measured by the line it was given, and only the drawing runs past it.
+    ///
+    /// Nothing here about readings. A reading is set in the room the line
+    /// leaves above the letters, which is room this does not ask for — see
+    /// `rubyFontScale`, and add what a reading needs on top of this.
+    ///
+    /// Asked of the face at the head of each chain, which is the one a text is
+    /// set in. The ones behind it are reached only for a character the first
+    /// has no glyph for, and a line sized for every face a chain might fall
+    /// back to is a line sized for none of them
+    public var minimumLineHeightScale: CGFloat {
+        // The scripts a text is set in. Emoji are left out: they are given the
+        // line's own em box and their ink centred in it — see STLayout — so
+        // however far they reach, they do not ask the line to be taller
+        return [STScript.latin, .japanese]
+            .map { minimumLineHeightScale(script: $0) }
+            .max() ?? 1
+    }
+
+    /// The same, asked of the one script
+    public func minimumLineHeightScale(script: STScript) -> CGFloat {
+        // Get the face at the head of the chain
+        guard let fontName = fontNames(script: script).first,
+            let fontId = fontId(fontName: fontName)
+        else { return 1 }
+
+        // Measured at a size of its own rather than at the one the text is
+        // set at, which is not known here and does not change the answer: what
+        // comes back is a ratio, and the metrics of a face scale with it.
+        //
+        // The scale the script is set at is already in it. `ctFont` applies
+        // it, so a face set smaller than the text around it asks for less of
+        // a line, which is what it should ask for
+        let size = Self.metricsSize
+        let ascent = ascent(fontId: fontId, size: size)
+        let descent = descent(fontId: fontId, size: size)
+        return max(1, (ascent + descent) / size)
+    }
+
+    /// The size the faces are measured at when a ratio is wanted. Large
+    /// enough that rounding in the metrics does not reach the answer
+    static let metricsSize: CGFloat = 1000
     
     //--------------------------------------------------------------//
     // MARK: - Font name

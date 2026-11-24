@@ -484,6 +484,14 @@ open class STLabel: UIView {
         setNeedsLayout()
     }
     
+    /// How tall a line has to be for the faces this label is set in, against
+    /// the size it is set at — see `STFontManager.minimumLineHeightScale`,
+    /// which is what `lineHeightScale` has to be at the least for the letters
+    /// to be drawn whole
+    open var minimumLineHeightScale: CGFloat {
+        return context.fontManager.minimumLineHeightScale
+    }
+
     open func fontScale(script: STScript) -> CGFloat {
         // Pass to font manager
         return context.fontManager.fontScale(script: script)
