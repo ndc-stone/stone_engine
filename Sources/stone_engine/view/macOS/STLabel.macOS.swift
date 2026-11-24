@@ -337,6 +337,20 @@ open class STLabel: NSView {
         }
     }
 
+    open var revealOrigin: STRevealOrigin {
+        get {
+            context.revealOrigin
+        }
+        set {
+            // Check new value
+            guard newValue != revealOrigin else { return }
+            context.revealOrigin = newValue
+
+            // Set needs display
+            needsDisplay = true
+        }
+    }
+
     /// How many characters there are to come out.
     ///
     /// Said once the text has been laid out, the readings being no characters
@@ -670,6 +684,11 @@ open class STLabel: NSView {
         /// glyph here is not what is next to it in the text, and the run it
         /// came from is no longer in hand
         var characterIndexes: [Int]
+
+        /// The place each glyph is coming to, which is what it is moved and
+        /// sized against while it is on its way. The word's place rather than
+        /// its own where the glyph is a reading
+        var anchors: [CGRect]
     }
 
     private func runFrameWithLineGap(at index: Int) -> CGRect {
@@ -879,15 +898,19 @@ open class STLabel: NSView {
                     ctFont: ctFont,
                     glyphs: [],
                     positions: [],
-                    characterIndexes: []
+                    characterIndexes: [],
+                    anchors: []
                 )
                 drawBuckets.append(drawBucket)
                 bucketIndex = drawBuckets.count - 1
             }
             
-            // Which character this run is drawn with
+            // Which character this run is drawn with, and the place it is
+            // coming to
             let characterIndex = index < context.revealIndexes.count
                 ? context.revealIndexes[index] : 0
+            let anchor = index < context.revealAnchors.count
+                ? context.revealAnchors[index] : run.frame
 
             // For ellipsis
             if run.visibility == .ellipsis {
@@ -895,6 +918,7 @@ open class STLabel: NSView {
                 drawBuckets[bucketIndex].glyphs.append(context.fontManager.ellipsisGlyph(fontId: run.fontId, direction: context.direction))
                 drawBuckets[bucketIndex].positions.append(run.position)
                 drawBuckets[bucketIndex].characterIndexes.append(characterIndex)
+                drawBuckets[bucketIndex].anchors.append(anchor)
             }
             // For visible
             else if run.visibility == .visible {
@@ -902,6 +926,7 @@ open class STLabel: NSView {
                 drawBuckets[bucketIndex].glyphs.append(run.glyph)
                 drawBuckets[bucketIndex].positions.append(run.position)
                 drawBuckets[bucketIndex].characterIndexes.append(characterIndex)
+                drawBuckets[bucketIndex].anchors.append(anchor)
             }
         }
 
@@ -954,19 +979,29 @@ open class STLabel: NSView {
         // on its own
         if bucket.needsToFlip {
             for i in 0 ..< bucket.glyphs.count {
-                // How far into coming out this one has got
+                // How far into coming out this one has got, and what that
+                // makes of it
                 let progress = context.revealProgress(
                     ofCharacter: bucket.characterIndexes[i], at: time
                 )
                 guard progress > 0 else { continue }
+                let drawing = context.revealAnimation.drawing(
+                    progress: progress,
+                    anchor: bucket.anchors[i],
+                    origin: context.revealOrigin
+                )
 
                 var transform: CGAffineTransform = .identity
                 transform = transform.translatedBy(x: 0, y: bucket.positions[i].y * 2)
                 transform = transform.scaledBy(x: 1, y: -1)
                 cgContext.saveGState()
-                if progress < 1 {
-                    cgContext.setAlpha(progress)
+                if drawing.alpha < 1 {
+                    cgContext.setAlpha(drawing.alpha)
                 }
+                // Where it is coming to is said first and turned over second,
+                // the turning over belonging to the glyph and the moving to
+                // the page it is being put on
+                cgContext.concatenate(drawing.transform)
                 cgContext.concatenate(transform)
                 CTFontDrawGlyphs(bucket.ctFont, [bucket.glyphs[i]], [bucket.positions[i]], 1, cgContext)
                 cgContext.restoreGState()
@@ -985,10 +1020,18 @@ open class STLabel: NSView {
                 // Not reached yet
                 guard progress > 0 else { continue }
 
-                // On its way, and so drawn on its own at what it has come to
+                // On its way, and so drawn on its own: it is given a colour
+                // and a place of its own, which is the one thing a glyph drawn
+                // among others cannot have
                 guard progress >= 1 else {
+                    let drawing = context.revealAnimation.drawing(
+                        progress: progress,
+                        anchor: bucket.anchors[i],
+                        origin: context.revealOrigin
+                    )
                     cgContext.saveGState()
-                    cgContext.setAlpha(progress)
+                    cgContext.setAlpha(drawing.alpha)
+                    cgContext.concatenate(drawing.transform)
                     CTFontDrawGlyphs(bucket.ctFont, [bucket.glyphs[i]], [bucket.positions[i]], 1, cgContext)
                     cgContext.restoreGState()
                     continue

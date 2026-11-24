@@ -56,6 +56,10 @@ public struct STLabelView {
     /// How long one character takes to come out
     public var revealDuration: TimeInterval
 
+    /// Which side a character comes in from, where it comes in from one —
+    /// see `STRevealAnimation.flyIn`, which is the only one that asks
+    public var revealOrigin: STRevealOrigin
+
     public init(
         _ text: String,
         direction: STDirection = .lrTb,
@@ -67,7 +71,8 @@ public struct STLabelView {
         isShownEllipsis: Bool = false,
         revealAnimation: STRevealAnimation = .none,
         revealedCharacterCount: Int = .max,
-        revealDuration: TimeInterval = 0.2
+        revealDuration: TimeInterval = 0.2,
+        revealOrigin: STRevealOrigin = .bottom
     ) {
         self.text = text
         self.direction = direction
@@ -80,6 +85,7 @@ public struct STLabelView {
         self.revealAnimation = revealAnimation
         self.revealedCharacterCount = revealedCharacterCount
         self.revealDuration = revealDuration
+        self.revealOrigin = revealOrigin
     }
 
     @MainActor
@@ -108,6 +114,7 @@ public struct STLabelView {
         label.isShownEllipsis = isShownEllipsis
         label.revealAnimation = revealAnimation
         label.revealDuration = revealDuration
+        label.revealOrigin = revealOrigin
         label.revealedCharacterCount = revealedCharacterCount
         label.text = text
     }
