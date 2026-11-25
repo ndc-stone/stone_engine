@@ -11,7 +11,7 @@ This software is licensed under the MIT License. See LICENSE for details.
 import UIKit
 import QuartzCore
 
-open class STLabel: UIView {
+open class STLabel: STTiledView {
     // Text input
     open weak var textInput: UITextInput?
 
@@ -438,10 +438,9 @@ open class STLabel: UIView {
     // MARK: - Layer
     //--------------------------------------------------------------//
     
-    class open override var layerClass: AnyClass {
-        // Use tiled layer
-        return STTiledLayer.self
-    }
+    // Vertical text is laid out from the right edge and grows to the left, so
+    // the tiles are kept against the right edge (see STTiledView)
+    open override var anchorsToRightEdge: Bool { context.direction == .tbRl }
     
     //--------------------------------------------------------------//
     // MARK: - Initialize
@@ -450,8 +449,7 @@ open class STLabel: UIView {
     private func _init() {
         // Configure itself
         backgroundColor = .systemBackground
-        layer.contentsGravity = .right
-        (layer as? STTiledLayer)?.context = context
+        (tiledContentView.layer as? STTiledLayer)?.context = context
 
         // Draw again for colors of new appearance (layout is skipped if nothing changed)
         registerForTraitChanges([UITraitUserInterfaceStyle.self, UITraitAccessibilityContrast.self]) { (label: STLabel, previousTraitCollection: UITraitCollection) in
@@ -681,37 +679,6 @@ open class STLabel: UIView {
         
         // Set needs to display
         setNeedsDisplay()
-    }
-    
-    private func alignLayerToRight(layer: CALayer) {
-        // Check direction
-        guard context.direction == .tbRl else { return }
-        
-        // Get content size
-        guard let contentSize = (layer as? STTiledLayer)?.contentSize else { return }
-        guard contentSize.width < frame.width && contentSize.height == frame.height else {
-            layer.setAffineTransform(.identity)
-            return
-        }
-        
-        // Transform layer
-        layer.setAffineTransform(.init(translationX: frame.width - contentSize.width, y: 0))
-    }
-    
-    open override func layoutSublayers(of layer: CALayer) {
-        // Invoke super
-        super.layoutSublayers(of: layer)
-        
-        #if ALIGN_LAYER
-        // Align layer to right
-        alignLayerToRight(layer: layer)
-        
-        // Wait a moment
-        DispatchQueue.main.async {
-            // Align layer to right again
-            self.alignLayerToRight(layer: layer)
-        }
-        #endif
     }
     
     open func layoutThatFits(_ size: CGSize) -> CGSize {

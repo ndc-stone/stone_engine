@@ -461,26 +461,49 @@ open class STTextView: UIScrollView {
         label.layoutIfNeeded()
     }
     
+    // The width the view had at the last layout, to tell how far its right
+    // edge was from the text's (see updateContentGeometry)
+    private var laidOutBoundsWidth: CGFloat?
+
     private func updateContentGeometry(oldOffset: CGPoint, oldSize: CGSize) {
-        // Set content size
-        contentSize = label.frame.size
-        
+        // Set content size. It reaches the label's right edge: vertical text
+        // narrower than the view has its label placed against the right edge
+        // (see layoutLabel), and the width is what holds the right edge below.
+        contentSize = .init(width: label.frame.maxX, height: label.frame.height)
+
+        // Remember the width for next time
+        let oldBoundsWidth = laidOutBoundsWidth ?? bounds.width
+        laidOutBoundsWidth = bounds.width
+
         // Update content offset
         switch direction {
         case .lrTb:
             break
         case .tbRl:
-            // Keep right X position
-            let offsetX: CGFloat
-            if oldSize.width < bounds.width {
-                //offsetX = -contentInset.right
-                offsetX = 0
+            // Vertical text starts at the right edge and grows to the left. Keep
+            // the text where it is on screen: hold the distance between the right
+            // edge of the text and that of the view. Nothing has to move unless
+            // the text or the view changed width, and leaving it alone otherwise
+            // keeps a scroll the user is making, bounce and all, as it is.
+            guard contentSize.width != oldSize.width || bounds.width != oldBoundsWidth else { return }
+
+            // Hold the distance from the right edge. This holds where the text is
+            // narrower than the view too: lines added to it must not push what is
+            // there across, even for the moment before whoever sizes the view to
+            // the text has done so, or the text is seen a line out of place.
+            let distanceFromRight = oldSize.width - (oldOffset.x + oldBoundsWidth)
+            var offsetX = contentSize.width - bounds.width - distanceFromRight
+
+            // Text narrower than the view sits against the right edge
+            let maxOffsetX = contentSize.width + contentInset.right - bounds.width
+            if contentSize.width + contentInset.left + contentInset.right <= bounds.width {
+                offsetX = maxOffsetX
             }
+            // Otherwise keep it within the text
             else {
-                let rx = oldSize.width - (oldOffset.x + bounds.width)
-                offsetX = contentSize.width - bounds.width - rx
+                offsetX = min(max(offsetX, -contentInset.left), maxOffsetX)
             }
-            
+
             // Set content offset
             contentOffset = .init(x: offsetX, y: oldOffset.y)
         }
