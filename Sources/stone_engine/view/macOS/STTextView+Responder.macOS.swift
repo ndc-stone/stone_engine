@@ -155,46 +155,22 @@ extension STTextView {
         }
 
         // Get current line
-        let line = label.context.line(at: isCursorBeginSelected ? selectedSTTextRange.range.lowerBound : selectedSTTextRange.range.upperBound)
+        let line = label.context.line(at: movingSelectionIndex)
 
-        // Decide cursor rect for up down
-        if line == 0 {
-            cursorRectForUpDown = .zero
-        }
-        else if cursorRectForUpDown.isEmpty {
-            cursorRectForUpDown = convert(cursorView.frame, to: label)
-        }
-
-        // Decide moved index
-        let index: Int?
+        // Decide moved index. On the first line it goes to the beginning, keeping
+        // the goal so that moving back returns to the same place
+        let index: Int
         if line == 0 {
             index = 0
         }
         else {
             // Get closest run at prev line
             guard let range = label.context.runIndexes(line: line - 1) else { return }
-            index = label.context.closestRunIndex(to: .init(x: cursorRectForUpDown.midX, y: cursorRectForUpDown.midY), range: range)
-        }
-        guard let index = index else { return }
-
-        // Decide moved range
-        var lower = selectedSTTextRange.range.lowerBound
-        var upper = selectedSTTextRange.range.upperBound
-        if modifySelection {
-            if isCursorBeginSelected {
-                lower = index
-            }
-            else {
-                upper = index
-            }
-        }
-        else {
-            lower = index
-            upper = index
+            index = closestRunIndexForLineMove(range: range)
         }
 
         // Move cursor
-        moveCursor(lower: lower, upper: upper)
+        moveCursorByLine(to: index, modifySelection: modifySelection)
     }
 
     func moveToNextLine(modifySelection: Bool) {
@@ -214,47 +190,55 @@ extension STTextView {
         }
 
         // Get current line
-        let line = label.context.line(at: isCursorBeginSelected ? selectedSTTextRange.range.lowerBound : selectedSTTextRange.range.upperBound)
+        let line = label.context.line(at: movingSelectionIndex)
 
-        // Decide cursor rect for up down
-        if line == label.context.lineCount - 1 {
-            let cursorRect = label.context.cursorFrame(at: text.count)
-            cursorRectForUpDown = cursorRect
-        }
-        else if cursorRectForUpDown.isEmpty {
-            cursorRectForUpDown = convert(cursorView.frame, to: label)
-        }
-
-        // Decide moved index
-        let index: Int?
+        // Decide moved index. On the last line it goes to the end, keeping the
+        // goal so that moving back returns to the same place
+        let index: Int
         if line == label.context.lineCount - 1 {
             index = text.count
         }
         else {
             // Get closest run at next line
             guard let range = label.context.runIndexes(line: line + 1) else { return }
-            index = label.context.closestRunIndex(to: .init(x: cursorRectForUpDown.midX, y: cursorRectForUpDown.midY), range: range)
-        }
-        guard let index = index else { return }
-
-        // Decide moved range
-        var lower = selectedSTTextRange.range.lowerBound
-        var upper = selectedSTTextRange.range.upperBound
-        if modifySelection {
-            if isCursorBeginSelected {
-                lower = index
-            }
-            else {
-                upper = index
-            }
-        }
-        else {
-            lower = index
-            upper = index
+            index = closestRunIndexForLineMove(range: range)
         }
 
         // Move cursor
+        moveCursorByLine(to: index, modifySelection: modifySelection)
+    }
+
+    // The caret position in the given line closest to the goal of the line moves.
+    // The goal is where the moving end of the selection was when the line moves
+    // began, so a short line passed on the way does not pull the caret off it.
+    private func closestRunIndexForLineMove(range: Range<Int>) -> Int {
+        // Decide goal from the moving end, not from the cursor view, which sits at
+        // the upper bound of the selection and is laid out in another view
+        if cursorRectForUpDown.isEmpty {
+            cursorRectForUpDown = label.context.cursorFrame(at: movingSelectionIndex)
+        }
+
+        return label.context.closestRunIndex(to: .init(x: cursorRectForUpDown.midX, y: cursorRectForUpDown.midY), range: range)
+    }
+
+    // Move the moving end of the selection (or the caret) to index, keeping the
+    // goal of the line moves.
+    private func moveCursorByLine(to index: Int, modifySelection: Bool) {
+        // Decide moved range. The anchor stays put, and the moving end may cross it
+        var lower = index
+        var upper = index
+        if modifySelection {
+            let range = selectedSTTextRange.range
+            let anchor = isCursorBeginSelected ? range.upperBound : range.lowerBound
+            lower = min(anchor, index)
+            upper = max(anchor, index)
+            isCursorBeginSelected = index < anchor
+        }
+
+        // Move cursor, keeping the goal
+        isMovingCursorByLine = true
         moveCursor(lower: lower, upper: upper)
+        isMovingCursorByLine = false
     }
     
     func moveForward(modifySelection: Bool) {
@@ -337,60 +321,41 @@ extension STTextView {
         moveCursor(lower: lower, upper: upper)
     }
     
+    // The move commands are logical, not on screen. For vertical writing, which
+    // drawsVerticallyForCharacter(at:) reports, AppKit already turns the arrow keys
+    // a quarter: the up arrow arrives as moveLeft (back one character) and the
+    // left arrow as moveDown (the next line). Turning them again here by the
+    // direction would send the up arrow to the next line.
     open override func moveUp(_ sender: Any?) {
-        switch direction {
-        case .lrTb: moveToPrevLine(modifySelection: false)
-        case .tbRl: moveBackward(modifySelection: false)
-        }
+        moveToPrevLine(modifySelection: false)
     }
 
     open override func moveUpAndModifySelection(_ sender: Any?) {
-        switch direction {
-        case .lrTb: moveToPrevLine(modifySelection: true)
-        case .tbRl: moveBackward(modifySelection: true)
-        }
+        moveToPrevLine(modifySelection: true)
     }
 
     open override func moveDown(_ sender: Any?) {
-        switch direction {
-        case .lrTb: moveToNextLine(modifySelection: false)
-        case .tbRl: moveForward(modifySelection: false)
-        }
+        moveToNextLine(modifySelection: false)
     }
 
     open override func moveDownAndModifySelection(_ sender: Any?) {
-        switch direction {
-        case .lrTb: moveToNextLine(modifySelection: true)
-        case .tbRl: moveForward(modifySelection: true)
-        }
+        moveToNextLine(modifySelection: true)
     }
 
     open override func moveLeft(_ sender: Any?) {
-        switch direction {
-        case .lrTb: moveBackward(modifySelection: false)
-        case .tbRl: moveToNextLine(modifySelection: false)
-        }
+        moveBackward(modifySelection: false)
     }
 
     open override func moveLeftAndModifySelection(_ sender: Any?) {
-        switch direction {
-        case .lrTb: moveBackward(modifySelection: true)
-        case .tbRl: moveToNextLine(modifySelection: true)
-        }
+        moveBackward(modifySelection: true)
     }
 
     open override func moveRight(_ sender: Any?) {
-        switch direction {
-        case .lrTb: moveForward(modifySelection: false)
-        case .tbRl: moveToPrevLine(modifySelection: false)
-        }
+        moveForward(modifySelection: false)
     }
 
     open override func moveRightAndModifySelection(_ sender: Any?) {
-        switch direction {
-        case .lrTb: moveForward(modifySelection: true)
-        case .tbRl: moveToPrevLine(modifySelection: true)
-        }
+        moveForward(modifySelection: true)
     }
 
     open override func moveForward(_ sender: Any?) {
@@ -415,8 +380,13 @@ extension STTextView {
         let line = label.context.line(at: selectedSTTextRange.range.upperBound)
         guard let range = label.context.runIndexes(line: line) else { return }
 
-        // Move cursor to end of line
-        moveCursor(lower: range.upperBound, upper: range.upperBound)
+        // Move cursor to end of line. A line closed by a newline ends before it,
+        // otherwise the caret would land at the beginning of the next line
+        var index = range.upperBound
+        if !range.isEmpty, label.context.runs[range.upperBound - 1].isNewline {
+            index = range.upperBound - 1
+        }
+        moveCursor(lower: index, upper: index)
     }
     
     //--------------------------------------------------------------//

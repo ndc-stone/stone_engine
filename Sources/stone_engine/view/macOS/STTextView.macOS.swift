@@ -178,6 +178,12 @@ open class STTextView: NSScrollView {
             // Update appearance
             updateCursorShown()
 
+            // Forget the goal of the line moves, unless they moved the cursor. A
+            // click, typing or a move along the line starts a new goal
+            if !isMovingCursorByLine {
+                cursorRectForUpDown = .zero
+            }
+
             // Reset cursor blink phase on input / cursor move
             cursorView?.resetBlinking()
 
@@ -218,6 +224,7 @@ open class STTextView: NSScrollView {
 
     open var isCursorBeginSelected = false
     open var cursorRectForUpDown: CGRect = .zero
+    var isMovingCursorByLine = false
     open var mouseDownIndex: Int = 0
     open var needsToScrollToShowCurosr = false
 
