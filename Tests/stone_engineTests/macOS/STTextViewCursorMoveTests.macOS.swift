@@ -10,6 +10,7 @@ STTextViewCursorMoveTests.macOS.swift
 そのための矢印キーの読み替えは AppKit が行い、エンジンは受け取った命令を論理的な向きとして扱う。
 */
 
+#if os(macOS)
 import XCTest
 @testable import stone_engine
 
@@ -259,3 +260,4 @@ final class STTextViewCursorMoveTests: XCTestCase {
         }
     }
 }
+#endif

@@ -8,6 +8,7 @@ STTextViewKeyCommandTests.macOS.swift
 画面の向きどおりに動くことは、実際のキーイベントを送って確かめる。
 */
 
+#if os(macOS)
 import XCTest
 @testable import stone_engine
 
@@ -369,3 +370,4 @@ final class STTextViewKeyCommandTests: XCTestCase {
         XCTAssertEqual(textView.text, "あいうえお\nかけこさしすせそ\nたちつてと")
     }
 }
+#endif

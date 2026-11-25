@@ -951,12 +951,14 @@ open class STLabel: NSView {
             // Unite marked run rects
             let rects = uniteRunRects(range: clipped, hasLineGap: false)
 
-            // Fill rects
+            // Fill rects. The line goes just outside the characters, below them in
+            // horizontal writing and on their left in vertical, so that it stays
+            // off the grid of the manuscript paper in either direction
             for rect in rects {
                 let lineRect: CGRect
                 switch direction {
                 case .lrTb: lineRect = CGRect(x: rect.minX + 1, y: rect.maxY, width: rect.width - 2, height: 2)
-                case .tbRl: lineRect = CGRect(x: rect.minX, y: rect.minY + 1, width: 2, height: rect.height - 2)
+                case .tbRl: lineRect = CGRect(x: rect.minX - 2, y: rect.minY + 1, width: 2, height: rect.height - 2)
                 }
                 cgContext.fill(lineRect)
             }
