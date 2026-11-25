@@ -34,6 +34,10 @@ public class STLayout {
     private var maxY: CGFloat { context.isSingleLine ? .greatestFiniteMagnitude : context.renderSize.height }
     private var tmpX: CGFloat?
 
+    // How far a punctuation mark hung at the end of a line reaches past it, for
+    // the fixed width layout. Zero when nothing hangs
+    private var hangingOverhang: CGFloat = 0
+
     // The ascent the line's em box is measured from, for this layout pass
     private var emAscent: CGFloat = 0
 
@@ -575,11 +579,11 @@ public class STLayout {
             // Layout run
             layoutRun()
             
-            // Extend geometry with hanging
-            switch context.direction {
-            case .lrTb: context.renderSize.width += context.fontSize * 0.25
-            case .tbRl: context.renderSize.height += context.fontSize * 0.25
-            }
+            // Let the hanging run be drawn past the end of the line. The render
+            // size is left alone: it is what the following lines break at, and
+            // growing it for every hanging run let them take more characters as
+            // the text went on, out of the grid of the manuscript paper
+            hangingOverhang = context.fontSize * 0.25
         }
     }
     
@@ -847,6 +851,13 @@ public class STLayout {
         // content, so only the inline axis can ever clip it. Leaving the block
         // axis bounded would hide runs whenever the render size lags the content.
         var renderFrame = CGRect(origin: .zero, size: context.renderSize)
+
+        // A hanging punctuation mark sits past the end of the line, and is shown
+        switch context.direction {
+        case .lrTb: renderFrame.size.width += hangingOverhang
+        case .tbRl: renderFrame.size.height += hangingOverhang
+        }
+
         if !context.isSingleLine {
             let unbounded = CGFloat.greatestFiniteMagnitude
             switch context.direction {
@@ -1662,6 +1673,7 @@ public class STLayout {
         tmpX = nil
         runId = 0
         lineStartRunId = 0
+        hangingOverhang = 0
         
         // Layout
         while runId < context.runs.count {

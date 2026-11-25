@@ -187,11 +187,52 @@ final class STLayoutKinsokuTests: STEngineTestCase {
         XCTAssertEqual(context.runChars[5], "、")
         XCTAssertEqual(hung.frame.minX, originalWidth, accuracy: 0.001, "「、」が枡目の外に出ていない")
 
-        // ぶら下がったぶん renderSize が広がる（描画がクリップされないように）
-        XCTAssertEqual(
-            context.renderSize.width, originalWidth + context.fontSize * 0.25, accuracy: 0.001,
-            "ぶら下がりぶんの余白が renderSize に足されていない"
-        )
+        // 枡目の外でも描かれる。renderSize は広げない（後の行の字数が変わるため）
+        XCTAssertEqual(hung.visibility, .visible, "ぶら下がった「、」が描かれない")
+        XCTAssertEqual(context.renderSize.width, originalWidth, accuracy: 0.001, "ぶら下がりで renderSize が変わった")
+    }
+
+    /// ぶら下がりが何度あっても、後の行の字数が増えないこと。
+    ///
+    /// 以前はぶら下がるたびに renderSize を 1/4 字ずつ広げており、それが改行の
+    /// 位置にも効いていた。ぶら下がりが 4 回を超えると 1 行に 1 字多く入り、
+    /// 原稿用紙の枡目からはみ出した。
+    func testHangingDoesNotWidenFollowingLines() {
+        let charsPerLine = 5
+        // どの行も 5 字のあとに「、」が来て、ぶら下がる
+        let text = String(repeating: "あいうえお、", count: 12) + "かきくけこさしすせそ"
+        for (name, context) in [("lrTb", hContext(charsPerLine: charsPerLine)), ("tbRl", vContext(charsPerLine: charsPerLine))] {
+            context.isFixedWidth = true
+            let originalSize = context.renderSize
+            layout(text, into: context)
+
+            for (line, range) in lineRanges(context).enumerated() {
+                let count = range.filter { !(context.runChars[$0] == "、" && $0 == range.upperBound - 1) }.count
+                XCTAssertLessThanOrEqual(count, charsPerLine, "[\(name)] \(line) 行目に \(count) 字入った: \(lineTexts(context)[line])")
+            }
+            XCTAssertEqual(lineTexts(context).suffix(2), ["かきくけこ", "さしすせそ"], "[\(name)] 最後の行がずれた")
+            XCTAssertEqual(context.renderSize, originalSize, "[\(name)] renderSize が変わった")
+        }
+    }
+
+    /// 字数ぶんに足りない高さのときは、入りきる字数で改行すること。
+    ///
+    /// ウィンドウが低いとアプリはビューを詰めるので、高さが字の大きさの
+    /// 整数倍にならない。原稿用紙の枡目は入りきる字数（切り捨て）で描かれるので、
+    /// 文字もそれを超えてはならない。ぶら下がりのあとも同じ。
+    func testFixedWidthBreaksAtWholeCharacters() {
+        let context = makeContext(direction: .tbRl, renderSize: CGSize(width: 400, height: 16 * 4.9))
+        context.isFixedWidth = true
+        layout(String(repeating: "あいうえ、", count: 6) + "かきくけこさし", into: context)
+
+        for (line, range) in lineRanges(context).enumerated() {
+            for runId in range where !(context.runChars[runId] == "、" && runId == range.upperBound - 1) {
+                XCTAssertLessThanOrEqual(
+                    context.runs[runId].frame.maxY, 16 * 4 + 0.001,
+                    "\(line) 行目の「\(context.runChars[runId])」が 4 字ぶんの枡目からはみ出した"
+                )
+            }
+        }
     }
 
     /// ぶら下がり対象でない行頭禁則文字（「」など）は、字詰め固定でもぶら下がらない。
