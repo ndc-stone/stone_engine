@@ -438,7 +438,12 @@ open class STTextView: NSScrollView {
         // Layout text document view
         rect.origin.x = 0
         rect.origin.y = 0
-        rect.size.width = renderedSize.width + contentInsets.left + contentInsets.right
+        // Vertical text starts from the right edge. Keep the document at least as
+        // wide as the view, so short text sits against the right edge and new lines
+        // are added to its left, the way horizontal text sits at the top and new
+        // lines go below it. A narrower document would be pinned to the left of the
+        // view instead, and every new line would push the text before it rightward.
+        rect.size.width = max(renderedSize.width + contentInsets.left + contentInsets.right, bounds.width)
         rect.size.height = bounds.height
         textDocumentView.frame = rect
     }
@@ -466,6 +471,15 @@ open class STTextView: NSScrollView {
         
         // Decide label frame from text document view
         rect = textDocumentView.frame.inset(by: contentInsets)
+
+        // Fit the label to the text and put it against the right edge, where
+        // vertical text begins. The document can be wider than the text (it is
+        // never narrower than the view), and the label lays its lines out from
+        // its own right edge while placing an empty last line by the width the
+        // text takes, so the two have to agree. The iOS view does the same.
+        let width = min(label.context.renderedSize.width, rect.width)
+        rect.origin.x = rect.maxX - width
+        rect.size.width = width
         
         // Layout label
         label.frame = rect
@@ -659,11 +673,28 @@ open class STTextView: NSScrollView {
         // Invoke super
         super.layout()
 
+        // Remember how far the visible area is from the right edge of the document.
+        // In vertical writing the document begins on the right and grows to the
+        // left, so a line added or removed changes its width, and the text already
+        // laid out moves with the right edge.
+        let documentWidth = textDocumentView.frame.width
+        let distanceFromRight = documentWidth - contentView.bounds.origin.x
+
         // Constrain the label before measuring
         prepareConstrainedFrames()
 
         // Layout document view
         layoutTextDocumentView()
+
+        // Keep the visible area where it was against the text. Without this a new
+        // line pushes everything on screen one line toward the beginning, while in
+        // horizontal writing the text stays put and the new line comes in below it.
+        if direction == .tbRl, textDocumentView.frame.width != documentWidth {
+            var visible = contentView.bounds
+            visible.origin.x = textDocumentView.frame.width - distanceFromRight
+            contentView.setBoundsOrigin(contentView.constrainBoundsRect(visible).origin)
+            reflectScrolledClipView(contentView)
+        }
 
         // Layout label
         // Force label to finish its layout so run frames and cursor position are current
