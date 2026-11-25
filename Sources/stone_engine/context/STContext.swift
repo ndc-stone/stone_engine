@@ -673,11 +673,19 @@ open class STContext {
     //--------------------------------------------------------------//
     
     public func isClockwise(run: STRun) -> Bool {
-        // Check script
-        guard !fontManager.script(fontId: run.fontId).notNeedsToClockwiseInTbRl else { return false }
-        
         // Check direction
         guard direction == .tbRl else { return false }
+
+        // The General Punctuation is set in the Japanese font, and on its side
+        // (see STFontManager.isPunctuationSetInJapaneseFont)
+        if STFontManager.isPunctuationSetInJapaneseFont(scalar: run.scalar),
+           !run.isNewline,
+           fontManager.script(fontId: run.fontId) == .japanese {
+            return true
+        }
+
+        // Check script
+        guard !fontManager.script(fontId: run.fontId).notNeedsToClockwiseInTbRl else { return false }
         
         // Check tate chu yoko
         return !isTateChuYoko(run: run)

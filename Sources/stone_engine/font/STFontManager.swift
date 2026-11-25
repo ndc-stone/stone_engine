@@ -124,6 +124,20 @@ extension STFontManager {
     // the character it follows belongs to
     private static let variationSelector16: UInt32 = 0xfe0f
 
+    // The punctuation of the General Punctuation block (U+2000-206F): '…',
+    // '‥', '―', '“' and so on. No script claims it, so it would be set in the
+    // first font that has it, a Latin one. A Latin '…' is small and sits on
+    // the baseline, and on its side in vertical text its dots run down the
+    // left of the line; its advance is not always a full em either, so the
+    // characters after it come off the manuscript grid. It is set in the
+    // Japanese font instead, as stone 1.2 did for everything past Latin-1:
+    // the Japanese '…' sits in the middle of the em, across and, on its side,
+    // down. Vertical text turns it on its side rather than substituting a
+    // vertical form (see STContext.isClockwise(run:)), as 1.2 did too.
+    public static func isPunctuationSetInJapaneseFont(scalar: UInt32) -> Bool {
+        return (0x2000 ... 0x206f).contains(scalar)
+    }
+
     func fontId(char: Character) -> Int {
         // Check cache
         if let fontId = charToFontId[char] {
@@ -142,26 +156,34 @@ extension STFontManager {
             script = .emoji
         }
 
+        // Set the General Punctuation in the Japanese font
+        if script == nil, Self.isPunctuationSetInJapaneseFont(scalar: baseScalar.value) {
+            script = .japanese
+        }
+
+        // Decide font ID and cache it
+        let fontId = fontId(scalar: baseScalar, script: script)
+        charToFontId[char] = fontId
+
+        return fontId
+    }
+
+    private func fontId(scalar: Unicode.Scalar, script: STScript?) -> Int {
         // Decide font ID. The script's own fonts come first, then every other
         // font: a character can belong to a script and still be missing from
         // its fonts (an emoji sitting in the Dingbats or Miscellaneous
         // Technical block, say), and drawing it with the default font would
         // only produce .notdef, so any font that has the glyph is preferable.
-        let chars = uniChars(string: String(baseScalar))
+        let chars = uniChars(string: String(scalar))
         var glyphs = [CGGlyph](repeating: 0, count: chars.count)
         for fontId in fontIdSearchOrder(script: script) {
             let ctFont = CTFontCreateWithName(possibleFontNames[fontId] as CFString, 17, nil)
             if CTFontGetGlyphsForCharacters(ctFont, chars, &glyphs, chars.count), glyphs[0] > 0 {
-                // Cache it
-                charToFontId[char] = fontId
-
                 return fontId
             }
         }
 
         // Use default font ID
-        charToFontId[char] = 0
-
         return 0
     }
 
