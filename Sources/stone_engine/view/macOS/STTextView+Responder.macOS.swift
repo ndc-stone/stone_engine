@@ -127,7 +127,7 @@ extension STTextView {
         interpretKeyEvents([event])
     }
     
-    private func moveCursor(lower: Int, upper: Int) {
+    func moveCursor(lower: Int, upper: Int) {
         // Set selected range
         selectedTextRange = STTextRange(range: min(lower, upper) ..< max(lower, upper))
         
@@ -211,7 +211,7 @@ extension STTextView {
     // The caret position in the given line closest to the goal of the line moves.
     // The goal is where the moving end of the selection was when the line moves
     // began, so a short line passed on the way does not pull the caret off it.
-    private func closestRunIndexForLineMove(range: Range<Int>) -> Int {
+    func closestRunIndexForLineMove(range: Range<Int>) -> Int {
         // Decide goal from the moving end, not from the cursor view, which sits at
         // the upper bound of the selection and is laid out in another view
         if cursorRectForUpDown.isEmpty {
@@ -224,7 +224,13 @@ extension STTextView {
     // Move the moving end of the selection (or the caret) to index, keeping the
     // goal of the line moves.
     private func moveCursorByLine(to index: Int, modifySelection: Bool) {
-        // Decide moved range. The anchor stays put, and the moving end may cross it
+        moveSelectionEnd(to: index, modifySelection: modifySelection, keepsGoal: true)
+    }
+
+    // Move the moving end of the selection to index when extending it, or the
+    // caret otherwise. The anchor stays put, and the moving end may cross it.
+    func moveSelectionEnd(to index: Int, modifySelection: Bool, keepsGoal: Bool = false) {
+        // Decide moved range
         var lower = index
         var upper = index
         if modifySelection {
@@ -235,8 +241,8 @@ extension STTextView {
             isCursorBeginSelected = index < anchor
         }
 
-        // Move cursor, keeping the goal
-        isMovingCursorByLine = true
+        // Move cursor
+        isMovingCursorByLine = keepsGoal
         moveCursor(lower: lower, upper: upper)
         isMovingCursorByLine = false
     }
@@ -364,29 +370,6 @@ extension STTextView {
 
     open override func moveBackward(_ sender: Any?) {
         moveBackward(modifySelection: false)
-    }
-    
-    open override func moveToBeginningOfLine(_ sender: Any?) {
-        // Get current line
-        let line = label.context.line(at: selectedSTTextRange.range.lowerBound)
-        guard let range = label.context.runIndexes(line: line) else { return }
-
-        // Move cursor to beginning of line
-        moveCursor(lower: range.lowerBound, upper: range.lowerBound)
-    }
-
-    open override func moveToEndOfLine(_ sender: Any?) {
-        // Get current line
-        let line = label.context.line(at: selectedSTTextRange.range.upperBound)
-        guard let range = label.context.runIndexes(line: line) else { return }
-
-        // Move cursor to end of line. A line closed by a newline ends before it,
-        // otherwise the caret would land at the beginning of the next line
-        var index = range.upperBound
-        if !range.isEmpty, label.context.runs[range.upperBound - 1].isNewline {
-            index = range.upperBound - 1
-        }
-        moveCursor(lower: index, upper: index)
     }
     
     //--------------------------------------------------------------//

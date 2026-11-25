@@ -367,21 +367,38 @@ final class STTextViewWholeLineScrollTests: XCTestCase {
         }
     }
 
-    /// Page Down / Page Up は現状どこにも実装がないこと。
+    /// Page Down / Page Up でスクロールしても、行が端で切れないこと。
     ///
-    /// NSResponder は scrollPageDown: などを NSStandardKeyBindingResponding で
-    /// 宣言するだけで実装を持たず、stone も実装していない。つまりこれらのキーでは
-    /// 何もスクロールしない。実装するなら行に合わせる処理も一緒に入れること。
-    func testPageScrollingIsNotImplemented() {
-        let textView = makeTextView(
-            text: String(repeating: "あいうえおかきくけこ", count: 40),
-            visibleLines: 6
-        )
+    /// ページ送りは行の高さの整数倍だけ動かし、そのうえで行に合わせる。
+    /// 見える範囲は行の高さの整数倍にしておく。下端が切れないことはアプリ側が
+    /// ビューの大きさで支えるもので、スクロールだけでは保証できないため。
+    func testPageScrollingShowsWholeLines() {
+        for direction in [STDirection.lrTb, .tbRl] {
+            for scale: CGFloat in [1.0, 1.5, 1.75] {
+                let textView = makeTextView(
+                    text: String(repeating: "あいうえおかきくけこ", count: 40),
+                    visibleLines: 6,
+                    lineHeightScale: scale,
+                    direction: direction
+                )
 
-        XCTAssertFalse(
-            textView.responds(to: Selector(("scrollPageDown:"))),
-            "Page Down が実装された。行に合わせる処理も入っているか確認すること"
-        )
+                textView.scrollToBeginningOfDocument(nil)
+                for (name, scroll) in [
+                    ("scrollPageDown", { textView.scrollPageDown(nil) }),
+                    ("scrollPageDown", { textView.scrollPageDown(nil) }),
+                    ("scrollPageUp", { textView.scrollPageUp(nil) }),
+                    ("pageDown", { textView.pageDown(nil) }),
+                    ("pageUp", { textView.pageUp(nil) }),
+                ] as [(String, () -> Void)] {
+                    scroll()
+                    textView.layoutSubtreeIfNeeded()
+                    XCTAssertTrue(
+                        clippedRuns(textView).isEmpty,
+                        "[\(direction) 行間 \(scale)] \(name) のあとで行が切れた"
+                    )
+                }
+            }
+        }
     }
 
     /// キャレットを追ってスクロールしたあとも切れず、かつキャレットが見えていること。
